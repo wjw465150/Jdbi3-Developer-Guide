@@ -675,14 +675,14 @@ List<User> users = handle.createQuery("SELECT id, name FROM user ORDER BY id ASC
     .list();
 ```
 
-This `RowMapper` is equivalent to the lambda mapper above but more explicit.
+这个 `RowMapper` 相当于上面的 lambda 映射器，但更明确。
 
 <a name="23______RowMappers_registry"></a>
-##### RowMappers registry
+##### RowMappers registry(行映射器注册表)
 
 Row mappers can be registered for particular types. This simplifies usage, requiring only that you specify what type you want to map to. Jdbi automatically looks up the mapper from the registry, and uses it.
 
-```
+```java
 jdbi.registerRowMapper(User.class,
     (rs, ctx) -> new User(rs.getInt("id"), rs.getString("name"));
 
