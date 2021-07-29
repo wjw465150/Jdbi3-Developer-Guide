@@ -5,7 +5,7 @@
 
 Jdbi提供了对Java中关系数据的方便、惯用的访问。Jdbi 3是第三个主要版本，它引入了对Java 8的增强支持，对设计和实现的无数改进，以及对模块化插件的增强支持。
 
-> ==💡提示:== 不想升级了吗?[v2文档](jdbi2/index.html)仍然可用。
+> **💡提示:** 不想升级了吗?[v2文档](jdbi2/index.html)仍然可用。
 
 Jdbi构建在JDBC之上。如果您的数据库有JDBC驱动程序，则可以使用Jdbi。Jdbi改进了JDBC的粗糙接口，提供了更自然的Java数据库接口，易于绑定到域数据类型。与ORM不同的是，我们的目标不是提供一个完整的对象关系映射框架—与隐藏的复杂性不同，我们提供的构建块允许您根据您的应用程序构建关系和对象之间的映射。
 
@@ -109,7 +109,7 @@ Jdbi不是ORM。没有会话缓存、更改跟踪、“视图中打开的会话�
 
 您可以使用自己的SQL，而Jdbi只运行您告诉它的命令——按照上帝希望的方式。
 
-> ==💡提示:==已经在使用Jdbi v2了吗?参见[从v2升级到v3](#_upgrading_from_v2_to_v3).
+> **💡提示:**已经在使用Jdbi v2了吗?参见[从v2升级到v3](#_upgrading_from_v2_to_v3).
 
 <a name="4___2__开始"></a>
 ## 2. 开始
@@ -193,9 +193,9 @@ Jdbi提供了其他几个模块，这些模块用其他特性增强了核心API�
 <a name="6____2_2__事先申明"></a>
 ### 2.2. 事先申明
 
-> ==💡提示:== 您可能想要添加我们的注释`org.jdbi.v3.meta.Beta` 将被列入IDE的“不稳定API使用”黑名单。
+> **💡提示:** 您可能想要添加我们的注释`org.jdbi.v3.meta.Beta` 将被列入IDE的“不稳定API使用”黑名单。
 
-> ==☢警告:== 我们的`org.jdbi.*.internal`包不被认为是公共API;它们的内容可能会在没有警告的情况下发生根本变化。
+> **☢警告:** 我们的`org.jdbi.*.internal`包不被认为是公共API;它们的内容可能会在没有警告的情况下发生根本变化。
 
 <a name="7___3__核心_API"></a>
 ## 3. 核心 API
@@ -238,7 +238,7 @@ Jdbi jdbi = Jdbi.create(ds);
 
 `Handle`在创建时从`Jdbi`继承配置。更多细节请参见[Configuration](#_configuration)。
 
-> ==👁小心:== 因为`Handle`持有一个打开的连接，所以必须小心确保当您使用完它时，每个Handle都是关闭的。如果关闭句柄失败，将会导致数据库被打开的连接淹没，或者耗尽连接池。
+> **👁小心:** 因为`Handle`持有一个打开的连接，所以必须小心确保当您使用完它时，每个Handle都是关闭的。如果关闭句柄失败，将会导致数据库被打开的连接淹没，或者耗尽连接池。
 
 有几种方法可以在运行时获得`Handle`实例。
 
@@ -264,7 +264,7 @@ jdbi.useHandle(handle -> {
 
 `withHandle`和`useHandle`都打开一个临时句柄，调用你的回调，并在回调返回时立即释放这个句柄。
 
-> ==💡提示:== 您可能会注意到在Jdbi的一些地方出现了“consumer”vs“callback”命名模式。回调函数返回一个值，并与`with-`方法相结合。消费者不返回值，并且与`use-`方法结合。
+> **💡提示:** 您可能会注意到在Jdbi的一些地方出现了“consumer”vs“callback”命名模式。回调函数返回一个值，并与`with-`方法相结合。消费者不返回值，并且与`use-`方法结合。
 
 或者，如果你想自己管理句柄的生命周期，使用`jdbc.open()`:
 
@@ -274,7 +274,7 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-> ==👁小心:== 当使用`jdbc.open()`时，应该始终使用try-with-resources或try-finally块来确保数据库连接被释放。不释放Handle将泄漏连接。我们建议在可能的情况下使用`withHandle`或`useHandle`而不是`open`。
+> **👁小心:** 当使用`jdbc.open()`时，应该始终使用try-with-resources或try-finally块来确保数据库连接被释放。不释放Handle将泄漏连接。我们建议在可能的情况下使用`withHandle`或`useHandle`而不是`open`。
 
 <a name="10____3_3__参数"></a>
 ### 3.3. 参数
@@ -285,7 +285,7 @@ Arguments是Jdbi对JDBC语句参数的表示(the `?` in `select * from Foo where
 
 参数可以执行比简单JDBC支持的更高级的绑定:BigDecimal可以绑定为SQL decimal，java.time.Year可以绑定为SQL int，或者一个复杂对象可以序列化为字节数组并绑定为SQL blob。
 
-> ==🏷注意:== Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#_templating) 和 [TemplateEngine](#_templateengine)。
+> **🏷注意:** Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#_templating) 和 [TemplateEngine](#_templateengine)。
 
 <a name="11_____3_3_1__位置参数"></a>
 #### 3.3.1. 位置参数
@@ -321,9 +321,9 @@ String name = handle.createQuery("select name from contacts where id = :id")
                     .one();
 ```
 
-> ==🏷注意:== 这个`:foo`语法是可以改变的默认行为;请参阅`ColonPrefixSqlParser`类。Jdbi也提供了对`#foo`语法的开箱即用的支持，您也可以创建自己的语法。
+> **🏷注意:** 这个`:foo`语法是可以改变的默认行为;请参阅`ColonPrefixSqlParser`类。Jdbi也提供了对`#foo`语法的开箱即用的支持，您也可以创建自己的语法。
 
-> ==💡提示:== 不允许混合命名参数和位置参数，因为这会变得混乱。
+> **💡提示:** 不允许混合命名参数和位置参数，因为这会变得混乱。
 
 <a name="13_____3_3_3__Supported_Argument_Types"></a>
 #### 3.3.3. Supported Argument Types(支持的参数类型)
@@ -386,7 +386,7 @@ handle.createQuery("SELECT value FROM items WHERE kind in (<varargListOfKinds>)"
       .list();
 ```
 
-> ==🏷注意:== 使用`bindList`需要编写带有属性的SQL，而不是绑定，尽管你的值是绑定的。该属性是一个占位符，它将被安全地呈现到以逗号分隔的绑定占位符列表中。
+> **🏷注意:** 使用`bindList`需要编写带有属性的SQL，而不是绑定，尽管你的值是绑定的。该属性是一个占位符，它将被安全地呈现到以逗号分隔的绑定占位符列表中。
 
 你可以从Java Bean的属性绑定多个参数:
 
@@ -446,11 +446,11 @@ handle.createUpdate("insert into documents (id, folder_id, name, contents) " +
       .execute();
 ```
 
-> ==🏷注意:== `bindBean()`、`bindFields()` 和 `bindMethods()` 可用于绑定嵌套属性，例如 `:user.address.street`。
+> **🏷注意:** `bindBean()`、`bindFields()` 和 `bindMethods()` 可用于绑定嵌套属性，例如 `:user.address.street`。
 
-> ==☢警告:== `bindMap()` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
+> **☢警告:** `bindMap()` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
 
-> ==💡提示:== 作者建议检查[Immutables](#_immutables)对高级方法的支持，方便地绑定和映射值类型。
+> **💡提示:** 作者建议检查[Immutables](#109____7_4__Immutables)对高级方法的支持，方便地绑定和映射值类型。
 
 <a name="15_____3_3_5__Custom_Arguments"></a>
 #### 3.3.5. Custom Arguments(自定义参数)
@@ -459,7 +459,7 @@ Occasionally your data model will use data types not natively supported by Jdbi 
 
 Fortunately, Jdbi can be configured to bind custom data types as arguments, by implementing a few simple interfaces.
 
-> ==🏷注意:== JDBC的核心特性通常得到所有数据库供应商的良好支持。然而，更高级的用法，如数组支持或几何类型，往往很快就会变成特定于供应商的。
+> **🏷注意:** JDBC的核心特性通常得到所有数据库供应商的良好支持。然而，更高级的用法，如数组支持或几何类型，往往很快就会变成特定于供应商的。
 
 <a name="16______Argument"></a>
 ##### Argument(参数)
@@ -545,7 +545,7 @@ public void uuidArgumentFactory() {
 
 稍后，当语句执行时，绑定期间定位的每个`Argument`都会应用到JDBC [PreparedStatement](https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html) .
 
-> ==🏷注意:==  有时，两个或多个参数工厂将支持相同数据类型的参数。 当这种情况发生时，最后注册的工厂获胜。 可准备参数工厂总是优先于基本参数工厂。 这意味着您可以覆盖任何数据类型的绑定方式，包括开箱即用支持的数据类型。
+> **🏷注意:**  有时，两个或多个参数工厂将支持相同数据类型的参数。 当这种情况发生时，最后注册的工厂获胜。 可准备参数工厂总是优先于基本参数工厂。 这意味着您可以覆盖任何数据类型的绑定方式，包括开箱即用支持的数据类型。
 
 <a name="20____3_4__Queries"></a>
 ### 3.4. Queries(查询)
@@ -659,7 +659,7 @@ List<User> users = handle.createQuery("SELECT id, name FROM user ORDER BY id ASC
         .list();
 ```
 
-> ==💡提示:== 在上面的例子中使用了三种不同的类型。 由 Handle.createQuery() 返回的 Query 实现了 ResultBearing 接口。 `ResultBearing.map()` 方法接受一个 `RowMapper<T>` 并返回一个 `ResultIterable<T>`。 最后，`ResultBearing.list()` 将结果集中的每一行收集到一个 `List<T>` 中。
+> **💡提示:** 在上面的例子中使用了三种不同的类型。 由 Handle.createQuery() 返回的 Query 实现了 ResultBearing 接口。 `ResultBearing.map()` 方法接受一个 `RowMapper<T>` 并返回一个 `ResultIterable<T>`。 最后，`ResultBearing.list()` 将结果集中的每一行收集到一个 `List<T>` 中。
 
 行映射器可以定义为类，允许重用：
 
@@ -680,7 +680,7 @@ List<User> users = handle.createQuery("SELECT id, name FROM user ORDER BY id ASC
 <a name="23______RowMappers_registry"></a>
 ##### RowMappers registry(行映射器注册表)
 
-Row mappers can be registered for particular types. This simplifies usage, requiring only that you specify what type you want to map to. Jdbi automatically looks up the mapper from the registry, and uses it.
+可以为特定类型注册行映射器。这简化了使用，只需要指定要映射到的类型。Jdbi自动从注册表查找映射器，并使用它。
 
 ```java
 jdbi.registerRowMapper(User.class,
@@ -692,31 +692,32 @@ try (Handle handle = jdbi.open()) {
         .list();
 }
 ```
+> **💡提示:** `翻译者WJW`提示,也可以handle调用registerRowMapper方法
 
-A mapper which implements `RowMapper` with an explicit mapped type (such as the `UserMapper` class in the previous section) may be registered without specifying the mapped type:
+可以在不指定映射类型的情况下注册使用显式映射类型（例如上一节中的 UserMapper 类）实现 `RowMapper` 的映射器：
 
-```
+```java
 handle.registerRowMapper(new UserMapper());
 ```
 
-When this method is used, Jdbi inspects the generic class signature of the mapper to automatically discover the mapped type.
+使用此方法时，Jdbi 检查映射器的泛型类签名以自动发现映射类型。
 
-It is possible to register more than one mapper for any given type. When this happens, the last-registered mapper for a given type takes precedence. This permits optimizations, like registering a "default" mapper for some type, while allowing that default mapper to be overridden with a different one when appropriate.
+可以为任何给定类型注册多个映射器。 发生这种情况时，给定类型的最后注册的映射器优先。 这允许优化，比如为某种类型注册一个“默认”映射器，同时允许在适当的时候用不同的映射器覆盖默认映射器。
 
 <a name="24______RowMapperFactory"></a>
-##### RowMapperFactory
+##### RowMapperFactory(行映射器工厂)
 
-A [RowMapperFactory](apidocs/org/jdbi/v3/core/mapper/RowMapperFactory.html) can produce row mappers for arbitrary types.
+[RowMapperFactory](apidocs/org/jdbi/v3/core/mapper/RowMapperFactory.html) 可以为任意类型生成行映射器。
 
-Implementing a factory might be preferable to a regular row mapper if:
+在以下情况下，实现工厂可能比常规行映射器更可取：
 
-- The mapper implementation is generic, and could apply to multiple mapped types. For example, Jdbi provides a generalized [BeanMapper](#_beanmapper), which maps columns to bean properties for any bean class.
-- The mapped type has a generic signature, and/or the mapper could be composed from other registered mappers. For example, Jdbi provides a [Map.Entry mapper](#_map_entry_mapping), provided a mapper is registered for types `K` and `V`.
-- You want to bundle multiple mappers into a single class.
+- 映射器实现是通用的，可以应用于多个映射类型。 例如，Jdbi 提供了一个通用的 [BeanMapper](#33______BeanMapper)，它将列映射到任何 bean 类的 bean 属性。
+- 映射类型具有通用签名，和/或映射器可以由其他注册的映射器组成。 例如，Jdbi 提供了一个 [Map.Entry mapper](#35______Map_Entry_mapping)，前提是为类型 `K` 和 `V` 注册了一个映射器。
+- 您想将多个映射器捆绑到一个类中。
 
-Let’s take an example `Pair<L, R>` class:
+让我们以`Pair<L, R>`类为例：
 
-```
+```java
 public final class Pair<L, R> {
   public final L left;
   public final R right;
@@ -728,11 +729,11 @@ public final class Pair<L, R> {
 }
 ```
 
-Now, let’s implement a row mapper factory. The factory should produce a `RowMapper<Pair<L, R>>` for any `Pair<L, R>` type, where the `L` type is mapped from the first column, and `R` from the second—assuming there are column mappers registered for both `L` and `R`.
+现在，让我们实现一个行映射器工厂。 工厂应该为任何`Pair<L, R>`类型生成一个`RowMapper<Pair<L, R>>`，其中`L`类型从第一列映射，`R`从第二列映射——假设 `L` 和 `R`都注册了列映射器。
 
-Let’s take this one step at a time:
+让我们一步一步来：
 
-```
+```java
 public class PairMapperFactory implements RowMapperFactory {
   public Optional<RowMapper<?>> build(Type type, ConfigRegistry config) {
     ...
@@ -740,34 +741,32 @@ public class PairMapperFactory implements RowMapperFactory {
 }
 ```
 
-The `build` method accepts a mapped type, and a config registry. It may return `Optional.of(someMapper)` if it knows how to map that type, or `Optional.empty()` otherwise.
+`build` 方法接受一个映射类型和一个配置注册表。 如果它知道如何映射该类型，它可能会返回 `Optional.of(someMapper)`，否则返回 `Optional.empty()`。
 
-First we check whether the mapped type is a `Pair`:
+首先，我们检查映射的类型是否为`Pair`:
 
-```
+```java
 if (!Pair.class.equals(GenericTypes.getErasedType(type))) {
   return Optional.empty();
 }
 ```
 
-|      | The `GenericTypes` utility class is discussed in [Working with Generic Types](#_working_with_generic_types). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** `GenericTypes`实用程序类在[使用泛型类型](#137____9_3__Working_with_Generic_Types)中进行了讨论。
 
-Next, we extract the `L` and `R` generic parameters from the mapped type:
+接下来，我们从映射类型中提取 `L` 和 `R` 泛型参数：
 
-```
+```java
 Type leftType = GenericTypes.resolveType(Pair.class.getTypeParameters()[0], type);
 Type rightType = GenericTypes.resolveType(Pair.class.getTypeParameters()[1], type);
 ```
 
-In the first line, `Pair.class.getTypeParameters()[0]` gives the type variable `L`. Likewise in the second line, `Pair.class.getTypeParameters()[1]` gives the type variable `R`.
+在第一行中，`Pair.class.getTypeParameters()[0]` 给出了类型变量 `L`。 同样在第二行，`Pair.class.getTypeParameters()[1]` 给出了类型变量 `R`。
 
-We use `resolveType()` to resolve the types for the `L` and `R` type variables in the context of the mapped type.
+我们使用 `resolveType()` 在映射类型的上下文中解析 `L` 和 `R` 类型变量的类型。
 
-Now that we have the types for `L` and `R`, we can look up the column mappers for those types from the `ColumnMappers` config class, through the config registry:
+现在我们有了`L` 和`R` 的类型，我们可以通过配置注册表从`ColumnMappers` 配置类中查找这些类型的列映射器：
 
-```
+```java
 ColumnMappers columnMappers = config.get(ColumnMappers.class);
 
 ColumnMapper<?> leftMapper = columnMappers.findFor(leftType)
@@ -778,27 +777,25 @@ ColumnMapper<?> rightMapper = columnMappers.findFor(rightType)
        "No column mapper registered for Pair right parameter " + rightType));
 ```
 
-The config registry is a locator for config classes. So when we call `config.get(ColumnMappers.class)`, we get back a `ColumnMappers` instance with the current column mapper configuration.
+配置注册表是配置类的定位器。 因此，当我们调用 `config.get(ColumnMappers.class)` 时，我们会返回一个带有当前列映射器配置的 `ColumnMappers` 实例。
 
-Next we call `ColumnMappers.findFor()` to get the column mappers for the left and right types.
+接下来我们调用 `ColumnMappers.findFor()` 来获取left 和 right类型的列映射器。
 
-|      | You may have noticed that although this method can return `Optional`, we’re throwing an exception if we can’t find the left- or right-hand mappers. We’ve found this to be a best practice: return `Optional.empty()` if the factory knows nothing about the mapped type (`Pair`, in this case). If it knows the mapped type but is missing some configuration to make it work (e.g. mappers not registered for `L` or `R` parameter) it is more helpful to throw an exception with an informative message, so users can diagnose *why* the mapper isn’t working as expected. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** 你可能已经注意到，虽然这个方法可以返回 `Optional`，但如果我们找不到左侧或右侧的映射器，我们就会抛出异常。 我们发现这是一个最佳实践：如果工厂对映射类型一无所知（在本例中为“Pair”），则返回`Optional.empty()`。 如果它知道映射类型但缺少一些配置以使其工作（例如，映射器未注册为`L`或`R`参数），则抛出带有信息性消息的异常更有帮助，因此用户可以诊断*为什么* 映射器未按预期工作。
 
-Finally, we construct a pair mapper, and return it:
+最后，我们构造一个pair mapper，并返回它：
 
-```
+```java
 RowMapper<?> pairMapper = (rs, ctx) ->
-    new Pair(leftMapper.map(rs, 1, ctx), // In JDBC, column numbers start at 1
+    new Pair(leftMapper.map(rs, 1, ctx), // 在 JDBC 中，列号从 1 开始
              rightMapper.map(rs, 2, ctx)); // ..for MOTHERF***ING REASONS
 
 return Optional.of(pairMapper);
 ```
 
-Here is the factory class all together:
+下面是工厂类PairMapperFactory的完整源代码：
 
-```
+```java
 public class PairMapperFactory implements RowMapperFactory {
   public Optional<RowMapper<?>> build(Type type, ConfigRegistry config) {
     if (!Pair.class.equals(GenericTypes.getErasedType(type))) {
@@ -826,9 +823,9 @@ public class PairMapperFactory implements RowMapperFactory {
 }
 ```
 
-Row mapper factories may be registered similar to regular row mappers:
+行映射器工厂的注册类似于常规行映射器:
 
-```
+```java
 jdbi.registerRowMapper(new PairMapperFactory());
 
 try (Handle handle = jdbi.open()) {
@@ -839,29 +836,27 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-|      | The `GenericType` utility class is discussed in [Working with Generic Types](#_working_with_generic_types). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types)中讨论.
 
 <a name="25_____3_5_2__Column_Mappers"></a>
-#### 3.5.2. Column Mappers
+#### 3.5.2. Column Mappers(列映射器)
 
-[ColumnMapper](apidocs/org/jdbi/v3/core/mapper/ColumnMapper.html) is a functional interface, which maps a column from the current row of a JDBC [ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html) to a mapped type.
+[ColumnMapper](apidocs/org/jdbi/v3/core/mapper/ColumnMapper.html) 是一个函数接口，从一个JDBC [ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html) 到映射类型。
 
-Since `ColumnMapper` is a functional interface, they can be provided inline to a query using a lambda expression:
+由于 `ColumnMapper` 是一个函数式接口，所以可以使用 lambda 表达式将它们内联提供给查询：
 
-```
+```java
 List<Money> amounts = handle
     .select("select amount from transactions where account_id = ?", accountId)
-    .map((rs, col, ctx) -> Money.parse(rs.getString(col))) 
+    .map((rs, col, ctx) -> Money.parse(rs.getString(col))) <1>
     .list();
 ```
 
-Whenever a column mapper is used to map rows, only the first column of each row is mapped.
+> **<1>** 每当使用列映射器映射行时，仅映射每行的第一列。
 
-Column mappers may be defined as classes, which allows for re-use:
+列映射器可以定义为允许重用的类：
 
-```
+```java
 public class MoneyMapper implements ColumnMapper<Money> {
   public Money map(ResultSet r, int columnNumber, StatementContext ctx) throws SQLException {
     return Money.parse(r.getString(columnNumber));
@@ -873,14 +868,14 @@ List<Money> amounts = handle
     .list();
 ```
 
-This `ColumnMapper` is equivalent to the lambda mapper above, but more explicit.
+这个 `ColumnMapper` 相当于上面的 lambda 映射器，但更明确。
 
 <a name="26______ColumnMappers_registry"></a>
-##### ColumnMappers registry
+##### ColumnMappers registry(列映射器注册表)
 
-Column mappers may be registered for specific types. This simplifies usage, requiring only that you specify what type you want to map to. Jdbi automatically looks up the mapper from the registry, and uses it.
+可以为特定类型注册列映射器。 这简化了使用，只需要您指定要映射到的类型。 Jdbi 会自动从注册表中查找映射器并使用它。
 
-```
+```java
 jdbi.registerColumnMapper(Money.class,
     (rs, col, ctx) -> Money.parse(rs.getString(col)));
 
@@ -890,48 +885,63 @@ List<Money> amounts = jdbi.withHandle(handle ->
           .list());
 ```
 
-A mapper which implements `ColumnMapper` with an explicit mapped type (such as the `MoneyMapper` class in the previous section) may be registered without specifying the mapped type:
+使用显式映射类型实现`ColumnMapper`的映射器(如前一节中的`MoneyMapper`类)可以不指定映射类型而被注册:
 
-```
+```java
 handle.registerColumnMapper(new MoneyMapper());
 ```
 
-When this method is used, Jdbi inspects the generic class signature of the mapper to automatically discover the mapped type.
+使用此方法时，Jdbi 检查映射器的泛型类签名以自动发现映射类型。
 
-It is possible to register more than one mapper for any given type. When this happens, the last-registered mapper for a given type takes precedence. This permits optimizations, like registering a "default" mapper for some type, while allowing that default mapper to be overridden with a different one when appropriate.
+可以为任何给定类型注册多个映射器。 发生这种情况时，给定类型的最后注册的映射器优先。 这允许优化，比如为某种类型注册一个“默认”映射器，同时允许在适当的时候用不同的映射器覆盖默认映射器。
 
-Out of the box, column mappers are registered for the following types:
+开箱即用，列映射器缺省注册了以下几种类型：
 
-- Primitives: `boolean`, `byte`, `short`, `int`, `long`, `char`, `float`, and `double`
-- java.lang: `Boolean`, `Byte`, `Short`, `Integer`, `Long`, `Character`, `Float`, `Double`, `String`, and `Enum` (stored as the enum value’s name by default)
+- 基本类型: `boolean`, `byte`, `short`, `int`, `long`, `char`, `float`, and `double`
+- java.lang: `Boolean`, `Byte`, `Short`, `Integer`, `Long`, `Character`, `Float`, `Double`, `String`, 和 `Enum` (默认情况下存储为枚举值的名称)
 - java.math: `BigDecimal`
-- `byte[]` arrays (e.g. for BLOB or VARBINARY columns)
-- java.net: `InetAddress`, `URL`, and `URI`
+- `byte[]` 数组 (例如 对于 BLOB 或 VARBINARY 列)
+- java.net: `InetAddress`, `URL`, 和 `URI`
 - java.sql: `Timestamp`
-- java.time: `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `ZonedDateTime`, and `ZoneId`
+- java.time: `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `ZonedDateTime`, and `ZoneId` (翻译者WJW注: 不包括`java.util.Date`)
 - java.util: `UUID`
-- `java.util.Collection` and Java arrays (for array columns). Some additional setup may be required depending on the type of array element—see [SQL Arrays](#_sql_arrays).
+- `java.util.Collection` 和 Java 数组（用于数组列）。 根据数组元素的类型，可能需要一些额外的设置——请参阅 [SQL 数组](#37____3_7__SQL_Arrays).
 
-|      | The binding and mapping method for enum values can be controlled via the [Enums](apidocs/org/jdbi/v3/core/enums/Enums.html) config, as well as the [EnumByName](apidocs/org/jdbi/v3/core/enums/EnumByName.html) and [EnumByOrdinal](apidocs/org/jdbi/v3/core/enums/EnumByOrdinal.html) annotations. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 枚举值的绑定和映射方法可以通过 [Enums](apidocs/org/jdbi/v3/core/enums/Enums.html) 配置以及 [EnumByName](apidocs/org/jdbi/v3 /core/enums/EnumByName.html) 和 [EnumByOrdinal](apidocs/org/jdbi/v3/core/enums/EnumByOrdinal.html) 注解。
+
+> 翻译者WJW添加: 如何注册`java.util.Date`的列映射器
+> ```java
+>     jdbi3.registerColumnMapper(new ColumnMapper<java.util.Date>() {
+>       public java.util.Date map(ResultSet rs, int columnNumber, StatementContext ctx) throws SQLException {
+>         return rs.getTimestamp(columnNumber);
+>       }
+>     });
+>     
+>     jdbi3.useHandle(handle -> {
+>       java.util.Date releaseDate = handle.select("select create_time from e_bi limit 3")
+>           .mapTo(java.util.Date.class)
+>           .first();
+>       
+>       System.out.println("create_time: " + releaseDate);
+>     });
+> ```
 
 <a name="27______ColumnMapperFactory"></a>
-##### ColumnMapperFactory
+##### ColumnMapperFactory(列映射器工厂)
 
-A [ColumnMapperFactory](apidocs/org/jdbi/v3/core/mapper/ColumnMapperFactory.html) can produce column mappers for arbitrary types.
+[ColumnMapperFactory](apidocs/org/jdbi/v3/core/mapper/ColumnMapperFactory.html) 可以生成任意类型的列映射器。
 
-Implementing a factory might be preferable to a regular column mapper if:
+在以下情况下，实现工厂可能比常规列映射器更可取：
 
-- The mapper class is generic, and could apply to multiple mapped types.
-- The type being mapped is generic, and/or the mapper could be composed from other registered mappers.
-- You want to bundle multiple mappers into a single class.
+- 映射器类是泛型的，可以应用于多个映射类型。
+- 被映射的类型是泛型的，并且/或者映射器可以由其他已注册的映射器组成。
+- 您想将多个映射器捆绑到一个类中。
 
-Let’s create a mapper factory for `Optional<T>` as an example. The factory should produce a `ColumnMapper<Optional<T>>` for any `T`, provided a column mapper is registered for `T`.
+作为示例，让我们为 `Optional<T>` 创建一个映射器工厂。 工厂应该为任何`T`生成一个`ColumnMapper<Optional<T>>`，前提是为`T`注册了一个列映射器。
 
-Let’s take this one step at a time:
+让我们一步一步来：
 
-```
+```java
 public class OptionalColumnMapperFactory implements ColumnMapperFactory {
   public Optional<ColumnMapper<?>> build(Type type, ConfigRegistry config) {
     ...
@@ -939,59 +949,55 @@ public class OptionalColumnMapperFactory implements ColumnMapperFactory {
 }
 ```
 
-The `build` method accepts a mapped type, and a config registry. It may return `Optional.of(someMapper)` if it knows how to map that type, or `Optional.empty()` otherwise.
+`build` 方法接受一个映射类型和一个配置注册表。 如果它知道如何映射该类型，它可能会返回 `Optional.of(someMapper)`，否则返回 `Optional.empty()`。
 
-First, we check whether the mapped type is an `Optional`:
+首先，我们检查映射类型是否为 `Optional`：
 
-```
+```java
 if (!Optional.class.equals(GenericTypes.getErasedType(type))) {
   return Optional.empty();
 }
 ```
 
-|      | The `GenericTypes` utility class is discussed in [Working with Generic Types](#_working_with_generic_types). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** `GenericTypes` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types) 中讨论.
 
-Next, extract the `T` generic parameter from the mapped type:
+接下来，从映射类型中提取 `T` 泛型参数：
 
-```
+```java
 Type t = GenericTypes.resolveType(Optional.class.getTypeParameters()[0], type);
 ```
 
-The expression `Optional.class.getTypeParameters()[0]` gives the type variable `T`.
+表达式 `Optional.class.getTypeParameters()[0]` 给出了类型变量 `T`。
 
-We use `resolveType()` to resolve the type of `T` in the context of the mapped type.
+我们使用 `resolveType()` 在映射类型的上下文中解析 `T` 的类型。
 
-Now that we have the type of `T`, we can look up a column mapper for that type from the `ColumnMappers` config class, through the config registry:
+现在我们有了 `T` 的类型，我们可以通过配置注册表从 `ColumnMappers` 配置类中查找该类型的列映射器：
 
-```
+```java
 ColumnMapper<?> tMapper = config.get(ColumnMappers.class)
     .findFor(embeddedType)
     .orElseThrow(() -> new NoSuchMapperException(
         "No column mapper registered for parameter " + embeddedType + " of type " + type));
 ```
 
-The config registry is a locator for config classes. So when we call `config.get(ColumnMappers.class)`, we get back a `ColumnMappers` instance with the current column mapper configuration.
+配置注册表是配置类的定位器。 因此，当我们调用 `config.get(ColumnMappers.class)` 时，我们会返回一个带有当前列映射器配置的 `ColumnMappers` 实例。
 
-Next we call `ColumnMappers.findFor()` to get the column mapper for the embedded type.
+接下来我们调用 `ColumnMappers.findFor()` 来获取嵌入类型的列映射器。
 
-|      | You may have noticed that although this method can return `Optional`, we’re throwing an exception if we can’t find a mapper for the embedded type. We’ve found this to be a best practice: return `Optional.empty()` if the factory knows nothing about the mapped type (`Optional`, in this case). If it knows the mapped type but is missing some configuration to make it work (e.g. no mapper registered for tye `T` parameter) it is more helpful to throw an exception with an informative message, so users can diagnose *why* the mapper isn’t working as expected. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** 你可能已经注意到，虽然这个方法可以返回 `Optional`，但如果我们找不到嵌入类型的映射器，我们就会抛出异常。 我们发现这是一个最佳实践：如果工厂对映射类型一无所知（在本例中为`Optional`），则返回`Optional.empty()`。 如果它知道映射的类型但缺少一些使其工作的配置（例如没有为类型`T`数注册映射器），则抛出带有信息性消息的异常更有帮助，因此用户可以诊断*为什么*映射器 没有按预期工作。
 
-Finally, we construct the column mapper for optionals, and return it:
+最后，我们为optionals构造列映射器，并返回它：
 
-```
+```java
 ColumnMapper<?> optionalMapper = (rs, col, ctx) ->
     Optional.ofNullable(tMapper.map(rs, col, ctx));
 
 return Optional.of(optionalMapper);
 ```
 
-Here is the factory class all together:
+下面是工厂类OptionalColumnMapperFactory的完整源代码：
 
-```
+```java
 public class OptionalColumnMapperFactory implements ColumnMapperFactory {
   public Optional<ColumnMapper<?>> build(Type type, ConfigRegistry config) {
     if (!Optional.class.equals(GenericTypes.getErasedType(type))) {
@@ -1013,9 +1019,9 @@ public class OptionalColumnMapperFactory implements ColumnMapperFactory {
 }
 ```
 
-Column mapper factories may be registered similar to regular column mappers:
+列映射器工厂可以类似于常规列映射器进行注册：
 
-```
+```java
 jdbi.registerColumnMapper(new OptionalColumnMapperFactory());
 
 try (Handle handle = jdbi.open()) {
@@ -1026,46 +1032,42 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-|      | The `GenericType` utility class is discussed in [Working with Generic Types](#_working_with_generic_types). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types) 中讨论。
 
 <a name="28_____3_5_3__Primitive_Mapping"></a>
-#### 3.5.3. Primitive Mapping
+#### 3.5.3. Primitive Mapping(基本类型映射)
 
-All Java primitive types have default mappings to their corresponding JDBC types. Generally, Jdbi will automatically perform boxing and unboxing as appropriate when it encounters wrapper types.
+所有 Java 基本类型都有到它们相应的 JDBC 类型的默认映射。 一般情况下，Jdbi 在遇到包装器类型时会自动进行适当的装箱和拆箱。
 
-By default, SQL `null` mapped to a primitive type will adopt the Java default value. This may be disabled by configuring `jdbi.getConfig(ColumnMappers.class).setCoalesceNullPrimitivesToDefaults(false)`.
+默认情况下，映射到原始类型的 SQL `null` 将采用 Java 默认值。 这可以通过配置`jdbi.getConfig(ColumnMappers.class).setCoalesceNullPrimitivesToDefaults(false)`来禁用。
 
 <a name="29_____3_5_4__Immutables_Mapping"></a>
-#### 3.5.4. Immutables Mapping
+#### 3.5.4. Immutables Mapping(不可变映射)
 
-`Immutables` value objects may be mapped, see the [Immutables](#_immutables) section for details.
+`Immutables` 值对象可能会被映射，详情参见 [Immutables](#109____7_4__Immutables) 部分。
 
 <a name="30_____3_5_5__Freebuilder_Mapping"></a>
-#### 3.5.5. Freebuilder Mapping
+#### 3.5.5. Freebuilder Mapping(自由建造器映射)
 
-`Freebuilder` value objects may be mapped, see the [Freebuilder](#_freebuilder) section for details.
+`Freebuilder` 值对象可能会被映射，详情参见 [Freebuilder](#110____7_5__Freebuilder) 部分。
 
 <a name="31_____3_5_6__Reflection_Mappers"></a>
-#### 3.5.6. Reflection Mappers
+#### 3.5.6. Reflection Mappers(反射映射器)
 
-Jdbi provides a few reflection-based mappers out of the box.
+Jdbi 提供了一些开箱即用的基于反射的映射器。
 
 Reflective mappers treat column names as bean property names (BeanMapper), constructor parameter names (ConstructorMapper), or field names (FieldMapper).
 
 Reflective mappers are snake_case aware and will automatically match up these columns to camelCase field/argument/property names.
 
-|      | To instruct Jdbi to ignore an otherwise mappable method, annotate it as `@Unmappable`. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** To instruct Jdbi to ignore an otherwise mappable method, annotate it as `@Unmappable`.
 
 <a name="32______ConstructorMapper"></a>
-##### ConstructorMapper
+##### ConstructorMapper(构造器映射器)
 
-**Jdbi** provides a simple constructor mapper which uses reflection to assign columns to constructor parameters by name.
+**Jdbi**提供了一个简单的构造函数映射器，它使用反射按名称将列分配给构造函数参数。
 
-```
+```java
 @ConstructorProperties({"id", "name"})
 public User(int id, String name) {
   this.id = id;
@@ -1073,24 +1075,22 @@ public User(int id, String name) {
 }
 ```
 
-The `@ConstructorProperties` annotations tells Jdbi the property name of each constructor parameter, so it can figure out which column corresponds to each constructor parameter.
+`@ConstructorProperties` 注解告诉 Jdbi 每个构造函数参数的属性名称，因此它可以找出每个构造函数参数对应的列。
 
-|      | Lombok’s `@AllArgsConstructor` annotation generates the `@ConstructorProperties` annotation for you. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** Lombok的 `@AllArgsConstructor` 注解会为您生成 `@ConstructorProperties`注解。
 
-Enabling the `-parameters` Java compiler flag removes the need for the `@ConstructorProperties` annotation—see [Compiling with Parameter Names](#_compiling_with_parameter_names). Thus:
+启用`-parameters` Java 编译器标志消除了对`@ConstructorProperties` 注解的需要——参见[使用参数名称编译](#133____9_2__使用参数名称编译)。 因此：
 
-```
+```java
 public User(int id, String name) {
     this.id = id;
     this.name = name;
 }
 ```
 
-Register a constructor mapper for your mapped class using the `factory()` method:
+使用 `factory()` 方法为你的映射类注册一个构造函数映射器：
 
-```
+```java
 handle.registerRowMapper(ConstructorMapper.factory(User.class));
 Set<User> userSet = handle.createQuery("SELECT * FROM user ORDER BY id ASC")
     .mapTo(User.class)
@@ -1099,11 +1099,11 @@ Set<User> userSet = handle.createQuery("SELECT * FROM user ORDER BY id ASC")
 assertThat(userSet).hasSize(4);
 ```
 
-The constructor parameter names "id", "name" match the database column names and as such no custom mapper code is required at all.
+构造函数参数名称“id”、“name”与数据库列名称匹配，因此根本不需要自定义映射器代码。
 
-Constructor mappers can be configured with a column name prefix for each mapped constructor parameter. This can help to disambiguate mapping joins, e.g. when two mapped classes have identical property names (like `id` or `name`):
+构造函数映射器可以为每个映射的构造函数参数配置一个列名前缀。 这可以帮助消除映射连接的歧义，例如 当两个映射类具有相同的属性名称（如 `id` 或 `name`）时：
 
-```
+```java
 handle.registerRowMapper(ConstructorMapper.factory(Contact.class, "c"));
 handle.registerRowMapper(ConstructorMapper.factory(Phone.class, "p"));
 handle.registerRowMapper(JoinRowMapper.forTypes(Contact.class, Phone.class);
@@ -1115,28 +1115,26 @@ List<JoinRow> contactPhones = handle.select("select " +
     .list();
 ```
 
-Typically, the mapped class will have a single constructor. If it has multiple constructors, Jdbi will pick one based on these rules:
+通常，映射类将具有单个构造函数。 如果它有多个构造函数，Jdbi 将根据以下规则选择一个：
 
-- First, use the constructor annotated with `@JdbiConstructor`, if any.
-- Next, use the constructor annotated with `@ConstructorProperties`, if any.
-- Otherwise, throw an exception that Jdbi doesn’t know which constructor to use.
+- 首先，使用带有`@JdbiConstructor` 注解的构造函数，如果有的话。
+- 接下来，使用用`@ConstructorProperties` 注解的构造函数，如果有的话。
+- 否则，抛出 Jdbi 不知道使用哪个构造函数的异常。
 
-For legacy column names that don’t match up to property names, use the `@ColumnName` annotation to provide an exact column name.
+对于与属性名称不匹配列名称的，请使用 `@ColumnName` 批注来提供准确的列名称。
 
-```
+```java
 public User(@ColumnName("user_id") int id, String name) {
   this.id = id;
   this.name = name;
 }
 ```
 
-|      | The `@ColumnName` annotation only applies while mapping SQL data into Java objects. When binding object properties (e.g. with `bindBean()`), bind the property name (`:id`) rather than the column name (`:user_id`). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** `@ColumnName` 注解仅在将 SQL 数据映射到 Java 对象时适用。 当绑定对象属性时（例如使用`bindBean()`），绑定属性名（`:id`）而不是列名（`:user_id`）。
 
-Nested constructor-injected types can be mapped using the `@Nested` annotation:
+嵌套的构造函数注入类型可以使用 `@Nested` 注解进行映射：
 
-```
+```java
 public class User {
   public User(int id,
               String name,
@@ -1153,6 +1151,8 @@ public class Address {
     ...
   }
 }
+
+```java
 handle.registerRowMapper(ConstructorMapper.factory(User.class));
 
 List<User> users = handle
@@ -1161,14 +1161,17 @@ List<User> users = handle
     .list();
 ```
 
-The `@Nested` annotation has an optional `value()` attribute, which can be used to apply a column name prefix to each nested constructor parameter:
+`@Nested` 注解有一个可选的 `value()` 属性，可用于将列名前缀应用于每个嵌套的构造函数参数：
 
-```
+```java
 public User(int id,
             String name,
             @Nested("addr") Address address) {
   ...
 }
+```
+
+```java
 handle.registerRowMapper(ConstructorMapper.factory(User.class));
 
 List<User> users = handle
@@ -1177,11 +1180,11 @@ List<User> users = handle
     .list();
 ```
 
-By default, ConstructorMapper expects the result set to contain columns to map every constructor parameter, and will throw an exception if any parameters cannot be mapped.
+默认情况下，ConstructorMapper 期望结果集包含映射每个构造函数参数的列，如果任何参数无法映射，则会抛出异常。
 
-Parameters annotated `@Nullable` may be omitted from the result set, in which `ConstructorMapper` will pass `null` to the constructor for that parameter.
+结果集中可能会省略带有`@Nullable`注释的参数，其中`ConstructorMapper`会将`null`传递给该参数的构造函数。
 
-```
+```java
 public class User {
   public User(int id,
               String name,
@@ -1192,14 +1195,12 @@ public class User {
 }
 ```
 
-In this example, the `id` and `name` columns must be present in the result set, but `passwordHash` and `address` are optional. If they are present, they will be mapped. Otherwise,
+在这个例子中，`id` 和 `name` 列必须出现在结果集中，但 `passwordHash` 和 `address` 是可选的。 如果它们存在，它们将被映射。 否则，
 
-|      | Any `@Nullable` annotation from any package may be used. `javax.annotation.Nullable` is a good choice. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** 可以使用任何包中的任何 `@Nullable` 注解。 `javax.annotation.Nullable` 是一个不错的选择。
 
 <a name="33______BeanMapper"></a>
-##### BeanMapper
+##### BeanMapper(Bean映射器)
 
 We also provide basic support for mapping beans:
 
@@ -2497,7 +2498,7 @@ public interface UserDao {
 
 方法参数绑定到 SQL 语句中各自位置的`?`标记。 所以 `id` 绑定到第一个 `?`，而 `name` 绑定到第二个。
 
-> ==💡提示:== `@SqlUpdate` 也可用于 DDL（数据定义语言）操作，如创建或更改表。 我们建议使用架构迁移工具，例如 [Flyway](https://flywaydb.org/) 或 [Liquibase](http://www.liquibase.org/) 来维护您的数据库架构。
+> **💡提示:** `@SqlUpdate` 也可用于 DDL（数据定义语言）操作，如创建或更改表。 我们建议使用架构迁移工具，例如 [Flyway](https://flywaydb.org/) 或 [Liquibase](http://www.liquibase.org/) 来维护您的数据库架构。
 
 默认情况下，`@SqlUpdate` 方法可能会返回一些类型：
 
@@ -2533,7 +2534,7 @@ public interface UserDao {
 }
 ```
 
-> ==💡提示:== One True Database在返回生成的键时支持附加功能。详见[PostgreSQL](#__getgeneratedkeys_4)。
+> **💡提示:** One True Database在返回生成的键时支持附加功能。详见[PostgreSQL](#__getgeneratedkeys_4)。
 
 <a name="70_____5_1_2__绑定参数"></a>
 #### 5.1.2. 绑定参数
@@ -2614,9 +2615,9 @@ void insert(@BindBean("user") User user);
 //void insert(@BindMethods("user") User user);
 ```
 
-> ==🏷注意:== 在核心 API 中，`@BindBean`、`@BindFields` 和 `@BindMethods` 可用于绑定嵌套属性，例如 `:user.address.street`。
+> **🏷注意:** 在核心 API 中，`@BindBean`、`@BindFields` 和 `@BindMethods` 可用于绑定嵌套属性，例如 `:user.address.street`。
 
-> ==☢警告:== `@BindMap` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
+> **☢警告:** `@BindMap` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
 
 <a name="71_____5_1_3__@SqlQuery"></a>
 #### 5.1.3. @SqlQuery
@@ -2644,7 +2645,7 @@ public interface UserDao {
 | <3>  | 如果单行方法返回空结果集，则返回 `null`。                    |
 | <4>  | 方法可能返回“可选”值。 如果查询没有返回任何行（或者如果行中的值为 null），则返回 `Optional.empty()` 而不是 null。 如果查询返回多于一行，SQL 对象将引发异常。 |
 
-> ==💡提示:== 通过向 [JdbiCollectors](#JdbiCollectors) 配置注册表注册 [CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，可以“教”Jdbi 识别新的集合类型。
+> **💡提示:** 通过向 [JdbiCollectors](#JdbiCollectors) 配置注册表注册 [CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，可以“教”Jdbi 识别新的集合类型。
 
 请参阅 [BuiltInCollectorFactory](apidocs/org/jdbi/v3/core/collector/BuiltInCollectorFactory.html) 以获取开箱即用支持的集合类型的完整列表。 某些 Jdbi 插件（例如`GuavaPlugin`）注册额外的集合类型。
 
@@ -2679,7 +2680,7 @@ try (Stream<String> names = dao.getNamesAsStream()) {
 }
 ```
 
-> ==☢警告:== `ResultIterable`、`ResultIterator` 和 `Stream` 方法不适用于按需(on-demand) SQL对象。 除非以嵌套方式调用方法（请参阅 [On-Demand](#97_____5_5_3__On_Demand)），返回的对象将已经关闭。
+> **☢警告:** `ResultIterable`、`ResultIterator` 和 `Stream` 方法不适用于按需(on-demand) SQL对象。 除非以嵌套方式调用方法（请参阅 [On-Demand](#97_____5_5_3__On_Demand)），返回的对象将已经关闭。
 
 <a name="72______@RegisterRowMapper"></a>
 
@@ -2714,7 +2715,7 @@ public class UserMapper implements RowMapper<User> {   <1> <2>
 | <2>  | 必须使用显式类型参数（例如，`RowMapper<User>`）而不是类型变量（例如`RowMapper<T>`）来实现`RowMapper`。 |
 | <3>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。   |
 
-> ==💡提示:== `@RegisterRowMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
+> **💡提示:** `@RegisterRowMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
 
 <a name="73______@RegisterRowMapperFactory"></a>
 ##### @RegisterRowMapperFactory
@@ -2747,7 +2748,7 @@ public class UserMapperFactory implements RowMapperFactory { <1>
 | ---- | ---------------------------------------------------------- |
 | <2>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。 |
 
-> ==💡提示:== `@RegisterRowMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
+> **💡提示:** `@RegisterRowMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
 
 <a name="74______@RegisterColumnMapper"></a>
 ##### @RegisterColumnMapper
@@ -2781,7 +2782,7 @@ public class MoneyMapper implements ColumnMapper<Money> {   <1> <2>
 | <2>  | 必须使用显式类型参数（例如 `ColumnMapper<User>`）而不是类型变量（例如 `ColumnMapper<T>`）来实现 `ColumnMapper`。 |
 | <3>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。   |
 
-> ==💡提示:== `@RegisterColumnMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
+> **💡提示:** `@RegisterColumnMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
 
 <a name="75______@RegisterColumnMapperFactory"></a>
 ##### @RegisterColumnMapperFactory
@@ -2814,7 +2815,7 @@ public class UserMapperFactory implements ColumnMapperFactory { <1>
 | ---- | ---------------------------------------------------------- |
 | <2>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。 |
 
-> ==💡提示:== `@RegisterColumnMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
+> **💡提示:** `@RegisterColumnMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
 
 <a name="76______@RegisterBeanMapper"></a>
 ##### @RegisterBeanMapper
@@ -2843,7 +2844,7 @@ public interface UserDao {
 
 在这个例子中，`User` 映射器将把 `u_id` 和 `u_name` 列映射到 `User.id` 和 `User.name` 属性中。 同样，将 `r_id` 和 `r_name` 分别映射到 `Role.id` 和 `Role.name`。
 
-> ==💡提示:== `@RegisterBeanMapper` 注解可以在同一类型或方法上重复（如上所示）以注册多个 bean 映射器。
+> **💡提示:** `@RegisterBeanMapper` 注解可以在同一类型或方法上重复（如上所示）以注册多个 bean 映射器。
 
 <a name="77______@RegisterConstructorMapper"></a>
 ##### @RegisterConstructorMapper
@@ -2872,7 +2873,7 @@ public interface UserDao {
 
 在这个例子中，`User` 映射器会将 `u_id` 和 `u_name` 列映射到 `User` 构造函数的 `id` 和 `name` 参数中。 同样，将 `r_id` 和 `r_name` 分别映射到 `Role` 构造函数的 `id` 和 `name` 参数。
 
-> ==💡提示:== `@RegisterConstructorMapper` 注解可以在同一类型或方法上重复多次以注册多个构造函数映射器。
+> **💡提示:** `@RegisterConstructorMapper` 注解可以在同一类型或方法上重复多次以注册多个构造函数映射器。
 
 <a name="78______@RegisterFieldMapper"></a>
 
@@ -2902,7 +2903,7 @@ public interface UserDao {
 
 在这个例子中，`User` 映射器将把 `u_id` 和 `u_name` 列映射到 `User.id` 和 `User.name` 字段中。 同样，将 `r_id` 和 `r_name` 分别映射到 `Role.id` 和 `Role.name` 字段。
 
-> ==💡提示:== `@RegisterConstructorMapper` 注解可以在同一类型或方法上重复多次以注册多个构造函数映射器。
+> **💡提示:** `@RegisterConstructorMapper` 注解可以在同一类型或方法上重复多次以注册多个构造函数映射器。
 
 <a name="79______@SingleValue"></a>
 ##### @SingleValue
@@ -2934,7 +2935,7 @@ public interface UserDao {
 
 通常，Jdbi 会将 `List<String>` 解释为表示映射类型为 `String`，并将所有结果行收集到一个列表中。 `@SingleValue` 注释导致 Jdbi 将 `List<String>` 视为映射类型。
 
-> ==🏷注意:== `@SingleValue Optional<String>` 很诱人，但通常不需要。 `Optional` 被实现为一个包含零个或一个元素的容器。 添加`@SingleValue` 意味着数据库本身有一个类似`optional<varchar>` 类型的列。
+> **🏷注意:** `@SingleValue Optional<String>` 很诱人，但通常不需要。 `Optional` 被实现为一个包含零个或一个元素的容器。 添加`@SingleValue` 意味着数据库本身有一个类似`optional<varchar>` 类型的列。
 
 <a name="80______Map<K_V>_Results"></a>
 
@@ -2942,7 +2943,7 @@ public interface UserDao {
 
 SQL 对象方法可能返回`Map<K,V>` 类型（参见核心API 中的[Map.Entry mapping](#35______Map_Entry_mapping)）。 在这种情况下，每一行都映射到一个 `Map.Entry<K,V>`，每行的条目都被收集到一个 单一的`Map` 实例中。
 
-> ==🏷注意:== 必须为键和值类型注册映射器。
+> **🏷注意:** 必须为键和值类型注册映射器。
 
 只需为键和值类型注册映射器，即可将主/详细连接行收集到map中。
 
@@ -2994,7 +2995,7 @@ Multimap<User, Phone> getMultimap();
 
 Jdbi 的 [MapMapper](apidocs/org/jdbi/v3/core/mapper/MapMapper.html) 将每一行映射到一个 `Map<String, Object>`，其中列名映射到列值。
 
-> ==🏷注意:== Jdbi 的默认设置是将列名转换为 Map 键的小写。 可以通过`MapMappers` 配置类更改此行为。
+> **🏷注意:** Jdbi 的默认设置是将列名转换为 Map 键的小写。 可以通过`MapMappers` 配置类更改此行为。
 
 默认情况下，SQL 对象将`Map` 返回类型视为`Map.Entry` 值的集合。 使用 `@SingleValue` 注释覆盖它，以便将返回类型视为单个值而不是集合：
 
@@ -3014,7 +3015,7 @@ Map<String, Object> getById(long userId);
 Map<String, BigDecimal> getNumericLevels();
 ```
 
-> ==💡提示:== 你使用 PostgreSQL 的 `hstore` 列吗？ [PostgreSQL](#_postgresql) 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器。 有关更多信息，请参阅 [hstore](#_hstore)。
+> **💡提示:** 你使用 PostgreSQL 的 `hstore` 列吗？ [PostgreSQL](#_postgresql) 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器。 有关更多信息，请参阅 [hstore](#_hstore)。
 
 <a name="81______@UseRowReducer"></a>
 
@@ -3119,7 +3120,7 @@ public interface UserDao {
 | ---- | --------------------------------------- |
 
 
-> ==☢警告:== `@SqlBatch` 方法必须至少有一个可迭代参数。
+> **☢警告:** `@SqlBatch` 方法必须至少有一个可迭代参数。
 
 默认情况下，`@SqlBatch` 方法可能会返回一些类型：
 
@@ -3488,7 +3489,7 @@ dao.useTransaction(txn -> {
 
 接口 `default` 方法，以及混入，例如 [SqlObject](apidocs/org/jdbi/v3/sqlobject/SqlObject.html) 和 [Transactional](apidocs/org/jdbi/v3/sqlobject/transaction/Transactional.html)，允许您在按需句柄保持打开状态的情况下运行代码。 同一线程上的重入调用将收到相同的“句柄”。 当最外面的按需调用完成时，句柄将关闭。
 
-> ==☢警告:== 在最外层的按需调用之外返回类似游标的类型，例如 `Stream<T>` 或 `Iterable<T>` 不起作用。 由于`Handle`关闭，数据库游标被释放，读取将失败。
+> **☢警告:** 在最外层的按需调用之外返回类似游标的类型，例如 `Stream<T>` 或 `Iterable<T>` 不起作用。 由于`Handle`关闭，数据库游标被释放，读取将失败。
 
 <a name="98____5_6__Additional_Annotations"></a>
 ### 5.6. Additional Annotations
@@ -4814,7 +4815,7 @@ NamedArgumentFinder cacheFinder = (name, ctx) ->
 stmt.bindNamedArgumentFinder(cacheFinder);
 ```
 
-> ==💡提示:== 在幕后，[SqlStatement.bindBean()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindBean-java.lang.Object-), [SqlStatement.bindMethods()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMethods-java.lang.Object-), [SqlStatement.bindFields()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindFields-java.lang.Object-), and [SqlStatement.bindMap()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMap-java.util.Map-) 方法只是创建和绑定的自定义实现 `NamedArgumentFinder` 分别用于  beans, methods, fields, 和 maps。
+> **💡提示:** 在幕后，[SqlStatement.bindBean()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindBean-java.lang.Object-), [SqlStatement.bindMethods()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMethods-java.lang.Object-), [SqlStatement.bindFields()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindFields-java.lang.Object-), and [SqlStatement.bindMap()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMap-java.util.Map-) 方法只是创建和绑定的自定义实现 `NamedArgumentFinder` 分别用于  beans, methods, fields, 和 maps。
 
 <a name="141____9_5__JdbiConfig"></a>
 ### 9.5. JdbiConfig
@@ -5317,7 +5318,7 @@ Jdbi includes an experimental SqlObject code generator. If you include the `jdbi
 ### 10.1. Best Practices
 
 - Test your SQL Objects (DAOs) against real databases when possible. Jdbi tries to be defensive and fail eagerly when you hold it wrong.
-- Use the `-parameters` compiler flag to avoid all those `@Bind("foo") String foo` redundant qualifiers in SQL Object method parameters. See [Compiling with Parameter Names](#_compiling_with_parameter_names).
+- Use the `-parameters` compiler flag to avoid all those `@Bind("foo") String foo` redundant qualifiers in SQL Object method parameters. See [使用参数名称编译](#133____9_2__使用参数名称编译).
 - Use a profiler! The true root cause of performance problems can often be a surprise. Measure first, *then* tune for performance. And then measure again to be sure it made a difference.
 - Don’t forget to bring a towel!
 
