@@ -285,7 +285,7 @@ Arguments是Jdbi对JDBC语句参数的表示(the `?` in `select * from Foo where
 
 参数可以执行比简单JDBC支持的更高级的绑定:BigDecimal可以绑定为SQL decimal，java.time.Year可以绑定为SQL int，或者一个复杂对象可以序列化为字节数组并绑定为SQL blob。
 
-> **🏷注意:** Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#_templating) 和 [TemplateEngine](#_templateengine)。
+> **🏷注意:** Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#36____3_6__Templating) 和 [TemplateEngine](#150____9_9__TemplateEngine)。
 
 <a name="11_____3_3_1__位置参数"></a>
 #### 3.3.1. 位置参数
@@ -477,7 +477,7 @@ static class UUIDArgument implements Argument {
     @Override
     public void apply(int position, PreparedStatement statement, StatementContext ctx)
     throws SQLException {
-        statement.setString(position, uuid.toString()); <1>
+        statement.setString(position, uuid.toString()); //<1>
     }
 }
 
@@ -491,8 +491,7 @@ public void uuidArgument() {
 }
 ```
 
-| <1> | 由于 Argument 通常直接调用 JDBC，因此在应用时会给出从 1 开始的索引（正如 JDBC 所期望的）。 |
-| --- | ----------------------------------------------------------------------------------- |
+> **<1>** 由于 Argument 通常直接调用 JDBC，因此在应用时会给出从 1 开始的索引（正如 JDBC 所期望的）。
 
 这里我们使用 **Argument** 直接绑定一个 UUID。 在这种特殊情况下，最明显的方法是将 UUID 作为字符串发送到数据库。 如果您的 JDBC 驱动程序直接支持自定义类型或高效的二进制传输，您可以在此处轻松利用它们。
 
@@ -506,12 +505,12 @@ Jdbi provides an `AbstractArgumentFactory` class which simplifies implementing t
 ```
 static class UUIDArgumentFactory extends AbstractArgumentFactory<UUID> {
     UUIDArgumentFactory() {
-        super(Types.VARCHAR); <1>
+        super(Types.VARCHAR); //<1>
     }
 
     @Override
     protected Argument build(UUID value, ConfigRegistry config) {
-        return (position, statement, ctx) -> statement.setString(position, value.toString()); <2>
+        return (position, statement, ctx) -> statement.setString(position, value.toString()); //<2>
     }
 }
 
@@ -526,9 +525,8 @@ public void uuidArgumentFactory() {
 }
 ```
 
-| <1> | 绑定 UUID 时使用的 JDBC [SQL 类型常量](https://docs.oracle.com/javase/8/docs/api/java/sql/Types.html)。 Jdbi 需要这个来绑定 `null` 的 UUID 值。 参见 [PreparedStatement.setNull(int,int)](https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#setNull-int-int-) |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <2> | 由于 `Argument` 是一个函数式接口，它可以实现为一个简单的 lambda 表达式。                                                                                                                                                                                                               |
+> **<1>** 绑定 UUID 时使用的 JDBC [SQL 类型常量](https://docs.oracle.com/javase/8/docs/api/java/sql/Types.html)。 Jdbi 需要这个来绑定 `null` 的 UUID 值。 参见 [PreparedStatement.setNull(int,int)](https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#setNull-int-int-)
+> **<2>** 由于 `Argument` 是一个函数式接口，它可以实现为一个简单的 lambda 表达式。                                                                                                                                                                                                               |
 
 <a name="18______Prepared_Arguments"></a>
 
@@ -581,7 +579,7 @@ Optional<String> name = handle.select(...)
     .findOne();
 ```
 
-当您希望结果至少包含一行时，请调用“first()”。 如果第一行映射到 `null`，则返回 `null`。 如果结果有零行，则抛出异常。
+当您希望结果至少包含一行时，请调用`first()`。 如果第一行映射到 `null`，则返回 `null`。 如果结果有零行，则抛出异常。
 
 ```java
 String name = handle.select("select name from users where id = ?", 3)
@@ -692,7 +690,7 @@ try (Handle handle = jdbi.open()) {
         .list();
 }
 ```
-> **💡提示:** `翻译者WJW`提示,也可以handle调用registerRowMapper方法
+> **💡提示:** `翻译者WJW`提示: 也可以handle调用registerRowMapper方法
 
 可以在不指定映射类型的情况下注册使用显式映射类型（例如上一节中的 UserMapper 类）实现 `RowMapper` 的映射器：
 
@@ -848,7 +846,7 @@ try (Handle handle = jdbi.open()) {
 ```java
 List<Money> amounts = handle
     .select("select amount from transactions where account_id = ?", accountId)
-    .map((rs, col, ctx) -> Money.parse(rs.getString(col))) <1>
+    .map((rs, col, ctx) -> Money.parse(rs.getString(col))) //<1>
     .list();
 ```
 
@@ -903,13 +901,13 @@ handle.registerColumnMapper(new MoneyMapper());
 - `byte[]` 数组 (例如 对于 BLOB 或 VARBINARY 列)
 - java.net: `InetAddress`, `URL`, 和 `URI`
 - java.sql: `Timestamp`
-- java.time: `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `ZonedDateTime`, and `ZoneId` (翻译者WJW注: 不包括`java.util.Date`)
+- java.time: `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `ZonedDateTime`, and `ZoneId` (`翻译者WJW`注: 不包括`java.util.Date`)
 - java.util: `UUID`
 - `java.util.Collection` 和 Java 数组（用于数组列）。 根据数组元素的类型，可能需要一些额外的设置——请参阅 [SQL 数组](#37____3_7__SQL_Arrays).
 
 > **🏷注意:** 枚举值的绑定和映射方法可以通过 [Enums](apidocs/org/jdbi/v3/core/enums/Enums.html) 配置以及 [EnumByName](apidocs/org/jdbi/v3 /core/enums/EnumByName.html) 和 [EnumByOrdinal](apidocs/org/jdbi/v3/core/enums/EnumByOrdinal.html) 注解。
 
-> 翻译者WJW添加: 如何注册`java.util.Date`的列映射器
+> `翻译者WJW`添加: 如何注册`java.util.Date`的列映射器
 > ```java
 >     jdbi3.registerColumnMapper(new ColumnMapper<java.util.Date>() {
 >       public java.util.Date map(ResultSet rs, int columnNumber, StatementContext ctx) throws SQLException {
@@ -1056,11 +1054,11 @@ try (Handle handle = jdbi.open()) {
 
 Jdbi 提供了一些开箱即用的基于反射的映射器。
 
-Reflective mappers treat column names as bean property names (BeanMapper), constructor parameter names (ConstructorMapper), or field names (FieldMapper).
+反射映射器将列名称视为 bean 属性名称 (BeanMapper)、构造函数参数名称 (ConstructorMapper) 或字段名称 (FieldMapper)。
 
-Reflective mappers are snake_case aware and will automatically match up these columns to camelCase field/argument/property names.
+反射映射器可以识别蛇形大小写，并且会自动将这些列与驼峰式字段/参数/属性名称匹配。
 
-> **💡提示:** To instruct Jdbi to ignore an otherwise mappable method, annotate it as `@Unmappable`.
+> **💡提示:** 要指示 Jdbi 忽略其他可映射的方法，请将其注释为 `@Unmappable`。
 
 <a name="32______ConstructorMapper"></a>
 ##### ConstructorMapper(构造器映射器)
@@ -1202,9 +1200,9 @@ public class User {
 <a name="33______BeanMapper"></a>
 ##### BeanMapper(Bean映射器)
 
-We also provide basic support for mapping beans:
+我们还提供映射 bean 的基本支持：
 
-```
+```java
 public class UserBean {
     private int id;
     private String name;
@@ -1224,9 +1222,9 @@ public class UserBean {
 }
 ```
 
-Register a bean mapper for your mapped class, using the `factory()` method:
+使用 `factory()` 方法为你的映射类注册一个 bean 映射器：
 
-```
+```java
 handle.registerRowMapper(BeanMapper.factory(UserBean.class));
 
 List<UserBean> users = handle
@@ -1235,18 +1233,18 @@ List<UserBean> users = handle
         .list();
 ```
 
-Alternatively, call `mapToBean()` instead of registering a bean mapper:
+或者，调用 `mapToBean()` 而不是注册 bean 映射器：
 
-```
+```java
 List<UserBean> users = handle
         .createQuery("select id, name from user")
         .mapToBean(UserBean.class)
         .list();
 ```
 
-Bean mappers can be configured with a column name prefix for each mapped property. This can help to disambiguate mapping joins, e.g. when two mapped classes have identical property names (like `id` or `name`):
+Bean 映射器可以为每个映射属性配置一个列名前缀。 这可以帮助消除映射连接的歧义，例如 当两个映射类具有相同的属性名称（如 `id` 或 `name`）时：
 
-```
+```java
 handle.registerRowMapper(BeanMapper.factory(ContactBean.class, "c"));
 handle.registerRowMapper(BeanMapper.factory(PhoneBean.class, "p"));
 handle.registerRowMapper(JoinRowMapper.forTypes(ContactBean.class, PhoneBean.class));
@@ -1258,9 +1256,9 @@ List<JoinRow> contactPhones = handle.select("select "
         .list();
 ```
 
-For legacy column names that don’t match up to property names, use the `@ColumnName` annotation to provide an exact column name.
+对于与属性名称不匹配的列名称，请使用 `@ColumnName` 批注来提供准确的列名称。
 
-```
+```java
 public class User {
   private int id;
 
@@ -1271,15 +1269,13 @@ public class User {
 }
 ```
 
-The `@ColumnName` annotation can be placed on either the getter or setter method.
+`@ColumnName` 注释可以放置在 getter 或 setter 方法上。
 
-|      | The `@ColumnName` annotation only applies while mapping SQL data into Java objects. When binding object properties (e.g. with `bindBean()`), bind the property name (`:id`) rather than the column name (`:user_id`). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** `@ColumnName` 注解仅在将 SQL 数据映射到 Java 对象时适用。 当绑定对象属性时（例如使用`bindBean()`），绑定属性名（`:id`）而不是列名（`:user_id`）。
 
-Nested Java Bean types can be mapped using the `@Nested` annotation:
+嵌套的 Java Bean 类型可以使用 `@Nested` 注解进行映射：
 
-```
+```java
 public class User {
   private int id;
   private String name;
@@ -1287,7 +1283,7 @@ public class User {
 
   ... (getters and setters)
 
-  @Nested 
+  @Nested //<1>
   public Address getAddress() { ... }
 
   public void setAddress(Address address) { ... }
@@ -1303,11 +1299,9 @@ public class Address {
 }
 ```
 
-|      | The `@Nested` annotation can be placed on either the getter or setter method. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **<1>** `@Nested` 注解可以放置在 getter 或 setter 方法上。
 
-```
+```java
 handle.registerRowMapper(BeanMapper.factory(User.class));
 
 List<User> users = handle
@@ -1316,9 +1310,9 @@ List<User> users = handle
     .list();
 ```
 
-The `@Nested` annotation has an optional `value()` attribute, which can be used to apply a column name prefix to each nested bean property:
+`@Nested` 注解有一个可选的 `value()` 属性，可用于将列名前缀应用于每个嵌套的 bean 属性：
 
-```
+```java
 @Nested("addr")
 public Address getAddress() { ... }
 handle.registerRowMapper(BeanMapper.factory(User.class));
@@ -1329,17 +1323,15 @@ List<User> users = handle
     .list();
 ```
 
-|      | `@Nested` properties are left unmodified (i.e. null) if the result set has no columns matching any properties of the nested object. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 如果结果集没有与嵌套对象的任何属性匹配的列，则 `@Nested` 属性保持不变（即 null）。
 
 <a name="34______FieldMapper"></a>
 
-##### FieldMapper
+##### FieldMapper(字段映射器)
 
-[FieldMapper](apidocs/org/jdbi/v3/core/mapper/reflect/FieldMapper.html) uses reflection to map database columns directly to object fields (including private fields).
+[FieldMapper](apidocs/org/jdbi/v3/core/mapper/reflect/FieldMapper.html) 使用反射将数据库列直接映射到对象字段（包括私有字段）。
 
-```
+```java
 public class User {
   public int id;
 
@@ -1347,9 +1339,9 @@ public class User {
 }
 ```
 
-Register a field mapper for your mapped class, using the `factory()` method:
+使用 `factory()` 方法为你的映射类注册一个字段映射器：
 
-```
+```java
 handle.registerRowMapper(FieldMapper.factory(User.class));
 
 List<UserBean> users = handle
@@ -1358,9 +1350,9 @@ List<UserBean> users = handle
         .list();
 ```
 
-Field mappers can be configured with a column name prefix for each mapped field. This can help to disambiguate mapping joins, e.g. when two mapped classes have identical property names (like `id` or `name`):
+字段映射器可以为每个映射字段配置一个列名前缀。 这可以帮助消除映射连接的歧义，例如 当两个映射类具有相同的属性名称（如 `id` 或 `name`）时：
 
-```
+```java
 handle.registerRowMapper(FieldMapper.factory(Contact.class, "c"));
 handle.registerRowMapper(FieldMapper.factory(Phone.class, "p"));
 handle.registerRowMapper(JoinRowMapper.forTypes(Contact.class, Phone.class);
@@ -1372,9 +1364,9 @@ List<JoinRow> contactPhones = handle.select("select " +
     .list();
 ```
 
-For legacy column names that don’t match up to field names, use the `@ColumnName` annotation to provide an exact column name:
+对于与字段名称不匹配的列名称，请使用 `@ColumnName` 注解提供准确的列名称：
 
-```
+```java
 public class User {
   @ColumnName("user_id")
   public int id;
@@ -1383,13 +1375,11 @@ public class User {
 }
 ```
 
-|      | The `@ColumnName` annotation only applies while mapping SQL data into Java objects. When binding object properties (e.g. with `bindBean()`), bind the property name (`:id`) rather than the column name (`:user_id`). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** `@ColumnName` 注释仅在将 SQL 数据映射到 Java 对象时适用。 当绑定对象属性时（例如使用`bindBean()`），绑定属性名（`:id`）而不是列名（`:user_id`）。
 
-Nested field-mapped types can be mapped using the `@Nested` annotation:
+嵌套的字段映射类型可以使用 `@Nested` 注解进行映射：
 
-```
+```java
 public class User {
   public int id;
   public String name;
@@ -1404,6 +1394,9 @@ public class Address {
   public String state;
   public String zip;
 }
+```
+
+```java
 handle.registerRowMapper(FieldMapper.factory(User.class));
 
 List<User> users = handle
@@ -1412,9 +1405,9 @@ List<User> users = handle
     .list();
 ```
 
-The `@Nested` annotation has an optional `value()` attribute, which can be used to apply a column name prefix to each nested field:
+`@Nested` 注解有一个可选的 `value()` 属性，可用于将列名前缀应用于每个嵌套字段：
 
-```
+```java
 public class User {
   public int id;
   public String name;
@@ -1422,6 +1415,9 @@ public class User {
   @Nested("addr")
   public Address address;
 }
+```
+
+```java
 handle.registerRowMapper(FieldMapper.factory(User.class));
 
 List<User> users = handle
@@ -1430,22 +1426,18 @@ List<User> users = handle
     .list();
 ```
 
-|      | `@Nested` fields are left unmodified (i.e. null) if the result set has no columns matching any fields of the nested object. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 如果结果集没有与嵌套对象的任何字段匹配的列，则 `@Nested` 字段保持不变（即 null）。
 
 <a name="35______Map_Entry_mapping"></a>
-##### Map.Entry mapping
+##### Map.Entry mapping(Map条目映射)
 
-Out of the box, Jdbi registers a `RowMapper<Map.Entry<K,V>>`. Since each row in the result set is a `Map.Entry<K,V>`, the entire result set can be easily collected into a `Map<K,V>` (or Guava’s `Multimap<K,V>`).
+开箱即用，Jdbi 注册了一个 `RowMapper<Map.Entry<K,V>>`。 由于结果集中的每一行都是一个`Map.Entry<K,V>`，整个结果集可以很容易地收集到一个`Map<K,V>`（或Guava的`Multimap<K,V>`） .
 
-|      | A mapper must be registered for both the key and value type. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:**必须为键和值类型注册映射器。
 
-Join rows can be gathered into a map result by specifying the generic map signature:
+通过指定通用映射签名，可以将连接行收集到map结果中：
 
-```
+```java
 String sql = "select u.id u_id, u.name u_name, p.id p_id, p.phone p_phone "
 
     + "from user u left join phone p on u.id = p.user_id";
@@ -1455,35 +1447,35 @@ Map<User, Phone> map = h.createQuery(sql)
         .collectInto(new GenericType<Map<User, Phone>>() {});
 ```
 
-In the preceding example, the `User` mapper uses a "u" column name prefix, and the `Phone` mapper uses "p". Since each mapper only reads columns with the expected prefix, the respective `id` columns are unambiguous.
+在前面的示例中，`User` 映射器使用“u”列名称前缀，`Phone` 映射器使用“p”。 由于每个映射器仅读取具有预期前缀的列，因此相应的 `id` 列是明确的。
 
-A unique index (e.g. by ID column) can be obtained by setting the key column name:
+可以通过设置键列名来获得唯一索引（例如通过 ID 列）：
 
-```
+```java
 Map<Integer, User> map = h.createQuery("select * from user")
         .setMapKeyColumn("id")
         .registerRowMapper(ConstructorMapper.factory(User.class))
         .collectInto(new GenericType<Map<Integer, User>>() {});
 ```
 
-Set both the key and value column names to gather a two-column query into a map result:
+设置键和值列名称以将两列查询收集到map结果中：
 
-```
+```java
 Map<String, String> map = h.createQuery("select key, value from config")
         .setMapKeyColumn("key")
         .setMapValueColumn("value")
         .collectInto(new GenericType<Map<String, String>>() {});
 ```
 
-All the above examples assume a one-to-one key/value relationship. What if there is a one-to-many relationship?
+以上所有示例都假设是一对一的键/值关系。 如果存在一对多关系怎么办？
 
-Google Guava provides a `Multimap` type, which supports mapping multiple values per key.
+Google Guava 提供了一个 `Multimap` 类型，它支持每个键映射多个值。
 
-First, follow the instructions in the [Google Guava](#_google_guava) section to install `GuavaPlugin` into Jdbi.
+首先，按照 [Google Guava](#102____7_1__Google_Guava) 部分中的说明将 `GuavaPlugin` 安装到 Jdbi 中。
 
-Then, simply ask for a `Multimap` instead of a `Map`:
+然后，简单地请求一个 `Multimap` 而不是 `Map`：
 
-```
+```java
 String sql = "select u.id u_id, u.name u_name, p.id p_id, p.phone p_phone "
     + "from user u left join phone p on u.id = p.user_id";
 Multimap<User, Phone> map = h.createQuery(sql)
@@ -1492,34 +1484,30 @@ Multimap<User, Phone> map = h.createQuery(sql)
         .collectInto(new GenericType<Multimap<User, Phone>>() {});
 ```
 
-The `collectInto()` method is worth explaining. When you call it, several things happen behind the scenes:
+`collectInto()`方法值得解释。当你调用它时，有几件事情会在幕后发生:
 
-- Consult the `JdbiCollectors` registry to obtain a [CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html) which supports the given container type.
-- Next, ask that `CollectorFactory` to extract the element type from the container type signature. In the above example, the element type of `Multimap<User,Phone>` is `Map.Entry<User,Phone>`.
-- Obtain a mapper for that element type from the mapping registry.
-- Obtain a [Collector](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collector.html) for the container type from the `CollectorFactory`.
-- Finally, return `map(elementMapper).collect(collector)`.
+- 参考`JdbiCollectors`注册表获取[CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，它支持给定的容器类型。
+- 接下来，要求`CollectorFactory` 从容器类型签名中提取元素类型。 在上面的例子中，`Multimap<User,Phone>` 的元素类型是`Map.Entry<User,Phone>`。
+- 从映射注册表中获取该元素类型的映射器。
+- 从`CollectorFactory`获取容器类型的[Collector](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collector.html)。
+- 最后，返回`map(elementMapper).collect(collector)`。
 
-|      | If the lookup for the collector factory, element type, or element mapper fails, an exception is thrown. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 如果对`收集器(collector )`工厂、元素类型或元素映射器的查找失败，则会引发异常。
 
-Jdbi can be enhanced to support arbitrary container types. See [[JdbiCollectors\]](#JdbiCollectors) for more information.
+可以增强Jdbi以支持任意容器类型。 有关更多信息，请参阅 [[JdbiCollectors\]](#JdbiCollectors)。
 
 <a name="36____3_6__Templating"></a>
-### 3.6. Templating
+### 3.6. Templating(模板)
 
-Binding query parameters, as described above, is excellent for sending a static set of parameters to the database engine. Binding ensures that the parameterized query string (`… where foo = ?`) is transmitted to the database without allowing hostile parameter values to inject SQL.
+如上所述，绑定查询参数非常适合向数据库引擎发送一组静态参数。 绑定确保参数化查询字符串（`... where foo = ?`）被传输到数据库，而不允许恶意参数值注入 SQL。
 
-Bound parameters are not always enough. Sometimes a query needs complicated or structural changes before being executed, and parameters just don’t cut it. Templating (using a `TemplateEngine`) allows you to alter a query’s content with general String manipulations.
+绑定参数并不总是足够的。 有时，查询在执行之前需要进行复杂的或结构化的更改，而参数就是无法削减它。 模板化（使用`TemplateEngine`）允许你通过一般的字符串操作来改变查询的内容。
 
-Typical uses for templating are optional or repeating segments (conditions and loops), complex variables such as comma-separated lists for IN clauses, and variable substitution for non-bindable SQL elements (like table names). Unlike *argument binding*, the *rendering* of *attributes* performed by TemplateEngines is **not** SQL-aware. Since they perform generic String manipulations, TemplateEngines can easily produce horribly mangled or subtly defective queries if you don’t use them carefully.
+模板的典型用途是可选或重复段(条件和循环)、复杂变量(如IN子句的逗号分隔列表)和非绑定SQL元素(如表名)的变量替换。与*参数绑定*不同的是，由TemplateEngines执行的*属性的*呈现*是不支持sql的。由于templateengine执行泛型String操作，如果不小心使用它们，很容易产生严重混乱或微妙缺陷的查询。
 
-|      | [Query templating is a common attack vector!](https://www.xkcd.com/327/) Always prefer binding parameters to static SQL over dynamic SQL when possible. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
 
-```
+```java
 handle.createQuery("select * from <TABLE> where name = :n")
 
     // -> "select * from Person where name = :n"
@@ -1529,23 +1517,22 @@ handle.createQuery("select * from <TABLE> where name = :n")
     .bind("n", "MyName");
 ```
 
-|      | Use a TemplateEngine to perform crude String manipulations on a query. Query parameters should be handled by Arguments. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 使用 TemplateEngine 对查询执行粗略的字符串操作。 查询参数应该由 Arguments 处理。
 
-|      | TemplateEngines and SqlParsers operate sequentially: the initial String will be rendered by the TemplateEngine using attributes, then parsed by the SqlParser with Argument bindings. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
 
-If the TemplateEngine outputs text matching the parameter format of the SqlParser, the parser will attempt to bind an Argument to it. This can be useful to e.g. have named parameters of which the name itself is also a variable, but can also cause confusing bugs:
+如果TemplateEngine输出与SqlParser的参数格式匹配的文本，解析器将尝试将Argument绑定到它。这可能是有用的，例如有命名参数的名称本身也是一个变量，但也可能导致令人困惑的错误:
 
-```
+```java
 String paramName = "arg";
 
 handle.createQuery("select * from Foo where bar = :<attr>")
     .define("attr", paramName)
     ...
     .bind(paramName, "baz"); // <- does not need to know the parameter's name ("arg")!
+```
+
+```java
 handle.createQuery("select * from emotion where emoticon = <sticker>")
     .define("sticker", ":-)") // -> "... where emoticon = :-)"
     .mapToMap()
@@ -1553,11 +1540,11 @@ handle.createQuery("select * from emotion where emoticon = <sticker>")
     .list();
 ```
 
-Bindings and definitions are usually separate. You can link them in a limited manner using the `stmt.defineNamedBindings()` or `@DefineNamedBindings` customizers. For each bound parameter (including bean properties), this will define a boolean which is `true` if the binding is present and not `null`. You can use this to craft conditional updates and query clauses.
+绑定和定义通常是分开的。 您可以使用 `stmt.defineNamedBindings()` 或 `@DefineNamedBindings` 定制器以有限的方式链接它们。 对于每个绑定参数（包括 bean 属性），这将定义一个布尔值，如果绑定存在则为“true”而不是“null”。 您可以使用它来制作条件更新和查询子句。
 
-For example,
+例如:
 
-```
+```java
 class MyBean {
     long id();
     String getA();
@@ -1571,14 +1558,14 @@ handle.createUpdate("update mybeans set <if(a)>a = :a,<endif> <if(b)>b = :b,<end
     .execute();
 ```
 
-Also see the section about [TemplateEngine](#_templateengine).
+另请参阅有关 [TemplateEngine](#150____9_9__TemplateEngine)的部分。
 
 <a name="37____3_7__SQL_Arrays"></a>
-### 3.7. SQL Arrays
+### 3.7. SQL Arrays(SQL数组)
 
-Jdbi can bind/map Java arrays to/from SQL arrays:
+Jdbi 可以绑定/映射 Java 数组到/从 SQL 数组：
 
-```
+```java
 handle.createUpdate("insert into groups (id, user_ids) values (:id, :userIds)")
       .bind("id", 1)
       .bind("userIds", new int[] { 10, 5, 70 })
@@ -1590,9 +1577,9 @@ int[] userIds = handle.createQuery("select user_ids from groups where id = :id")
       .one();
 ```
 
-You can also use Collections in place of arrays, but you’ll need to provide the element type if you’re using the fluent API, since it’s erased:
+你也可以使用集合来代替数组，但如果你使用fluent API，你需要提供元素类型，因为它被擦除了:
 
-```
+```java
 handle.createUpdate("insert into groups (id, user_ids) values (:id, :userIds)")
       .bind("id", 1)
       .bindArray("userIds", int.class, Arrays.asList(10, 5, 70))
@@ -1604,9 +1591,9 @@ List<Integer> userIds = handle.createQuery("select user_ids from groups where id
       .one();
 ```
 
-Use `@SingleValue` for mapping an array result with the SqlObject API:
+使用`@SingleValue`来映射SqlObject API的数组结果:
 
-```
+```java
 public interface GroupsDao {
   @SqlQuery("select user_ids from groups where id = ?")
   @SingleValue
@@ -1615,30 +1602,26 @@ public interface GroupsDao {
 ```
 
 <a name="38_____3_7_1__Registering_array_types"></a>
-#### 3.7.1. Registering array types
+#### 3.7.1. Registering array types(注册数组类型)
 
-Any Java array element type you want binding support for needs to be registered with Jdbi’s `SqlArrayTypes` registry. An array type that is directly supported by your JDBC driver can be registered using:
+你想要绑定支持的任何 Java 数组元素类型都需要在 Jdbi 的 `SqlArrayTypes` 注册表中注册。 可以使用以下方式注册 JDBC 驱动程序直接支持的数组类型：
 
-```
+```java
 jdbi.registerArrayType(int.class, "integer");
 ```
 
-Here, `"integer"` is the SQL type name that the JDBC driver supports natively.
+这里，`"integer"` 是 JDBC 驱动程序本身支持的 SQL 类型名称。
 
-|      | Plugins like `PostgresPlugin` and `H2DatabasePlugin` automatically register the most common array element types for their respective databases. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> “PostgresPlugin”和“H2DatabasePlugin”等插件会自动为其各自的数据库注册最常见的数组元素类型。
 
-|      | Postgres supports enum array types, so you can register an array type for `enum Colors { red, blue }` using `jdbi.registerArrayType(Colors.class, "colors")` where `"colors"` is a user-defined enum type name in your database. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> Postgres 支持枚举数组类型，因此您可以使用 `jdbi.registerArrayType(Colors.class, "colors")` 为 `enum Colors { red, blue }` 注册数组类型，其中 `"colors"` 是用户定义的枚举 在您的数据库中键入名称。
 
 <a name="39_____3_7_2__Binding_custom_array_types"></a>
-#### 3.7.2. Binding custom array types
+#### 3.7.2. Binding custom array types(绑定自定义数组类型)
 
-You can also provide your own implementation of `SqlArrayType` that converts a custom Java element type to a type supported by the JDBC driver:
+您还可以提供您自己的 SqlArrayType 实现，它将自定义 Java 元素类型转换为 JDBC 驱动程序支持的类型：
 
-```
+```java
 class UserArrayType implements SqlArrayType<User> {
 
     @Override
@@ -1653,9 +1636,9 @@ class UserArrayType implements SqlArrayType<User> {
 }
 ```
 
-You can now bind instances of `User[]` to arguments of data type `integer[]`:
+您现在可以将 `User[]` 的实例绑定到数据类型 `integer[]` 的参数：
 
-```
+```java
 User user1 = new User(1, "bob")
 User user2 = new User(42, "alice")
 
@@ -1666,22 +1649,23 @@ handle.createUpdate("insert into groups (id, user_ids) values (:id, :users)")
       .execute();
 ```
 
-|      | Like the [Arguments Registry](#_arguments_registry), if there are multiple `SqlArrayType` s registered for the same data type, the last registered wins. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 和[Arguments Registry](#_arguments_registry)一样，如果有多个`SqlArrayType`为同一个数据类型注册，最后注册的获胜。
 
 <a name="40_____3_7_3__Mapping_array_types"></a>
-#### 3.7.3. Mapping array types
+#### 3.7.3. Mapping array types(映射数组类型)
 
 `SqlArrayType` only allows you to bind Java array/collection arguments to their SQL counterparts. To map SQL array columns back to Java types, you can register a regular `ColumnMapper`:
 
-```
+```java
 public class UserIdColumnMapper implements ColumnMapper<UserId> {
     @Override
     public UserId map(ResultSet rs, int col, StatementContext ctx) throws SQLException {
         return new UserId(rs.getInt(col));
     }
 }
+```
+
+```java
 handle.registerColumnMapper(new UserIdColumnMapper());
 List<UserId> userIds = handle.createQuery("select user_ids from groups where id = :id")
       .bind("id", 1)
@@ -1689,24 +1673,22 @@ List<UserId> userIds = handle.createQuery("select user_ids from groups where id 
       .one();
 ```
 
-|      | Array columns can be mapped to any container type registered with the `JdbiCollectors` registry. E.g. a `VARCHAR[]` may be mapped to an `ImmutableList<String>` if the guava plugin is installed. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 数组列可以映射到任何在“JdbiCollectors”注册表中注册的容器类型。 例如。 如果安装了 guava 插件，则 `VARCHAR[]` 可以映射到 `ImmutableList<String>`。
 
 <a name="41____3_8__Results"></a>
-### 3.8. Results
+### 3.8. Results(结果)
 
-After executing a database query, you need to interpret the results. JDBC provides the **ResultSet** class which can do simple mapping to Java primitives and built in classes, but the API is often cumbersome to use. **Jdbi** provides configurable mapping, including the ability to register custom mappers for rows and columns.
+执行数据库查询后，您需要解释结果。 JDBC 提供了 **ResultSet** 类，它可以简单地映射到 Java 基本类型和内置类，但 API 使用起来往往很麻烦。 **Jdbi** 提供可配置的映射，包括为行和列注册自定义映射器的能力。
 
-A **RowMapper** converts a row of a **ResultSet** into a result object.
+**RowMapper** 将 **ResultSet** 的一行转换为结果对象。
 
-A **ColumnMapper** converts a single column’s value into a Java object. It can be used as a **RowMapper** if there is only one column present, or it can be used to build more complex **RowMapper** types.
+**ColumnMapper** 将单个列的值转换为 Java 对象。 如果只有一列，它可以用作 **RowMapper**，或者它可以用于构建更复杂的 **RowMapper** 类型。
 
-The mapper is selected based on the declared result type of your query.
+映射器是根据查询的声明结果类型选择的。
 
-**jdbi** iterates over the rows in the ResultSet and presents the mapped results to you in a container such as a **List**, **Stream**, **Optional**, or **Iterator**.
+**jdbi** 遍历 ResultSet 中的行，并在容器（例如 **List**、**Stream**、**Optional** 或 **Iterator**）中向您呈现映射的结果。
 
-```
+```java
 public static class User {
     final int id;
     final String name;
@@ -1743,57 +1725,57 @@ public Optional<User> findUserById(long id) {
 ```
 
 <a name="42_____3_8_1__ResultBearing"></a>
-#### 3.8.1. ResultBearing
+#### 3.8.1. ResultBearing(结果承载)
 
-The [ResultBearing](apidocs/org/jdbi/v3/core/result/ResultBearing.html) interface represents a result set of a database operation, which has not been mapped to any particular result type.
+[ResultBearing](apidocs/org/jdbi/v3/core/result/ResultBearing.html) 接口代表一个数据库操作的结果集，它没有映射到任何特定的结果类型。
 
-TODO:
+TODO(要做):
 
-- Query implements ResultBearing
-- Update.executeAndReturnGeneratedKeys() returns ResultBearing
-- PreparedBatch.executeAndReturnGeneratedKeys() returns ResultBearing
-- A ResultBearing object can be mapped, which returns a ResultIterable of the mapped type.
-  - mapTo(Type | Class | GenericType) if a mapper is registered for type
+- Query 实现了 ResultBearing
+- Update.executeAndReturnGeneratedKeys() 返回 ResultBearing
+- PreparedBatch.executeAndReturnGeneratedKeys() 返回 ResultBearing
+- 可以映射 ResultBearing 对象，它返回映射类型的 ResultIterable。
+  - mapTo(Type | Class | GenericType) 如果映射器已注册类型
   - map(RowMapper | ColumnMapper)
-  - mapToBean() for bean types
-  - mapToMap() which returns Map<String,Object> mapping lower-cased column names to values
+  - mapToBean() 用于bean类型
+  - mapToMap()返回Map<string，对象>，将小写列名映射到值</string，对象>
 - reduceRows
   - RowView
 - reduceResultSet
-- collectInto e.g. with a GenericType token. Implies a mapTo() and a collect() in one operation. e.g. collectInto(new GenericType<List<User>>(){}) is the same as mapTo(User.class).collect(toList())
-- Provide list of container types supported out of the box
+- collectInto 例如 带有 GenericType 标记。 在一个操作中隐含一个 mapTo() 和一个 collect() 。 例如 collectInto(new GenericType<List<User>>(){}) 与 mapTo(User.class).collect(toList()) 相同
+- 提供开箱即用支持的容器类型列表
 
 <a name="43_____3_8_2__ResultIterable"></a>
-#### 3.8.2. ResultIterable
+#### 3.8.2. ResultIterable(结果可迭代)
 
-[ResultIterable](apidocs/org/jdbi/v3/core/result/ResultIterable.html) represents a result set which has been mapped to a specific type, e.g. `ResultIterable<User>`.
+[ResultIterable](apidocs/org/jdbi/v3/core/result/ResultIterable.html) 表示已映射到特定类型的结果集，例如 `ResultIterable<用户>`。
 
-TODO:
+TODO(要做):
 
 - ResultIterable.forEach
 - ResultIterable.iterator()
-  - Must be explicitly closed, to release database resources.
-  - Use try-with-resources to ensure database resources get cleaned up. *
+  - 必须显式关闭，以释放数据库资源。
+  - 使用 try-with-resources 确保数据库资源得到清理。
 
 <a name="44______Find_a_Single_Result"></a>
-##### Find a Single Result
+##### Find a Single Result(查找单个结果)
 
-`ResultIterable.one()` returns the only row in the result set. If zero or multiple rows are encountered, it will throw `IllegalStateException`.
+`ResultIterable.one()` 返回结果集中的唯一行。 如果遇到零行或多行，则会抛出`IllegalStateException`。
 
-`ResultIterable.findOne()` returns an `Optional<T>` of the only row in the result set, or `Optional.empty()` if no rows are returned.
+`ResultIterable.findOne()` 返回结果集中唯一行的 `Optional<T>`，如果没有返回行，则返回 `Optional.empty()`。
 
-`ResultIterable.first()` returns the first row in the result set. If zero rows are encountered, `IllegalStateException` is thrown.
+`ResultIterable.first()` 返回结果集中的第一行。 如果遇到零行，则抛出“IllegalStateException”。
 
-`ResultIterable.findFirst()` returns an `Optional<T>` of the first row, if any.
+`ResultIterable.findFirst()` 返回第一行的 `Optional<T>`，如果有的话。
 
 <a name="45______Stream"></a>
-##### Stream
+##### Stream(流)
 
-**Stream** integration allows you to use a RowMapper to adapt a ResultSet into the new Java 8 Streams framework. As long as your database supports streaming results (for example, PostgreSQL will do it as long as you are in a transaction and set a fetch size), the stream will lazily fetch rows from the database as necessary.
+**Stream** 集成允许您使用 RowMapper 将 ResultSet 适配到新的 Java 8 Streams 框架中。 只要您的数据库支持流式结果（例如，只要您在事务中并设置提取大小，PostgreSQL 就会这样做），流将根据需要从数据库中延迟提取行。
 
-**#stream** returns a **Stream<T>**. You should then process the stream and produce a result. This stream must be closed to release any database resources held, so we recommend **useStream**, **withStream** or alternately a **try-with-resources** block to ensure that no resources are leaked.
+**#stream** 返回 **Stream<T>**。 然后您应该处理流并产生结果。 必须关闭此流以释放持有的任何数据库资源，因此我们建议使用 **useStream**、**withStream** 或 **try-with-resources** 块以确保没有资源泄漏。
 
-```
+```java
 handle.createQuery("SELECT id, name FROM user ORDER BY id ASC")
       .map(new UserMapper())
       .useStream(stream -> {
@@ -1805,14 +1787,14 @@ handle.createQuery("SELECT id, name FROM user ORDER BY id ASC")
       });
 ```
 
-**#withStream** and **#useStream** handle closing the stream for you. You provide a **StreamCallback** that produces a result or a **StreamConsumer** that produces no result, respectively.
+**#withStream** 和 **#useStream** 为您处理关闭流。 您分别提供产生结果的 **StreamCallback** 或不产生结果的 **StreamConsumer**。
 
 <a name="46______List"></a>
-##### List
+##### List(列表)
 
-**#list** emits a **List<T>**. This necessarily buffers all results in memory.
+**#list** 发出 **List<T>**。 这必然会在内存中缓冲所有结果。
 
-```
+```java
 List<User> users =
     handle.createQuery("SELECT id, name FROM user")
         .map(new UserMapper())
@@ -1820,13 +1802,13 @@ List<User> users =
 ```
 
 <a name="47______Collectors"></a>
-##### Collectors
+##### Collectors(收集者)
 
-**#collect** takes a **Collector<T, ? , R>** that builds a resulting collection **R<T>**. The **java.util.stream.Collectors** class has a number of interesting **Collector** implementations to start with.
+**#collect** 需要一个 **Collector<T, ? , R>** 构建结果集合 **R<T>**。 **java.util.stream.Collectors** 类有许多有趣的 **Collector** 实现。
 
-You can also write your own custom collectors. For example, to accumulate found rows into a **Map**:
+您还可以编写自己的自定义收集器。 例如，要将找到的行累积到一个 **Map** 中：
 
-```
+```java
 h.execute("insert into something (id, name) values (1, 'Alice'), (2, 'Bob'), (3, 'Chuckles')");
 Map<Integer, Something> users = h.createQuery("select id, name from something")
     .mapTo(Something.class)
@@ -1839,31 +1821,31 @@ Map<Integer, Something> users = h.createQuery("select id, name from something")
 ```
 
 <a name="48______Reduction"></a>
-##### Reduction
+##### Reduction(规约)
 
-**#reduce** provides a simplified **Stream#reduce**. Given an identity starting value and a **BiFunction<U, T, U>** it will repeatedly combine **U** until only a single remains, and then return that.
+**#reduce** 提供了一个简化的 **Stream#reduce**。 给定一个单位起始值和一个 **BiFunction<U, T, U>** 它将反复组合 **U** 直到只剩下一个，然后返回那个。
 
 <a name="49______ResultSetScanner"></a>
-##### ResultSetScanner
+##### ResultSetScanner(结果集扫描器)
 
-The **ResultSetScanner** interface accepts a lazily-provided **ResultSet** and produces the result Jdbi returns from statement execution.
+**ResultSetScanner** 接口接受延迟提供的 **ResultSet** 并生成 Jdbi 从语句执行返回的结果。
 
-Most of the above operations are implemented in terms of **ResultSetScanner**. The Scanner has ownership of the ResultSet and may advance or seek it.
+上面的大多数操作都是通过**ResultSetScanner**实现的。扫描器拥有ResultSet的所有权，可以前进或寻找它。
 
-The return value ends up being the final result of statement execution.
+返回值最终是语句执行的最终结果。
 
-Most users should prefer using the higher level result collectors described above, but someone’s gotta do the dirty work.
+大多数用户应该更喜欢使用上面描述的更高级别的结果收集器，但总得有人做脏活。
 
 <a name="50_____3_8_3__Joins"></a>
-#### 3.8.3. Joins
+#### 3.8.3. Joins(连接)
 
-Joining multiple tables together is a very common database task. It is also where the mismatch between the relational model and Java’s object model starts to rear its ugly head.
+将多个表连接在一起是一项非常常见的数据库任务。 这也是关系模型和 Java 对象模型之间的不匹配开始抬头的地方。
 
-Here we present a couple of strategies for retrieving results from more complicated rows.
+在这里，我们提出了几种从更复杂的行中检索结果的策略。
 
-Consider a contact list app as an example. The contact list contains any number of contacts. Contacts have a name, and any number of phone numbers. Phone numbers have a type (e.g. home, work) and a phone number:
+以联系人列表应用程序为例。 联系人列表包含任意数量的联系人。 联系人有姓名和任意数量的电话号码。 电话号码有一个类型（例如家庭、工作）和一个电话号码：
 
-```
+```java
 class Contact {
   Long id;
   String name;
@@ -1881,11 +1863,11 @@ class Phone {
 }
 ```
 
-We’ve left out getters, setters, and access modifiers for brevity.
+为简洁起见，我们省略了 getter、setter 和访问修饰符。
 
-Since we’ll be reusing the same queries, we’ll define them as constants now:
+由于我们将重用相同的查询，我们现在将它们定义为常量：
 
-```
+```java
 static final String SELECT_ALL = "select contacts.id c_id, name c_name, "
     + "phones.id p_id, type p_type, phones.phone p_phone "
     + "from contacts left join phones on contacts.id = phones.contact_id "
@@ -1894,57 +1876,56 @@ static final String SELECT_ALL = "select contacts.id c_id, name c_name, "
 static final String SELECT_ONE = SELECT_ALL + "where phones.id = :id";
 ```
 
-Note that we’ve given aliases (e.g. `c_id`, `p_id`) to distinguish columns of the same name (`id`) from different tables.
+请注意，我们提供了别名（例如`c_id`、`p_id`）来区分不同表中的相同名称（`id`）的列。
 
-Jdbi provides a few different APIs for dealing with joined data.
+Jdbi 提供了一些不同的 API 来处理连接数据。
 
 <a name="51______ResultBearing_reduceRows__"></a>
 
 ##### ResultBearing.reduceRows()
 
-The [ResultBearing.reduceRows(U, BiFunction)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-U-java.util.function.BiFunction-) method accepts an accumulator seed value and a lambda function. For each row in the result set, Jdbi calls the lambda with the current accumulator value and a [RowView](apidocs/org/jdbi/v3/core/result/RowView.html) over the current row of the result set. The value returned for each row becomes the input accumulator passed in for the next row. After the last row has been processed, `reducedRows()` returns the last value returned from the lambda.
+[ResultBearing.reduceRows(U, BiFunction)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-U-java.util.function.BiFunction-) 方法接受一个累加器种子值和一个 lambda 函数。 对于结果集中的每一行，Jdbi 使用当前累加器值和结果集当前行上的 [RowView](apidocs/org/jdbi/v3/core/result/RowView.html) 调用 lambda。 每行返回的值成为为下一行传入的输入累加器。 在处理完最后一行后，`reducedRows()` 返回从 lambda 返回的最后一个值。
 
-```
+```java
 List<Contact> contacts = handle.createQuery(SELECT_ALL)
     .registerRowMapper(BeanMapper.factory(Contact.class, "c"))
-    .registerRowMapper(BeanMapper.factory(Phone.class, "p")) 
-    .reduceRows(new LinkedHashMap<Long, Contact>(), 
+    .registerRowMapper(BeanMapper.factory(Phone.class, "p")) //<1>
+    .reduceRows(new LinkedHashMap<Long, Contact>(), //<2>
                 (map, rowView) -> {
-      Contact contact = map.computeIfAbsent( 
+      Contact contact = map.computeIfAbsent( //<3>
           rowView.getColumn("c_id", Long.class),
           id -> rowView.getRow(Contact.class));
 
-      if (rowView.getColumn("p_id", Long.class) != null) { 
+      if (rowView.getColumn("p_id", Long.class) != null) { //<4>
         contact.addPhone(rowView.getRow(Phone.class));
       }
 
-      return map; 
+      return map; //<5>
     })
-    .values() 
+    .values() //<6>
     .stream()
-    .collect(toList()); 
+    .collect(toList()); //<7>
 ```
 
-|      | Register row mappers for `Contact` and `Phone`. Note the `"c"` and `"p"` arguments used—these are column name prefixes. By registering mappers with prefixes, the `Contact` mapper will only map the `c_id` and `c_name` columns, whereas the `Phone` mapper will only map `p_id`, `p_type`, and `p_phone`. |
-| ---- | ------------------------------------------------------------ |
-|      | Use an empty [LinkedHashMap](https://docs.oracle.com/javase/8/docs/api/java/util/LinkedHashMap.html) as the accumulator seed, mapped by contact ID. `LinkedHashMap` is a good accumulator when selecting multiple master records, since it has fast storage and lookup while preserving insertion order (which helps honor `ORDER BY` clauses). If ordering is unimportant, a `HashMap` would also suffice. |
-|      | Load the `Contact` from the accumulator if we already have it; otherwise, initialize it through the `RowView`. |
-|      | If `p_id` column is not null, load the phone number from the current row and add it to the current contact. |
-|      | Return the input map (now sporting an additional contact and/or phone) as the accumulator for the next row. |
-|      | At this point, all rows have been read into memory, and we don’t need the contact ID keys. So we call `Map.values()` to get a `Collection<Contact>`. |
-|      | Collect the contacts into a `List<Contact>`.                 |
+> **<1>** 为`Contact` 和 `Phone`注册行映射器。 注意使用的 `"c"` 和 `"p"` 参数——这些是列名前缀。 通过使用前缀注册映射器，`Contact`映射器将只映射`c_id`和`c_name`列，而`Phone`映射器将仅映射`p_id`、`p_type`和`p_phone`。
+> **<2>** 使用一个空的[LinkedHashMap](https://docs.oracle.com/javase/8/docs/api/java/util/LinkedHashMap.html)作为累加器种子，按联系人ID映射。当选择多个主记录时，`LinkedHashMap`是一个很好的累加器，因为它有快速的存储和查找，同时保留插入顺序(这有助于尊重`order BY`子句)。如果排序不重要，那么HashMap也足够了。
+> **<3>** 如果我们已经有了它，则从累加器中加载`ontact`； 否则，通过`RowView`初始化它。
+> **<4>** 如果 `p_id` 列不为空，则从当前行加载电话号码并将其添加到当前联系人。
+> **<5>** 返回输入map（现在有一个额外的联系人和/或电话）作为下一行的累加器。
+> **<6>** 此时，所有行都已读入内存，我们不需要联系人 ID 键。 所以我们调用`Map.values()`来获得一个`Collection<Contact>`。
+> **<7>** 将联系人收集到一个 `List<Contact>` 中。
 
-Alternatively, the [ResultBearing.reduceRows(RowReducer)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-org.jdbi.v3.core.result.RowReducer-) variant accepts a [RowReducer](apidocs/org/jdbi/v3/core/result/RowReducer.html) and returns a stream of reduced elements.
+或者，[ResultBearing.reduceRows(RowReducer)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-org.jdbi.v3.core.result.RowReducer-) 接受一个 [RowReducer](apidocs/org/jdbi/v3/core/result/RowReducer.html) 并返回一个被简化的元素流。
 
-For simple master-detail joins, the [ResultBearing.reduceRows(BiConsumer method makes it easy to reduce these joins into a stream of master elements.
+对于简单的主从连接，[ResultBearing.reduceRows(BiConsumer,RowView>)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-java.util.function.BiConsumer-) 方法可以轻松地将这些连接简化为主元素流。
 
-Adapting the example above:
+修改上面的例子：
 
-```
+```java
 List<Contact> contacts = handle.createQuery(SELECT_ALL)
     .registerRowMapper(BeanMapper.factory(Contact.class, "c"))
     .registerRowMapper(BeanMapper.factory(Phone.class, "p"))
-    .reduceRows((Map<Long, Contact> map, RowView rowView) -> { 
+    .reduceRows((Map<Long, Contact> map, RowView rowView) -> { //<1>
       Contact contact = map.computeIfAbsent(
           rowView.getColumn("c_id", Long.class),
           id -> rowView.getRow(Contact.class));
@@ -1952,23 +1933,22 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
       if (rowView.getColumn("p_id", Long.class) != null) {
         contact.addPhone(rowView.getRow(Phone.class));
       }
-      
+      //<2>
     })
-    .collect(toList()); 
+    .collect(toList()); //<3>
 ```
 
-|      | The lambda receives a map where result objects will be stored, and a `RowView`. The map is a `LinkedHashMap`, so the result stream will yield the result objects in the same order they were inserted. |
-| ---- | ------------------------------------------------------------ |
-|      | No `return` statement needed. The same `map` is reused on every row. |
-|      | This `reduceRows()` invocation produces a `Stream<Contact>` (i.e. from `map.values().stream()`. In this example, we collect the elements into a list, but we could call any `Stream` method here. |
+> **<1>** lambda接收一个map，其中结果对象将被存储，和一个`RowView`。该map是一个`LinkedHashMap`，因此结果流将以插入结果对象的相同顺序生成结果对象。
+> **<2>** 不需要 `return` 语句。 在每一行上重复使用相同的 `map`。
+> **<3>** 这个`reduceRows()`调用产生一个`Stream<contact>`(即来自`map.values(). Stream()`)。</contact>在这个例子中，我们将元素收集到一个列表中，但是我们可以在这里调用任何`Stream`方法。
 
-You may be wondering about the `getRow()` and `getColumn()` calls to `rowView`. When you call `rowView.getRow(SomeType.class)`, `RowView` looks up the registered row mapper for `SomeType`, and uses it to map the current row to a `SomeType` object.
+你可能想知道 `getRow()` 和 `getColumn()` 对 `rowView` 的调用。 当你调用 `rowView.getRow(SomeType.class)` 时，`RowView` 会为 `SomeType` 查找注册的行映射器，并使用它来将当前行映射到一个 `SomeType` 对象。
 
-Likewise, when you call `rowView.getColumn("my_value", MyValueType.class)`, `RowView` looks up the registered column mapper for `MyValueType`, and uses it to map the `my_value` column of the current row to a `MyValueType` object.
+同样，当你调用 `rowView.getColumn("my_value", MyValueType.class)` 时，`RowView` 会为 `MyValueType` 查找注册的列映射器，并使用它来将当前行的 `my_value` 列映射到一个 `MyValueType` 对象。
 
-Now let’s do the same thing, but for a single contact:
+现在让我们做同样的事情，但对于单个 contact：
 
-```
+```java
 Optional<Contact> contact = handle.createQuery(SELECT_ONE)
     .bind("id", contactId)
     .registerRowMapper(BeanMapper.factory(Contact.class, "c"))
@@ -1986,11 +1966,11 @@ Optional<Contact> contact = handle.createQuery(SELECT_ONE)
 <a name="52______ResultBearing_reduceResultSet__"></a>
 ##### ResultBearing.reduceResultSet()
 
-[ResultBearing.reduceResultSet()](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceResultSet-U-org.jdbi.v3.core.result.ResultSetAccumulator-) is a low-level API similar to `reduceRows()`, except it provides direct access to the JDBC `ResultSet` instead of a `RowView` for each row.
+[ResultBearing.reduceResultSet()](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceResultSet-U-org.jdbi.v3.core.result.ResultSetAccumulator-) 是一个类似于` reduceRows()`，除了它提供对 JDBC `ResultSet` 的直接访问，而不是每行的 `RowView`。
 
-This method can provide superior performance compared to `reduceRows()`, at the expense of verbosity:
+与“reduceRows()”相比，此方法可以提供更出色的性能，但代价是冗长：
 
-```
+```java
 List<Contact> contacts = handle.createQuery(SELECT_ALL)
     .reduceResultSet(new LinkedHashMap<Long, Contact>(),
                      (acc, resultSet, ctx) -> {
@@ -2022,38 +2002,40 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
 ```
 
 <a name="53______JoinRowMapper"></a>
-##### JoinRowMapper
+##### JoinRowMapper(连接行映射器)
 
-The JoinRowMapper takes a set of types to extract from each row. It uses the mapping registry to determine how to map each given type, and presents you with a JoinRow that holds all of the resulting values.
+`JoinRowMapper` 需要从每一行中提取一组类型。 它使用映射注册表来确定如何映射每个给定类型，并向您提供一个 `JoinRow`，其中包含所有结果值。
 
-Let’s consider two simple types, User and Article, with a join table named Author. Guava provides a Multimap class which is very handy for representing joined tables like this. Assuming we have mappers already registered:
+让我们考虑两个简单的类型，User 和 Article，有一个名为 Author 的连接表。 Guava 提供了一个 Multimap 类，它对于表示这样的连接表非常方便。 假设我们已经注册了映射器：
 
-```
+```java
 h.registerRowMapper(ConstructorMapper.factory(User.class));
 h.registerRowMapper(ConstructorMapper.factory(Article.class));
 ```
 
 we can then easily populate a Multimap with the mapping from the database:
 
-```
+```java
 Multimap<User, Article> joined = HashMultimap.create();
 h.createQuery("SELECT * FROM user NATURAL JOIN author NATURAL JOIN article")
     .map(JoinRowMapper.forTypes(User.class, Article.class))
     .forEach(jr -> joined.put(jr.get(User.class), jr.get(Article.class)));
 ```
+> **💡提示:** `翻译者WJW`提示: NATURAL JOIN即自然连接，`natural join`等同于`inner join`或`inner using`，其作用是将两个表中具有相同名称的列进行匹配.
 
-|      | While this approach is easy to read and write, it can be inefficient for certain patterns of data. Consider performance requirements when deciding whether to use high level mapping or more direct low level access with handwritten mappers. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 虽然这种方法易于读写，但对于某些数据模式可能效率低下。 在决定是使用高级映射还是使用手写映射器进行更直接的低级访问时，请考虑性能要求。
 
-You can also use it with SqlObject:
+您还可以将它与 SqlObject 一起使用：
 
-```
+```java
 public interface UserArticleDao {
     @RegisterJoinRowMapper({User.class, Article.class})
     @SqlQuery("SELECT * FROM user NATURAL JOIN author NATURAL JOIN article")
     Stream<JoinRow> getAuthorship();
 }
+```
+
+```java
 Multimap<User, Article> joined = HashMultimap.create();
 
 handle.attach(UserArticleDao.class)
@@ -2064,20 +2046,20 @@ assertThat(joined).isEqualTo(JoinRowMapperTest.getExpected());
 ```
 
 <a name="54____3_9__Updates"></a>
-### 3.9. Updates
+### 3.9. Updates(更新)
 
-Updates are operations that return an integer number of rows modified, such as a database **INSERT**, **UPDATE**, or **DELETE**.
+更新是返回整数行修改的操作，例如数据库 **INSERT**、**UPDATE** 或 **DELETE**。
 
-You can execute a simple update with `Handle`'s `int execute(String sql, Object… args)` method which binds simple positional parameters.
+您可以使用`Handle` 的`int execute(String sql, Object... args)` 方法执行简单的更新，该方法绑定了简单的位置参数。
 
-```
+```java
 count = handle.execute("INSERT INTO user(id, name) VALUES(?, ?)", 4, "Alice");
 assertThat(count).isEqualTo(1);
 ```
 
-To further customize, use `createUpdate`:
+要进一步自定义，请使用 `createUpdate`：
 
-```
+```java
 int count = handle.createUpdate("INSERT INTO user(id, name) VALUES(:id, :name)")
     .bind("id", 3)
     .bind("name", "Charlie")
@@ -2085,16 +2067,16 @@ int count = handle.createUpdate("INSERT INTO user(id, name) VALUES(:id, :name)")
 assertThat(count).isEqualTo(1);
 ```
 
-Updates may return [Generated Keys](#_generated_keys) instead of a result count.
+更新可能返回[Generated Keys](#58____3_12__Generated_Keys)而不是一个结果计数。
 
 <a name="55____3_10__Batches"></a>
-### 3.10. Batches
+### 3.10. Batches(批处理)
 
-A **Batch** sends many commands to the server in bulk.
+**Batch** 向服务器批量发送许多命令。
 
-After opening the batch, repeated add statements, and invoke **add**.
+打开批处理后，重复添加语句，并调用**add**。
 
-```
+```java
 Batch batch = handle.createBatch();
 
 batch.add("INSERT INTO fruit VALUES(0, 'apple')");
@@ -2103,17 +2085,17 @@ batch.add("INSERT INTO fruit VALUES(1, 'banana')");
 int[] rowsModified = batch.execute();
 ```
 
-The statements are sent to the database in bulk, but each statement is executed separately. There are no parameters. Each statement returns a modification count, as with an Update, and those counts are then returned in an `int[]` array. In common cases all elements will be `1`.
+语句被批量发送到数据库，但每个语句是单独执行的。 没有参数。 每个语句都返回一个修改计数，就像更新一样，然后这些计数在一个 `int[]` 数组中返回。 在常见情况下，所有元素都将为“1”。
 
 <a name="56____3_11__Prepared_Batches"></a>
 
-### 3.11. Prepared Batches
+### 3.11. Prepared Batches(准备好了的批处理)
 
-A **PreparedBatch** sends one statement to the server with many argument sets. The statement is executed repeatedly, once for each batch of arguments that is **add**-ed to it.
+**PreparedBatch** 向服务器发送一个带有多个参数集的语句。 该语句被重复执行，每批 **添加** 的参数执行一次。
 
-The result is again a `int[]` of modified row count.
+结果仍然是修改后的行数的`int[]`。
 
-```
+```java
 PreparedBatch batch = handle.prepareBatch("INSERT INTO user(id, name) VALUES(:id, :name)");
 for (int i = 100; i < 5000; i++) {
     batch.bind("id", i).bind("name", "User:" + i).add();
@@ -2121,9 +2103,9 @@ for (int i = 100; i < 5000; i++) {
 int[] counts = batch.execute();
 ```
 
-SqlObject also supports batch inserts:
+SqlObject 也支持批量插入：
 
-```
+```java
 public void testSqlObjectBatch() {
     BasketOfFruit basket = handle.attach(BasketOfFruit.class);
 
@@ -2144,43 +2126,39 @@ public interface BasketOfFruit {
 }
 ```
 
-|      | Batching dramatically increases efficiency over repeated single statement execution, but many databases don’t handle extremely large batches well either. Test with your database configuration, but often extremely large data sets should be divided and committed in pieces - or risk bringing your database to its knees. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 与重复执行单条语句相比，批处理显着提高了效率，但许多数据库也不能很好地处理非常大的批处理。 使用您的数据库配置进行测试，但通常应将极大的数据集分割并提交——否则可能会使您的数据库瘫痪。
 
 <a name="57_____3_11_1__Exception_Rewriting"></a>
-#### 3.11.1. Exception Rewriting
+#### 3.11.1. Exception Rewriting(异常重写)
 
-The JDBC SQLException class is very old and predates more modern exception facilities like Throwable’s suppressed exceptions. When a batch fails, there may be multiple failures to report, which could not be represented by the base Exception types of the day.
+`JDBC SQLException` 类非常古老并且比更现代的异常工具如 Throwable 的抑制异常早。 当一个批次失败时，可能会报告多个失败，这无法用当天的基本异常类型来表示。
 
-So SQLException has a bespoke [getNextException](https://docs.oracle.com/javase/8/docs/api/java/sql/SQLException.html#getNextException--) chain to represent the causes of a batch failure. Unfortunately, by default most logging libraries do not print these exceptions out, pushing their handling into your code. It is very common to forget to handle this situation and end up with logs that say nothing other than
+所以 SQLException 有一个定制的 [getNextException](https://docs.oracle.com/javase/8/docs/api/java/sql/SQLException.html#getNextException--) 链来表示批处理失败的原因。 不幸的是，默认情况下，大多数日志库不会打印出这些异常，而是将它们的处理推入您的代码中。 忘记处理这种情况并最终得到的日志除了
 
-```
+```log
 java.sql.BatchUpdateException: Batch entry 1 insert into something (id, name) values (0, '') was aborted. Call getNextException to see the cause.
 ```
 
-**jdbi** will attempt to rewrite such nextExceptions into "suppressed exceptions" (new in Java 8) so that your logs are more helpful:
+**jdbi** 将尝试将此类 nextExceptions 重写为“被抑制的异常”（Java 8 中的新功能），以便您的日志更有帮助：
 
-```
+```log
 java.sql.BatchUpdateException: Batch entry 1 insert into something (id, name) values (0, 'Keith') was aborted. Call getNextException to see the cause.
 Suppressed: org.postgresql.util.PSQLException: ERROR: duplicate key value violates unique constraint "something_pkey"
   Detail: Key (id)=(0) already exists.
 ```
 
 <a name="58____3_12__Generated_Keys"></a>
-### 3.12. Generated Keys
+### 3.12. Generated Keys(生成的键)
 
-An Update or PreparedBatch may automatically generate keys. These keys are treated separately from normal results. Depending on your database and configuration, the entire inserted row may be available.
+Update 或 PreparedBatch 可以自动生成键。 这些键与正常结果分开处理。 根据您的数据库和配置，整个插入行可能可用。
 
-|      | Unfortunately there is a lot of variation between databases supporting this feature so please test this feature’s interaction with your database thoroughly. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 不幸的是，支持该特性的数据库之间有很多差异，所以请彻底测试该特性与数据库的交互。
 
-In PostgreSQL, the entire row is available, so you can immediately map your inserted names back to full User objects! This avoids the overhead of separately querying after the insert completes.
+在 PostgreSQL 中，整行都可用，因此您可以立即将插入的名称映射回完整的 User 对象！ 这避免了插入完成后单独查询的开销。
 
-Consider the following table:
+考虑下表：
 
-```
+```java
 public static class User {
     final int id;
     final String name;
@@ -2198,9 +2176,9 @@ public void setUp() {
 }
 ```
 
-You can get generated keys in the fluent style:
+您可以以fluent的方式获取生成的键：
 
-```
+```java
 public void fluentInsertKeys() {
     db.useHandle(handle -> {
         User data = handle.createUpdate("INSERT INTO users (name) VALUES(?)")
@@ -2216,13 +2194,13 @@ public void fluentInsertKeys() {
 ```
 
 <a name="59____3_13__Stored_Procedure_Calls"></a>
-### 3.13. Stored Procedure Calls
+### 3.13. Stored Procedure Calls(存储过程调用)
 
-A **Call** invokes a database stored procedure.
+**Call** 调用数据库存储过程。
 
-Let’s assume an existing stored procedure as an example:
+让我们假设一个现有的存储过程作为例子：
 
-```
+```sql
 CREATE FUNCTION add(a IN INT, b IN INT, sum OUT INT) AS $$
 BEGIN
   sum := a + b;
@@ -2230,44 +2208,41 @@ END;
 $$ LANGUAGE plpgsql
 ```
 
-Here’s how to call a stored procedure:
+下面是调用存储过程的方法：
 
-```
+```java
 OutParameters result = handle
-        .createCall("{:sum = call add(:a, :b)}") 
-        .bind("a", 13) 
-        .bind("b", 9) 
-        .registerOutParameter("sum", Types.INTEGER)   
-        .invoke(); 
+        .createCall("{:sum = call add(:a, :b)}") //<1>
+        .bind("a", 13) //<2>
+        .bind("b", 9) //<2>
+        .registerOutParameter("sum", Types.INTEGER)   //<3> <4>
+        .invoke(); //<5>
 ```
 
-|      | Call `Handle.createCall()` with the SQL statement. Note that JDBC has a peculiar SQL format when calling stored procedures, which we must follow. |
-| ---- | ------------------------------------------------------------ |
-|      | Bind input parameters to the procedure call.                 |
-|      | Register out parameters, the values that will be returned from the stored procedure call. This tells JDBC what data type to expect for each out parameter. |
-|      | Out parameters may be registered by name (as shown in the example) or by zero-based index, if the SQL is using positional parameters. Multiple output parameters may be registered, depending on the output of the stored procedure itself. |
-|      | Finally, call `invoke()` to execute the procedure.           |
+> **<1>** 使用 SQL 语句调用 `Handle.createCall()`。 请注意，JDBC 在调用存储过程时具有特殊的 SQL 格式，我们必须遵循该格式。
+> **<2>** 将输入参数绑定到过程调用。
+> **<3>** 注册输出参数，即将从存储过程调用返回的值。 这告诉 JDBC 期望每个输出参数的数据类型。
+> **<4>** 如果 SQL 使用位置参数，则输出参数可以按名称（如示例所示）或从零开始的索引进行注册。 可以注册多个输出参数，具体取决于存储过程本身的输出。
+> **<5>** 最后，调用 `invoke()` 来执行该过程。
 
-Invoking the stored procedure returns an [OutParameters](apidocs/org/jdbi/v3/core/statement/OutParameters.html) object, which contains the value(s) returned from the stored procedure call.
+调用存储过程会返回一个 [OutParameters](apidocs/org/jdbi/v3/core/statement/OutParameters.html) 对象，其中包含从存储过程调用返回的值。
 
-Now we can extract the result(s) from `OutParameters`:
+现在我们可以从 `OutParameters` 中提取结果：
 
-```
+```java
 int sum = result.getInt("sum");
 ```
 
-It is possible to return open cursors as a result-like object by declaring it as `Types.REF_CURSOR` and then inspecting it via `OutParameters.getRowSet()`. Usually this must be done in a transaction, and the results must be consumed before closing the statement by processing it using the `Call.invoke(Consumer)` or `Call.invoke(Function)` callback style.
+通过将打开的游标声明为`Types.REF_CURSOR`，然后通过`OutParameters.getRowSet()`检查它，可以将打开的游标作为类似结果的对象返回。 通常这必须在事务中完成，并且必须在关闭语句之前通过使用 `Call.invoke(Consumer)` 或 `Call.invoke(Function)` 回调样式处理它来消耗结果。
 
-|      | Due to design constraints within JDBC, the parameter data types available through `OutParameters` is limited to those types supported directly by JDBC. This cannot be expanded through e.g. mapper registration. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 由于 JDBC 中的设计限制，通过 `OutParameters` 可用的参数数据类型仅限于 JDBC 直接支持的那些类型。 这不能通过例如扩展 映射器注册。
 
 <a name="60____3_14__Scripts"></a>
-### 3.14. Scripts
+### 3.14. Scripts(脚本)
 
-A **Script** parses a String into semicolon terminated statements. The statements can be executed in a single **Batch** or individually.
+**Script** 将 String 解析为分号终止的语句。 这些语句可以在单个 **Batch** 中执行，也可以单独执行。
 
-```
+```java
 int[] results = handle.createScript(
         "INSERT INTO user VALUES(3, 'Charlie');"
         + "UPDATE user SET name='Bobby Tables' WHERE id=2;")
@@ -2277,15 +2252,15 @@ assertThat(results).containsExactly(1, 1);
 ```
 
 <a name="61____3_15__Transactions"></a>
-### 3.15. Transactions
+### 3.15. Transactions(事务)
 
-**jdbi** provides full support for JDBC transactions.
+**jdbi** 完全支持 JDBC 事务。
 
-**Handle** objects provide two ways to open a transaction — **inTransaction** allows you to return a result, and **useTransaction** has no return value.
+**Handle** 对象提供了两种开启事务的方式 —— **inTransaction** 允许你返回结果，而**useTransaction** 没有返回值。
 
-Both optionally allow you to specify the transaction isolation level.
+两者都允许您选择指定事务隔离级别。
 
-```
+```java
 public Optional<User> findUserById(long id) {
     return handle.inTransaction(h ->
             h.createQuery("SELECT * FROM users WHERE id=:id")
@@ -2295,16 +2270,16 @@ public Optional<User> findUserById(long id) {
 }
 ```
 
-Here, we (probably unnecessarily) guard a simple *SELECT* statement with a transaction.
+在这里，我们（可能是不必要地）用事务保护一个简单的 *SELECT* 语句。
 
-Additionally, Handle has a number of methods for direct transaction management: begin(), savepoint(), rollback(), commit(), etc. Normally, you will not need to use these. If you do not explicitly commit a manually opened transaction, it will be rolled back.
+此外，Handle 有许多用于直接事务管理的方法：begin()、savepoint()、rollback()、commit() 等。通常，您不需要使用这些方法。 如果您没有明确提交手动打开的事务，它将被回滚。
 
 <a name="62_____3_15_1__Serializable_Transactions"></a>
-#### 3.15.1. Serializable Transactions
+#### 3.15.1. Serializable Transactions(可序列化事务)
 
-For more advanced queries, sometimes serializable transactions are required. **jdbi** includes a transaction runner that is able to retry transactions that abort due to serialization failures. It is important that your transaction does not have side effects as it may be executed multiple times.
+对于更高级的查询，有时需要可序列化的事务。 **jdbi** 包括一个事务运行器，它能够重试由于序列化失败而中止的事务。 重要的是您的事务没有副作用，因为它可能会被执行多次。
 
-```
+```java
 // Automatically rerun transactions
 db.setTransactionHandler(new SerializableTransactionRunner());
 
@@ -2344,20 +2319,20 @@ assertThat(result1.get() + result2.get()).isEqualTo(30 + 60);
 executor.shutdown();
 ```
 
-The above test is designed to run two transactions in lock step. Each attempts to read the sum of all rows in the table, and then insert a new row with that sum. We seed the table with the values 10 and 20.
+上面的测试旨在在锁定步骤中运行两个事务。 每个尝试读取表中所有行的总和，然后插入具有该总和的新行。 我们用值 10 和 20 为表设置种子。
 
-Without serializable isolation, each transaction reads 10 and 20, and then returns 30. The end result is 30 + 30 = 60, which does not correspond to any serial execution of the transactions!
+如果没有可序列化隔离，每个事务读取10和20，然后返回30。最终结果是30 + 30 = 60，这并不对应于事务的任何串行执行!
 
-With serializable isolation, one of the two transactions is forced to abort and retry. On the second go around, it calculates 10 + 20 + 30 = 60. Adding to 30 from the other, we get 30 + 60 = 90 and the assertion succeeds.
+使用可序列化隔离，两个事务中的一个将被迫中止并重试。在第二次循环中，它计算出10 + 20 + 30 = 60。加上另一个的30，我们得到30 + 60 = 90，断言成功。
 
 <a name="63____3_16__ClasspathSqlLocator"></a>
-### 3.16. ClasspathSqlLocator
+### 3.16. ClasspathSqlLocator(类路径SqlLocator)
 
-You may find it helpful to store your SQL templates in individual files on the classpath, rather than in string inside Java code.
+您可能会发现将 SQL 模板存储在类路径上的单个文件中而不是 Java 代码中的字符串中很有帮助。
 
 The `ClasspathSqlLocator` converts Java type and method names into classpath locations, and then reads, parses, and caches the loaded statements.
 
-```
+```java
 // reads classpath resource com/foo/BarDao/query.sql
 ClasspathSqlLocator.findSqlOnClasspath(com.foo.BarDao.class, "query");
 
@@ -2366,42 +2341,42 @@ ClasspathSqlLocator.findSqlOnClasspath("com.foo.BarDao.query");
 ```
 
 <a name="64___4__Configuration"></a>
-## 4. Configuration
+## 4. Configuration(配置)
 
-`Jdbi` aims to be useful out of the box with minimal configuration. Sometimes you need to change default behavior, or add in extensions to handle additional database types. Each piece of core or extension that wishes to participate in configuration defines a configuration class, for example the `SqlStatements` class stores SqlStatement related configuration. Then, on any `Configurable` context (like a `Jdbi` or `Handle`) you can change configuration in a type safe way:
+`Jdbi` 旨在以最少的配置开箱即用。 有时您需要更改默认行为，或添加扩展以处理其他数据库类型。每一个希望参与配置的核心或扩展都定义了一个配置类，例如`SqlStatements`类存储了SqlStatement相关的配置。 然后，在任何`Configurable`上下文（如`Jdbi` 或 `Handle`）上，您都可以以类型安全的方式更改配置：
 
-```
+```java
 jdbi.getConfig(SqlStatements.class).setUnusedBindingAllowed(true);
 jdbi.getConfig(Arguments.class).register(new MyTypeArgumentFactory());
 jdbi.getConfig(Handles.class).setForceEndTransactions(true);
 
-// Or, if you have a bunch of work to do:
+// 或者，如果您有很多工作要做：
 jdbi.configure(RowMappers.class, rm -> {
     rm.register(new TypeARowMapperFactory();
     rm.register(new TypeBRowMapperFactory();
 });
 ```
 
-Generally, you should finalize all configuration changes before interacting with the database.
+通常，您应该在与数据库交互之前完成所有配置更改。
 
-When a new context is created, it inherits a copy of the parent context configuration at the time of creation. So a `Handle` initializes its configuration from the creating `Jdbi`, but changes never propagate back up.
+创建新上下文时，它会在创建时继承父上下文配置的副本。 因此，`Handle` 从创建的 `Jdbi` 初始化其配置，但更改永远不会传播回来。
 
-See [JdbiConfig](#_jdbiconfig) for more advanced implementation details.
+有关更高级的实现细节，请参阅 [JdbiConfig](#141____9_5__JdbiConfig)
 
 <a name="65____4_1__Qualified_Types"></a>
-### 4.1. Qualified Types
+### 4.1. Qualified Types(限定类型)
 
-Sometimes the same Java object can correspond to multiple data types in a database. For example, a `String` could be `varchar` plaintext, `nvarchar` text, `json` data, etc, all with different handling requirements.
+有时，同一个 Java 对象可以对应数据库中的多种数据类型。 例如，`String` 可以是 `varchar` 纯文本、`nvarchar` 文本、`json` 数据等，所有这些都有不同的处理要求。
 
-[QualifiedType](apidocs/org/jdbi/v3/core/qualifier/QualifiedType.html) allows you to add such context to a Java type:
+[QualifiedType](apidocs/org/jdbi/v3/core/qualifier/QualifiedType.html)允许您添加这样的上下文到Java类型:
 
-```
+```java
 QualifiedType.of(String.class).with(Json.class);
 ```
 
-This `QualifiedType` still represents the `String` *type*, but *qualified* with the `@Json` annotation. It can be used in a way similar to [GenericType](#_generictype), to make components handling values (mainly `ArgumentFactories` and `ColumnMapperFactories`) perform their work differently, and to have the values handled by different implementations altogether:
+这个 `QualifiedType` 仍然代表 `String` *类型*，但使用 `@Json` 注解进行限定。 它可以以类似于 [GenericType](#138_____9_3_1__GenericType) 的方式使用，使组件处理值（主要是 `ArgumentFactories` 和 `ColumnMapperFactories`）以不同的方式执行它们的工作，并让不同的实现完全处理这些值：
 
-```
+```java
 @Json
 public class JsonArgumentFactory extends AbstractArgumentFactory<String> {
     @Override
@@ -2411,43 +2386,35 @@ public class JsonArgumentFactory extends AbstractArgumentFactory<String> {
 }
 ```
 
-Once registered, this `@Json` qualified factory will receive **only** `@Json String` values. Other factories *not* qualified as such will **not** receive this value:
+一旦注册，这个`@Json` 限定工厂将只接收`@Json String` 值。 其他不限定的工厂将不会收到此值：
 
-```
+```java
 QualifiedType<String> json = QualifiedType.of(String.class).with(Json.class);
 query.bindByType("jsonValue", "{\"foo\":1}", json);
 ```
 
-|      | Jdbi chooses factories to handle values by **exactly matching** their *qualifiers*. It’s up to the factory implementations to discriminate on the *type* of the value afterwards. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> Jdbi通过**精确匹配**它们的**限定符**来选择工厂来处理值。这取决于工厂实现是否区分值的*type*。
 
-|      | Qualifiers are implemented as `Annotations`. This allows factories to independently inspect values for qualifiers at the source, such as on their `Class`, to alter their own behavior or to *requalify* a value and have it re-evaluated by Jdbi’s lookup chain. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 限定符实现为“注解”。 这允许工厂在源头独立检查限定符的值，例如在他们的“类”上，以改变他们自己的行为或*重新限定*一个值并让它由 Jdbi 的查找链重新评估。
 
-|      | Qualifiers being annotations does **not** mean they inherently activate their function when placed in source classes. Each feature decides its own rules regarding their use. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 限定符是注释**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
 
-|      | Arguments can only be qualified for binding via `bindByType` calls, not regular `bind` or `update.execute(Object…)`. Also, arrays cannot be qualified. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
 
-These features currently make use of qualified types:
+这些功能目前使用限定类型：
 
-- `@NVarchar` and `@MacAddr` (the latter in `jdbi3-postgres`) bind and map Strings as `nvarchar` and `macaddr` respectively, instead of the usual `varchar`.
-- `jdbi3-postgres` offers [HStore](#_hstore).
+- `@NVarchar` 和 `@MacAddr`（后者在 `jdbi3-postgres` 中）分别将字符串绑定和映射为 `nvarchar` 和 `macaddr`，而不是通常的 `varchar`。
+- `jdbi3-postgres` 提供 [HStore](#_hstore).
 - [JSON](#jdbi3-json)
-- `BeanMapper`, `@BindBean`, `@RegisterBeanMapper`, `mapTobean()`, and `bindBean()` respect qualifiers on getters, setters, and setter parameters.
-- `ConstructorMapper` and `@RegisterConstructorMapper` respect qualifiers on constructor parameters.
-- `@BindMethods` and `bindMethods()` respect qualifiers on methods.
-- `@BindFields`, `@RegisterFieldMapper`, `FieldMapper` and `bindFields()` respect qualifiers on fields.
-- `SqlObject` respects qualifiers on methods (applies them to the return type) and parameters.
-  - on parameters of type `Consumer<T>`, qualifiers are applied to the `T`.
+- `BeanMapper`、`@BindBean`、`@RegisterBeanMapper`、`mapTobean()` 和 `bindBean()` 尊重 getter、setter 和 setter 参数的限定符。
+- `ConstructorMapper` 和 `@RegisterConstructorMapper` 尊重构造函数参数的限定符。
+- `@BindMethods` 和 `bindMethods()` 尊重方法的限定符。
+- `@BindFields`、`@RegisterFieldMapper`、`FieldMapper` 和 `bindFields()` 尊重字段的限定符。
+- `SqlObject` 尊重方法的限定符（将它们应用于返回类型）和参数。
+  - 在 `Consumer<T>` 类型的参数上，限定符应用于 `T`。
 - `@MapTo`
-- `@BindJpa` and `JpaMapper` respect qualifiers on getters and setters.
-- `@BindKotlin`, `bindKotlin()`, and `KotlinMapper` respect qualifiers on constructor parameters, getters, setters, and setter parameters.
+- `@BindJpa` 和 `JpaMapper` 尊重 getter 和 setter 的限定符。
+- `@BindKotlin`、`bindKotlin()` 和 `KotlinMapper` 尊重构造函数参数、getter、setter 和 setter 参数的限定符。
 
 <a name="66___5__SQL_Objects_SQL对象_"></a>
 ## 5. SQL Objects(SQL对象)
@@ -2629,21 +2596,20 @@ void insert(@BindBean("user") User user);
 ```java
 public interface UserDao {
   @SqlQuery("select name from users")
-  List<String> listNames(); <1>
+  List<String> listNames(); //<1>
 
   @SqlQuery("select name from users where id = ?")
-  String getName(long id);   <2> <3>
+  String getName(long id);   //<2> <3>
 
   @SqlQuery("select name from users where id = ?")
-  Optional<String> findName(long id); <4>
+  Optional<String> findName(long id); //<4>
 }
 ```
 
-| <1>  | 当多行方法返回空结果集时，将返回空集合。                     |
-| ---- | ------------------------------------------------------------ |
-| <2>  | 如果单行方法从查询中返回多行，则该方法只返回结果集中的第一行。 |
-| <3>  | 如果单行方法返回空结果集，则返回 `null`。                    |
-| <4>  | 方法可能返回“可选”值。 如果查询没有返回任何行（或者如果行中的值为 null），则返回 `Optional.empty()` 而不是 null。 如果查询返回多于一行，SQL 对象将引发异常。 |
+> **<1>** 当多行方法返回空结果集时，将返回空集合。
+> **<2>** 如果单行方法从查询中返回多行，则该方法只返回结果集中的第一行。
+> **<3>** 如果单行方法返回空结果集，则返回 `null`。
+> **<4>** 方法可能返回“可选”值。 如果查询没有返回任何行（或者如果行中的值为 null），则返回 `Optional.empty()` 而不是 null。 如果查询返回多于一行，SQL 对象将引发异常。
 
 > **💡提示:** 通过向 [JdbiCollectors](#JdbiCollectors) 配置注册表注册 [CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，可以“教”Jdbi 识别新的集合类型。
 
@@ -2699,8 +2665,8 @@ public interface UserDao {
 与此注解一起使用的行映射器必须满足一些要求：
 
 ```java
-public class UserMapper implements RowMapper<User> {   <1> <2>
-  public UserMapper() { <3>
+public class UserMapper implements RowMapper<User> {   //<1> <2>
+  public UserMapper() { //<3>
     ...
   }
 
@@ -2710,10 +2676,9 @@ public class UserMapper implements RowMapper<User> {   <1> <2>
 }
 ```
 
-| <1>  | 必须是一个公共类。                                           |
-| ---- | ------------------------------------------------------------ |
-| <2>  | 必须使用显式类型参数（例如，`RowMapper<User>`）而不是类型变量（例如`RowMapper<T>`）来实现`RowMapper`。 |
-| <3>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。   |
+> **<1>** 必须是一个公共类。
+> **<2>** 必须使用显式类型参数（例如，`RowMapper<User>`）而不是类型变量（例如`RowMapper<T>`）来实现`RowMapper`。
+> **<3>** 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。
 
 > **💡提示:** `@RegisterRowMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
 
@@ -2733,8 +2698,8 @@ public interface UserDao {
 与此注解一起使用的行映射器工厂必须满足一些要求：
 
 ```java
-public class UserMapperFactory implements RowMapperFactory { <1>
-  public UserMapperFactory() { <2>
+public class UserMapperFactory implements RowMapperFactory { //<1>
+  public UserMapperFactory() { //<2>
     ...
   }
 
@@ -2744,9 +2709,8 @@ public class UserMapperFactory implements RowMapperFactory { <1>
 }
 ```
 
-| <1>  | 必须是一个公共类。                                         |
-| ---- | ---------------------------------------------------------- |
-| <2>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。 |
+> **<1>** 必须是一个公共类。
+> **<2>** 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。
 
 > **💡提示:** `@RegisterRowMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
 
@@ -2766,8 +2730,8 @@ public interface AccountDao {
 与此注解一起使用的列映射器必须满足一些要求：
 
 ```java
-public class MoneyMapper implements ColumnMapper<Money> {   <1> <2>
-  public MoneyMapper() { <3>
+public class MoneyMapper implements ColumnMapper<Money> {   //<1> <2>
+  public MoneyMapper() { //<3>
     ...
   }
 
@@ -2777,10 +2741,9 @@ public class MoneyMapper implements ColumnMapper<Money> {   <1> <2>
 }
 ```
 
-| <1>  | 必须是一个公共类。                                           |
-| ---- | ------------------------------------------------------------ |
-| <2>  | 必须使用显式类型参数（例如 `ColumnMapper<User>`）而不是类型变量（例如 `ColumnMapper<T>`）来实现 `ColumnMapper`。 |
-| <3>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。   |
+> **<1>** 必须是一个公共类。
+> **<2>** 必须使用显式类型参数（例如 `ColumnMapper<User>`）而不是类型变量（例如 `ColumnMapper<T>`）来实现 `ColumnMapper`。
+> **<3>** 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。
 
 > **💡提示:** `@RegisterColumnMapper` 注解可以在同一类型或方法上重复多次以注册多个映射器。
 
@@ -2800,8 +2763,8 @@ public interface AccountDao {
 与此注解一起使用的列映射器工厂必须满足一些要求：
 
 ```java
-public class UserMapperFactory implements ColumnMapperFactory { <1>
-  public UserMapperFactory() { <2>
+public class UserMapperFactory implements ColumnMapperFactory { //<1>
+  public UserMapperFactory() { //<2>
     ...
   }
 
@@ -2811,9 +2774,8 @@ public class UserMapperFactory implements ColumnMapperFactory { <1>
 }
 ```
 
-| <1>  | 必须是一个公共类。                                         |
-| ---- | ---------------------------------------------------------- |
-| <2>  | 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。 |
+> **<1>** 必须是一个公共类。
+> **<2>** 必须有一个公共的、无参数的构造函数（或一个默认构造函数）。
 
 > **💡提示:** `@RegisterColumnMapperFactory` 注解可以在同一类型或方法上重复多次以注册多个工厂。
 
@@ -2979,7 +2941,7 @@ Map<String, String> getAll();
 
 如果存在一对多关系怎么办？ Google Guava 提供了一个 `Multimap` 类型，它支持每个键映射多个值。
 
-首先，按照 [Google Guava](#_google_guava) 部分中的说明安装 `GuavaPlugin`。
+首先，按照 [Google Guava](#102____7_1__Google_Guava) 部分中的说明安装 `GuavaPlugin`。
 
 然后，只需指定一个 `Multimap` 返回类型而不是 `Map`：
 
@@ -3026,7 +2988,7 @@ Map<String, BigDecimal> getNumericLevels();
 考虑一个包含文件夹和文档的文件系统比喻。 在连接中，我们将使用 `f_` 作为文件夹列的前缀，并使用 `d_` 作为文档列的前缀。
 
 ```java
-@RegisterBeanMapper(value = Folder.class, prefix = "f") <1>
+@RegisterBeanMapper(value = Folder.class, prefix = "f") //<1>
 @RegisterBeanMapper(value = Document.class, prefix = "d")
 public interface DocumentDao {
     @SqlQuery("select " +
@@ -3036,8 +2998,8 @@ public interface DocumentDao {
             "on f.id = d.folder_id " +
             "where f.id = :folderId" +
             "order by d.name")
-    @UseRowReducer(FolderDocReducer.class) <2>
-    Optional<Folder> getFolder(int folderId); <3>
+    @UseRowReducer(FolderDocReducer.class) //<2>
+    Optional<Folder> getFolder(int folderId); //<3>
 
     @SqlQuery("select " +
             "f.id f_id, f.name f_name, " +
@@ -3045,16 +3007,16 @@ public interface DocumentDao {
             "from folders f left join documents d " +
             "on f.id = d.folder_id " +
             "order by f.name, d.name")
-    @UseRowReducer(FolderDocReducer.class) <2>
-    List<Folder> listFolders(); <3>
+    @UseRowReducer(FolderDocReducer.class) //<2>
+    List<Folder> listFolders(); //<3>
 
-    class FolderDocReducer implements LinkedHashMapRowReducer<Integer, Folder> { <4>
+    class FolderDocReducer implements LinkedHashMapRowReducer<Integer, Folder> { //<4>
         @Override
         public void accumulate(Map<Integer, Folder> map, RowView rowView) {
-            Folder f = map.computeIfAbsent(rowView.getColumn("f_id", Integer.class), <5>
+            Folder f = map.computeIfAbsent(rowView.getColumn("f_id", Integer.class), //<5>
                                            id -> rowView.getRow(Folder.class));
 
-            if (rowView.getColumn("d_id", Integer.class) != null) { <6>
+            if (rowView.getColumn("d_id", Integer.class) != null) { //<6>
                 f.getDocuments().add(rowView.getRow(Document.class));
             }
         }
@@ -3062,13 +3024,12 @@ public interface DocumentDao {
 }
 ```
 
-| <1>  | 在此示例中，我们使用前缀注册文件夹和文档映射器，以便每个映射器仅查看具有该前缀的列。 这些映射器由 `getRow(Folder.class)` 和 `getRow(Document.class)` 调用中的行缩减器间接使用。 |
-| ---- | ------------------------------------------------------------ |
-| <2>  | 用`@UseRowReducer`注解该方法，并指定`RowReducer`实现类。     |
-| <3>  | 同样的' RowReducer '实现可以用于单主记录和多主记录查询。     |
-| <4>  | [LinkedHashMapRowReducer](apidocs/org/jdbi/v3/core/result/LinkedHashMapRowReducer.html) 是一个抽象的`RowReducer` 实现，它使用`LinkedHashMap` 作为结果容器，并返回`values()` 集合作为结果 . |
-| <5>  | 通过 ID 从map中获取此行的`Folder`，如果不在map中，则创建它。 |
-| <6>  | 在映射文档并将其添加到文件夹之前，确认该行有一个文档（这是左联接）。 |
+> **<1>** 在此示例中，我们使用前缀注册文件夹和文档映射器，以便每个映射器仅查看具有该前缀的列。 这些映射器由 `getRow(Folder.class)` 和 `getRow(Document.class)` 调用中的行缩减器间接使用。
+> **<2>** 用`@UseRowReducer`注解该方法，并指定`RowReducer`实现类。
+> **<3>** 同样的' RowReducer '实现可以用于单主记录和多主记录查询。
+> **<4>** [LinkedHashMapRowReducer](apidocs/org/jdbi/v3/core/result/LinkedHashMapRowReducer.html) 是一个抽象的`RowReducer` 实现，它使用`LinkedHashMap` 作为结果容器，并返回`values()` 集合作为结果。
+> **<5>** 通过 ID 从map中获取此行的`Folder`，如果不在map中，则创建它。
+> **<6>** 在映射文档并将其添加到文件夹之前，确认该行有一个文档（这是左联接）。
 
 <a name="82_____5_1_4__@SqlBatch"></a>
 #### 5.1.4. @SqlBatch
@@ -3111,13 +3072,12 @@ insert into contacts (id, name, email) values (3, 'baz', 'c@fake.com');
 public interface UserDao {
   @SqlBatch("insert into users (tenant_id, id, name) " +
       "values (:tenantId, :user.id, :user.name)")
-  void bulkInsert(@Bind("tenantId") long tenantId, <1>
+  void bulkInsert(@Bind("tenantId") long tenantId, //<1>
                   @BindBean("user") User... users);
 }
 ```
 
-| <1>  | 使用相同的`tenant_id`插入每个用户记录。 |
-| ---- | --------------------------------------- |
+> **<1>** 使用相同的`tenant_id`插入每个用户记录。
 
 
 > **☢警告:** `@SqlBatch` 方法必须至少有一个可迭代参数。
@@ -3137,12 +3097,11 @@ public interface UserDao {
 public interface UserDao {
   @SqlBatch("insert into users (id, name) values (nextval('user_seq'), ?)")
   @GetGeneratedKeys("id")
-  long[] bulkInsert(List<String> names); <1>
+  long[] bulkInsert(List<String> names); //<1>
 }
 ```
 
-| <1>  | 为每个插入的名称返回生成的 ID。 |
-| ---- | ------------------------------- |
+> **<1>** 为每个插入的名称返回生成的 ID。
 
 可以通过这种方式生成和返回多个列：
 
@@ -3514,12 +3473,12 @@ SQL 对象从它们扩展的接口继承方法和注解：
 ```java
 package com.app.dao;
 
-@UseClasspathSqlLocator  <1> <2>
+@UseClasspathSqlLocator  //<1> <2>
 public interface CrudDao<T, ID> {
-  @SqlUpdate <3>
+  @SqlUpdate //<3>
   void insert(@BindBean T entity);
 
-  @SqlQuery <3>
+  @SqlQuery //<3>
   Optional<T> findById(ID id);
 
   @SqlQuery
@@ -3533,10 +3492,9 @@ public interface CrudDao<T, ID> {
 }
 ```
 
-| <1> | 参见 [SqlLocator](#88_____5_1_8__SqlLocator). |
-| --- | --------------------------------------------- |
-| <2> | 类注解由子类型继承。                            |
-| <3> | 方法和参数注解由子类型继承，除非子类型覆盖了方法。 |
+> **<1>** 参见 [SqlLocator](#88_____5_1_8__SqlLocator).
+> **<2>** 类注解由子类型继承。
+> **<3>** 方法和参数注解由子类型继承，除非子类型覆盖了方法。
 
 ```java
 package com.app.contact;
@@ -4671,11 +4629,10 @@ If you want to have two separate pools, for example a read-only set that connect
 
 ```java
 @SqlUpdate("insert into users (id, name) values (:id, :name)")
-void insert(@Bind("id") long id, @Bind("name") String name); <1>
+void insert(@Bind("id") long id, @Bind("name") String name); //<1>
 ```
 
-|     | 如此冗长，非常样板。哇。 |
-| --- | ---------------------- |
+> **<1>** 如此冗长，非常样板。哇。
 
 如果你使用 `-parameters` 编译器标志编译你的代码，那么就不需要这些注解 — Jdbi 自动使用方法参数名称：
 
