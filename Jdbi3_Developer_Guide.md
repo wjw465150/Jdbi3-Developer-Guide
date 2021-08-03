@@ -1,5 +1,9 @@
 # Jdbi 3 开发指南
 
+> 翻译: <span style="font-size:1.5rem; background:yellow;">**白石**</span>
+>
+> 开源地址: https://github.com/wjw465150/Jdbi3-Developer-Guide
+
 <a name="1___1__Jdbi_简介"></a>
 ## 1. Jdbi 简介
 
@@ -14,7 +18,7 @@ Jdbi的API有两种形式:
 <a name="2____1_1__流式_API"></a>
 ### 1.1. 流式 API
 
-Core API提供了流畅的命令式接口。使用Builder样式对象将SQL连接到富Java数据类型。
+Core API 提供了一个流畅的命令式接口。 使用 Builder 样式对象将 SQL 连接到丰富的 Java 数据类型。
 
 ```java
 Jdbi jdbi = Jdbi.create("jdbc:h2:mem:test"); // (H2 in-memory database)
@@ -1433,7 +1437,7 @@ List<User> users = handle
 
 开箱即用，Jdbi 注册了一个 `RowMapper<Map.Entry<K,V>>`。 由于结果集中的每一行都是一个`Map.Entry<K,V>`，整个结果集可以很容易地收集到一个`Map<K,V>`（或Guava的`Multimap<K,V>`） .
 
-> **🏷注意:**必须为键和值类型注册映射器。
+> **🏷注意:** 必须为键和值类型注册映射器。
 
 通过指定通用映射签名，可以将连接行收集到map结果中：
 
@@ -1496,16 +1500,206 @@ Multimap<User, Phone> map = h.createQuery(sql)
 
 可以增强Jdbi以支持任意容器类型。 有关更多信息，请参阅 [[JdbiCollectors\]](#JdbiCollectors)。
 
+
+<a name="36____3_6__Codecs"></a>
+### 3.6. Codecs
+
+> **🏷注意:** Codec API 仍然不稳定，可能会发生变化。 `翻译者WJW`提示: 先不要使用此功能!
+
+编解码器是为类型注册参数和列映射器的替代品。 它负责将类型化的值序列化为数据库列并从数据库列创建类型。
+
+编解码器收集在编解码器工厂中，该工厂可以使用 `registerCodecFactory` 便捷方法进行注册。
+
+```java
+// register a single codec
+jdbi.registerCodecFactory(CodecFactory.forSingleCodec(type, codec));
+
+// register a few codecs
+jdbi.registerCodecFactory(CodecFactory.builder()
+  // register a codec by qualified type
+  .addCodec(QualifiedType.of(Foo.class), codec1)
+  // register a codec by direct java type
+  .addCodec(Foo.class, codec2)
+  // register a codec by generic type
+  .addCodec(new GenericType<Set<Foo>>() {}. codec3)
+  .build());
+
+// register many codecs
+Map<QualifiedType<?>, Codec<?>> codecs = ...
+jdbi.registerCodecFactory(new CodecFactory(codecs));
+```
+
+编解码器示例：
+
+```java
+public class Counter {
+
+    private int count = 0;
+
+    public Counter() {}
+
+    public int nextValue() {
+        return count++;
+    }
+
+    private Counter setValue(int value) {
+        this.count = value;
+        return this;
+    }
+
+    private int getValue() {
+        return count;
+    }
+
+    /**
+     * Codec to persist a counter to the database and restore it back.
+     */
+    public static class CounterCodec implements Codec<Counter> {
+
+        @Override
+        public ColumnMapper<Counter> getColumnMapper() {
+            return (r, idx, ctx) -> new Counter().setValue(r.getInt(idx));
+        }
+
+        @Override
+        public Function<Counter, Argument> getArgumentFunction() {
+            return counter -> (idx, stmt, ctx) -> stmt.setInt(idx, counter.getValue());
+        }
+    }
+}
+```
+
+JDBI 核心 API:
+
+```java
+// register the codec with JDBI
+jdbi.registerCodecFactory(CodecFactory.forSingleCodec(COUNTER_TYPE, new CounterCodec()));
+
+
+// store object
+int result = jdbi.withHandle(h -> h.createUpdate("INSERT INTO counters (id, value) VALUES (:id, :value)")
+    .bind("id", counterId)
+    .bindByType("value", counter, COUNTER_TYPE)
+    .execute());
+
+
+// load object
+Counter restoredCounter = jdbi.withHandle(h -> h.createQuery("SELECT value from counters where id = :id")
+    .bind("id", counterId)
+    .mapTo(COUNTER_TYPE).first());
+```
+
+SQL Object API 透明地使用编解码器：
+
+```java
+// SQL object dao
+public interface CounterDao {
+    @SqlUpdate("INSERT INTO counters (id, value) VALUES (:id, :value)")
+    int storeCounter(@Bind("id") String id, @Bind("value") Counter counter);
+
+    @SqlQuery("SELECT value from counters where id = :id")
+    Counter loadCounter(@Bind("id") String id);
+}
+
+
+    // register the codec with JDBI
+    jdbi.registerCodecFactory(CodecFactory.forSingleCodec(COUNTER_TYPE, new CounterCodec()));
+
+
+    // store object
+    int result = jdbi.withExtension(CounterDao.class, dao -> dao.storeCounter(counterId, counter));
+
+
+    // load object
+    Counter restoredCounter = jdbi.withExtension(CounterDao.class, dao -> dao.loadCounter(counterId));
+```
+
+<a name="37_____3_6_1__Resolving_Types"></a>
+#### 3.6.1. Resolving Types(解析类型)
+
+通过使用 [guava](apidocs/org/jdbi/v3/guava/package-summary.html) 模块中的 `TypeResolvingCodecFactory`，可以使用为具体类的子类或接口类型注册的编解码器。这是必要的，例如 将 [Auto Value](https://github.com/google/auto/blob/master/value/userguide/index.md) 生成的类映射到数据库列。
+
+在下面的例子中，只注册了一个用于 `Value<String>` 的编解码器，但是代码使用了 bean 和具体实现的类（`StringBean` 包含一个 `StringValue`，`StringValue` 实现了 `Value<String> `接口）。 如果找不到完美匹配，`TypeResolvingCodecFactory` 将检查类型以查找接口或超类的编解码器。
+
+```java
+// SQL object dao using concrete types
+public interface DataDao {
+
+    @SqlUpdate("INSERT INTO data (id, value) VALUES (:bean.id, :bean.value)")
+    int storeData(@BindBean("bean") StringBean bean);
+
+    @SqlUpdate("INSERT INTO data (id, value) VALUES (:id, :value)")
+    int storeData(@Bind("id") String id, @Bind("value") StringValue data);
+
+    @SqlQuery("SELECT value from data where id = :id")
+    StringValue loadData(@Bind("id") String id);
+}
+
+
+// generic type representation
+public static final QualifiedType<Value<String>> DATA_TYPE = QualifiedType.of(new GenericType<Value<String>>() {});
+
+
+public static class DataCodec implements Codec<Value<String>> {
+
+    @Override
+    public ColumnMapper<Value<String>> getColumnMapper() {
+        return (r, idx, ctx) -> {
+            return new StringValue(r.getString(idx));
+        };
+    }
+
+    @Override
+    public Function<Value<String>, Argument> getArgumentFunction() {
+        return data -> (idx, stmt, ctx) -> {
+            stmt.setString(idx, data.getValue());
+        };
+    }
+}
+
+
+// value interface
+public interface Value<T> {
+
+    T getValue();
+}
+
+
+// bean using concrete types, not interface types.
+public static class StringBean implements Bean<Value<String>> {
+
+    private final String id;
+
+    private final StringValue value;
+
+    public StringBean(String id, StringValue value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public StringValue getValue() {
+        return value;
+    }
+}
+```
+
 <a name="36____3_6__Templating"></a>
-### 3.6. Templating(模板)
+
+### 3.7. Templating(模板)
 
 如上所述，绑定查询参数非常适合向数据库引擎发送一组静态参数。 绑定确保参数化查询字符串（`... where foo = ?`）被传输到数据库，而不允许恶意参数值注入 SQL。
 
 绑定参数并不总是足够的。 有时，查询在执行之前需要进行复杂的或结构化的更改，而参数就是无法削减它。 模板化（使用`TemplateEngine`）允许你通过一般的字符串操作来改变查询的内容。
 
-模板的典型用途是可选或重复段(条件和循环)、复杂变量(如IN子句的逗号分隔列表)和非绑定SQL元素(如表名)的变量替换。与*参数绑定*不同的是，由TemplateEngines执行的*属性的*呈现*是不支持sql的。由于templateengine执行泛型String操作，如果不小心使用它们，很容易产生严重混乱或微妙缺陷的查询。
+模板的典型用途是可选或重复段（条件和循环）、复杂变量（如 IN 子句的逗号分隔列表）以及不可绑定 SQL 元素（如表名）的变量替换。 与*参数绑定*不同，由 TemplateEngines 执行的属性呈现**不是** SQL 感知的。 由于它们执行通用字符串操作，如果您不小心使用它们，TemplateEngines 很容易产生严重损坏或有细微缺陷的查询。
 
-> [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
+> **👁小心:** [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
 
 ```java
 handle.createQuery("select * from <TABLE> where name = :n")
@@ -1517,9 +1711,9 @@ handle.createQuery("select * from <TABLE> where name = :n")
     .bind("n", "MyName");
 ```
 
-> 使用 TemplateEngine 对查询执行粗略的字符串操作。 查询参数应该由 Arguments 处理。
+> **💡提示:** 使用 TemplateEngine 对查询执行粗略的字符串操作。 查询参数应该由 Arguments 处理。
 
-> TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
+> **👁小心:** TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
 
 如果TemplateEngine输出与SqlParser的参数格式匹配的文本，解析器将尝试将Argument绑定到它。这可能是有用的，例如有命名参数的名称本身也是一个变量，但也可能导致令人困惑的错误:
 
@@ -1561,7 +1755,7 @@ handle.createUpdate("update mybeans set <if(a)>a = :a,<endif> <if(b)>b = :b,<end
 另请参阅有关 [TemplateEngine](#150____9_9__TemplateEngine)的部分。
 
 <a name="37____3_7__SQL_Arrays"></a>
-### 3.7. SQL Arrays(SQL数组)
+### 3.8. SQL Arrays(SQL数组)
 
 Jdbi 可以绑定/映射 Java 数组到/从 SQL 数组：
 
@@ -1602,7 +1796,7 @@ public interface GroupsDao {
 ```
 
 <a name="38_____3_7_1__Registering_array_types"></a>
-#### 3.7.1. Registering array types(注册数组类型)
+#### 3.8.1. Registering array types(注册数组类型)
 
 你想要绑定支持的任何 Java 数组元素类型都需要在 Jdbi 的 `SqlArrayTypes` 注册表中注册。 可以使用以下方式注册 JDBC 驱动程序直接支持的数组类型：
 
@@ -1612,12 +1806,12 @@ jdbi.registerArrayType(int.class, "integer");
 
 这里，`"integer"` 是 JDBC 驱动程序本身支持的 SQL 类型名称。
 
-> “PostgresPlugin”和“H2DatabasePlugin”等插件会自动为其各自的数据库注册最常见的数组元素类型。
+> **🏷注意:** `PostgresPlugin`和`H2DatabasePlugin`等插件会自动为其各自的数据库注册最常见的数组元素类型。
 
-> Postgres 支持枚举数组类型，因此您可以使用 `jdbi.registerArrayType(Colors.class, "colors")` 为 `enum Colors { red, blue }` 注册数组类型，其中 `"colors"` 是用户定义的枚举 在您的数据库中键入名称。
+> **💡提示:** Postgres 支持枚举数组类型，因此您可以使用 `jdbi.registerArrayType(Colors.class, "colors")` 为 `enum Colors { red, blue }` 注册数组类型，其中 `"colors"` 是用户定义的枚举 在您的数据库中键入名称。
 
 <a name="39_____3_7_2__Binding_custom_array_types"></a>
-#### 3.7.2. Binding custom array types(绑定自定义数组类型)
+#### 3.8.2. Binding custom array types(绑定自定义数组类型)
 
 您还可以提供您自己的 SqlArrayType 实现，它将自定义 Java 元素类型转换为 JDBC 驱动程序支持的类型：
 
@@ -1649,10 +1843,10 @@ handle.createUpdate("insert into groups (id, user_ids) values (:id, :users)")
       .execute();
 ```
 
-> 和[Arguments Registry](#_arguments_registry)一样，如果有多个`SqlArrayType`为同一个数据类型注册，最后注册的获胜。
+> **🏷注意:** 和[Arguments Registry](#_arguments_registry)一样，如果有多个`SqlArrayType`为同一个数据类型注册，最后注册的获胜。
 
 <a name="40_____3_7_3__Mapping_array_types"></a>
-#### 3.7.3. Mapping array types(映射数组类型)
+#### 3.8.3. Mapping array types(映射数组类型)
 
 `SqlArrayType` only allows you to bind Java array/collection arguments to their SQL counterparts. To map SQL array columns back to Java types, you can register a regular `ColumnMapper`:
 
@@ -1673,10 +1867,10 @@ List<UserId> userIds = handle.createQuery("select user_ids from groups where id 
       .one();
 ```
 
-> 数组列可以映射到任何在“JdbiCollectors”注册表中注册的容器类型。 例如。 如果安装了 guava 插件，则 `VARCHAR[]` 可以映射到 `ImmutableList<String>`。
+> **🏷注意:** 数组列可以映射到任何在“JdbiCollectors”注册表中注册的容器类型。 例如。 如果安装了 guava 插件，则 `VARCHAR[]` 可以映射到 `ImmutableList<String>`。
 
 <a name="41____3_8__Results"></a>
-### 3.8. Results(结果)
+### 3.9. Results(结果)
 
 执行数据库查询后，您需要解释结果。 JDBC 提供了 **ResultSet** 类，它可以简单地映射到 Java 基本类型和内置类，但 API 使用起来往往很麻烦。 **Jdbi** 提供可配置的映射，包括为行和列注册自定义映射器的能力。
 
@@ -1725,7 +1919,7 @@ public Optional<User> findUserById(long id) {
 ```
 
 <a name="42_____3_8_1__ResultBearing"></a>
-#### 3.8.1. ResultBearing(结果承载)
+#### 3.9.1. ResultBearing(结果承载)
 
 [ResultBearing](apidocs/org/jdbi/v3/core/result/ResultBearing.html) 接口代表一个数据库操作的结果集，它没有映射到任何特定的结果类型。
 
@@ -1746,7 +1940,7 @@ TODO(要做):
 - 提供开箱即用支持的容器类型列表
 
 <a name="43_____3_8_2__ResultIterable"></a>
-#### 3.8.2. ResultIterable(结果可迭代)
+#### 3.9.2. ResultIterable(结果可迭代)
 
 [ResultIterable](apidocs/org/jdbi/v3/core/result/ResultIterable.html) 表示已映射到特定类型的结果集，例如 `ResultIterable<用户>`。
 
@@ -1837,7 +2031,7 @@ Map<Integer, Something> users = h.createQuery("select id, name from something")
 大多数用户应该更喜欢使用上面描述的更高级别的结果收集器，但总得有人做脏活。
 
 <a name="50_____3_8_3__Joins"></a>
-#### 3.8.3. Joins(连接)
+#### 3.9.3. Joins(连接)
 
 将多个表连接在一起是一项非常常见的数据库任务。 这也是关系模型和 Java 对象模型之间的不匹配开始抬头的地方。
 
@@ -1904,7 +2098,7 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
     })
     .values() //<6>
     .stream()
-    .collect(toList()); //<7>
+    .collect(Collectors.toList()); //<7>
 ```
 
 > **<1>** 为`Contact` 和 `Phone`注册行映射器。 注意使用的 `"c"` 和 `"p"` 参数——这些是列名前缀。 通过使用前缀注册映射器，`Contact`映射器将只映射`c_id`和`c_name`列，而`Phone`映射器将仅映射`p_id`、`p_type`和`p_phone`。
@@ -1935,7 +2129,7 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
       }
       //<2>
     })
-    .collect(toList()); //<3>
+    .collect(Collectors.toList()); //<3>
 ```
 
 > **<1>** lambda接收一个map，其中结果对象将被存储，和一个`RowView`。该map是一个`LinkedHashMap`，因此结果流将以插入结果对象的相同顺序生成结果对象。
@@ -2013,7 +2207,7 @@ h.registerRowMapper(ConstructorMapper.factory(User.class));
 h.registerRowMapper(ConstructorMapper.factory(Article.class));
 ```
 
-we can then easily populate a Multimap with the mapping from the database:
+然后，我们可以轻松地用数据库中的映射填充Multimap:
 
 ```java
 Multimap<User, Article> joined = HashMultimap.create();
@@ -2023,7 +2217,7 @@ h.createQuery("SELECT * FROM user NATURAL JOIN author NATURAL JOIN article")
 ```
 > **💡提示:** `翻译者WJW`提示: NATURAL JOIN即自然连接，`natural join`等同于`inner join`或`inner using`，其作用是将两个表中具有相同名称的列进行匹配.
 
-> 虽然这种方法易于读写，但对于某些数据模式可能效率低下。 在决定是使用高级映射还是使用手写映射器进行更直接的低级访问时，请考虑性能要求。
+> **🏷注意:** 虽然这种方法易于读写，但对于某些数据模式可能效率低下。 在决定是使用高级映射还是使用手写映射器进行更直接的低级访问时，请考虑性能要求。
 
 您还可以将它与 SqlObject 一起使用：
 
@@ -2046,7 +2240,7 @@ assertThat(joined).isEqualTo(JoinRowMapperTest.getExpected());
 ```
 
 <a name="54____3_9__Updates"></a>
-### 3.9. Updates(更新)
+### 3.10. Updates(更新)
 
 更新是返回整数行修改的操作，例如数据库 **INSERT**、**UPDATE** 或 **DELETE**。
 
@@ -2070,7 +2264,7 @@ assertThat(count).isEqualTo(1);
 更新可能返回[Generated Keys](#58____3_12__Generated_Keys)而不是一个结果计数。
 
 <a name="55____3_10__Batches"></a>
-### 3.10. Batches(批处理)
+### 3.11. Batches(批处理)
 
 **Batch** 向服务器批量发送许多命令。
 
@@ -2089,7 +2283,7 @@ int[] rowsModified = batch.execute();
 
 <a name="56____3_11__Prepared_Batches"></a>
 
-### 3.11. Prepared Batches(准备好了的批处理)
+### 3.12. Prepared Batches(准备好了的批处理)
 
 **PreparedBatch** 向服务器发送一个带有多个参数集的语句。 该语句被重复执行，每批 **添加** 的参数执行一次。
 
@@ -2126,10 +2320,10 @@ public interface BasketOfFruit {
 }
 ```
 
-> 与重复执行单条语句相比，批处理显着提高了效率，但许多数据库也不能很好地处理非常大的批处理。 使用您的数据库配置进行测试，但通常应将极大的数据集分割并提交——否则可能会使您的数据库瘫痪。
+> **💡提示:** 与重复执行单条语句相比，批处理显着提高了效率，但许多数据库也不能很好地处理非常大的批处理。 使用您的数据库配置进行测试，但通常应将极大的数据集分割并提交——否则可能会使您的数据库瘫痪。
 
 <a name="57_____3_11_1__Exception_Rewriting"></a>
-#### 3.11.1. Exception Rewriting(异常重写)
+#### 3.12.1. Exception Rewriting(异常重写)
 
 `JDBC SQLException` 类非常古老并且比更现代的异常工具如 Throwable 的抑制异常早。 当一个批次失败时，可能会报告多个失败，这无法用当天的基本异常类型来表示。
 
@@ -2148,11 +2342,11 @@ Suppressed: org.postgresql.util.PSQLException: ERROR: duplicate key value violat
 ```
 
 <a name="58____3_12__Generated_Keys"></a>
-### 3.12. Generated Keys(生成的键)
+### 3.13. Generated Keys(生成的键)
 
 Update 或 PreparedBatch 可以自动生成键。 这些键与正常结果分开处理。 根据您的数据库和配置，整个插入行可能可用。
 
-> 不幸的是，支持该特性的数据库之间有很多差异，所以请彻底测试该特性与数据库的交互。
+> **☢警告:** 不幸的是，支持该特性的数据库之间有很多差异，所以请彻底测试该特性与数据库的交互。
 
 在 PostgreSQL 中，整行都可用，因此您可以立即将插入的名称映射回完整的 User 对象！ 这避免了插入完成后单独查询的开销。
 
@@ -2194,7 +2388,7 @@ public void fluentInsertKeys() {
 ```
 
 <a name="59____3_13__Stored_Procedure_Calls"></a>
-### 3.13. Stored Procedure Calls(存储过程调用)
+### 3.14. Stored Procedure Calls(存储过程调用)
 
 **Call** 调用数据库存储过程。
 
@@ -2235,10 +2429,10 @@ int sum = result.getInt("sum");
 
 通过将打开的游标声明为`Types.REF_CURSOR`，然后通过`OutParameters.getRowSet()`检查它，可以将打开的游标作为类似结果的对象返回。 通常这必须在事务中完成，并且必须在关闭语句之前通过使用 `Call.invoke(Consumer)` 或 `Call.invoke(Function)` 回调样式处理它来消耗结果。
 
-> 由于 JDBC 中的设计限制，通过 `OutParameters` 可用的参数数据类型仅限于 JDBC 直接支持的那些类型。 这不能通过例如扩展 映射器注册。
+> **☢警告:** 由于 JDBC 中的设计限制，通过 `OutParameters` 可用的参数数据类型仅限于 JDBC 直接支持的那些类型。 这不能通过例如扩展 映射器注册。
 
 <a name="60____3_14__Scripts"></a>
-### 3.14. Scripts(脚本)
+### 3.15. Scripts(脚本)
 
 **Script** 将 String 解析为分号终止的语句。 这些语句可以在单个 **Batch** 中执行，也可以单独执行。
 
@@ -2252,7 +2446,7 @@ assertThat(results).containsExactly(1, 1);
 ```
 
 <a name="61____3_15__Transactions"></a>
-### 3.15. Transactions(事务)
+### 3.16. Transactions(事务)
 
 **jdbi** 完全支持 JDBC 事务。
 
@@ -2275,7 +2469,7 @@ public Optional<User> findUserById(long id) {
 此外，Handle 有许多用于直接事务管理的方法：begin()、savepoint()、rollback()、commit() 等。通常，您不需要使用这些方法。 如果您没有明确提交手动打开的事务，它将被回滚。
 
 <a name="62_____3_15_1__Serializable_Transactions"></a>
-#### 3.15.1. Serializable Transactions(可序列化事务)
+#### 3.16.1. Serializable Transactions(可序列化事务)
 
 对于更高级的查询，有时需要可序列化的事务。 **jdbi** 包括一个事务运行器，它能够重试由于序列化失败而中止的事务。 重要的是您的事务没有副作用，因为它可能会被执行多次。
 
@@ -2326,7 +2520,7 @@ executor.shutdown();
 使用可序列化隔离，两个事务中的一个将被迫中止并重试。在第二次循环中，它计算出10 + 20 + 30 = 60。加上另一个的30，我们得到30 + 60 = 90，断言成功。
 
 <a name="63____3_16__ClasspathSqlLocator"></a>
-### 3.16. ClasspathSqlLocator(类路径SqlLocator)
+### 3.17. ClasspathSqlLocator(类路径SqlLocator)
 
 您可能会发现将 SQL 模板存储在类路径上的单个文件中而不是 Java 代码中的字符串中很有帮助。
 
@@ -2393,13 +2587,13 @@ QualifiedType<String> json = QualifiedType.of(String.class).with(Json.class);
 query.bindByType("jsonValue", "{\"foo\":1}", json);
 ```
 
-> Jdbi通过**精确匹配**它们的**限定符**来选择工厂来处理值。这取决于工厂实现是否区分值的*type*。
+> **💡提示:** Jdbi通过**精确匹配**它们的**限定符**来选择工厂来处理值。这取决于工厂实现是否区分值的*type*。
 
-> 限定符实现为“注解”。 这允许工厂在源头独立检查限定符的值，例如在他们的“类”上，以改变他们自己的行为或*重新限定*一个值并让它由 Jdbi 的查找链重新评估。
+> **🏷注意:** 限定符实现为“注解”。 这允许工厂在源头独立检查限定符的值，例如在他们的“类”上，以改变他们自己的行为或*重新限定*一个值并让它由 Jdbi 的查找链重新评估。
 
-> 限定符是注释**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
+> **☢警告:** 限定符是注释**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
 
-> 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
+> **👁小心:** 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
 
 这些功能目前使用限定类型：
 
@@ -3526,28 +3720,26 @@ public interface AccountDao extends CrudDao<Account, UUID> {}
 - `/com/app/account/AccountDao/update.sql`
 - `/com/app/account/AccountDao/deleteById.sql`
 
-Suppose `Account` used `name()`-style accessors instead of `getName()`. In that case, we’d want `AccountDao` to use `@BindMethods` instead of `@BindBean`.
+假设`Account` 使用`name()` 样式的访问器而不是`getName()`。 在这种情况下，我们希望 `AccountDao` 使用 `@BindMethods` 而不是 `@BindBean`。
 
-Let’s override those methods with the right annotations:
+让我们用正确的注解覆盖这些方法：
 
-```
+```java
 package com.app.account;
 
 @RegisterConstructorMapper(Account.class)
 public interface AccountDao extends CrudDao<Account, UUID> {
   @Override
-  @SqlUpdate 
+  @SqlUpdate //<1>
   void insert(@BindMethods Account entity);
 
   @Override
-  @SqlUpdate 
+  @SqlUpdate //<1>
   void update(@BindMethods Account entity);
 }
 ```
 
-|      | Method annotations are not inherited on override, so we must duplicate those we want to keep. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **<1>** 方法注解不会在`override`上继承，因此必须复制想要保留的注解。
 
 <a name="100___6__Testing"></a>
 ## 6. Testing(测试)
@@ -3578,31 +3770,31 @@ public interface AccountDao extends CrudDao<Account, UUID> {
 ## 7. Third-Party Integration(第三方集成)
 
 <a name="102____7_1__Google_Guava"></a>
-### 7.1. Google Guava
+### 7.1. Google Guava(谷歌Guava)
 
-This plugin adds support for the following types:
+这个插件增加了对以下类型的支持：
 
-- `Optional<T>` - registers an argument and mapper. Supports `Optional` for any wrapped type `T` for which a mapper / argument factory is registered.
-- Most Guava collection and map types - see [GuavaCollectors](apidocs/org/jdbi/v3/guava/GuavaCollectors.html) for a complete list of supported types.
+- `Optional<T>` - 注册一个参数和映射器。 对于注册映射器/参数工厂的任何包装类型`T`，支持`Optional`。
+- 大多数 Guava 集合和Map类型 - 请参阅 [GuavaCollectors](apidocs/org/jdbi/v3/guava/GuavaCollectors.html) 以获取支持类型的完整列表。
 
-To use this plugin, add a Maven dependency:
+要使用此插件，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-guava</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance:
+然后将插件安装到你的 `Jdbi` 实例中：
 
-```
+```java
 jdbi.installPlugin(new GuavaPlugin());
 ```
 
-With the plugin installed, any supported Guava collection type can be returned from a SQL object method:
+安装插件后，可以从 SQL 对象方法返回任何受支持的 Guava 集合类型：
 
-```
+```java
 public interface UserDao {
     @SqlQuery("select * from users order by name")
     ImmutableList<User> list();
@@ -3613,83 +3805,104 @@ public interface UserDao {
 ```
 
 <a name="103____7_2__H2_Database"></a>
-### 7.2. H2 Database
+### 7.2. H2 Database(H2数据库)
 
-This plugin configures Jdbi to correctly handle `integer[]` and `uuid[]` data types in an H2 database.
+该插件配置 Jdbi 以正确处理 H2 数据库中的 `integer[]` 和 `uuid[]` 数据类型。
 
-This plugin is included with the core jar (but may be extracted to separate artifact in the future). Use it by installing the plugin into your `Jdbi` instance:
+这个插件包含在核心 jar 中（但将来可能会被提取到单独的模块中）。 通过将插件安装到您的`Jdbi`实例中来使用它：
 
-```
+```java
 jdbi.installPlugin(new H2DatabasePlugin());
 ```
 
 <a name="104____7_3__JSON"></a>
 ### 7.3. JSON
 
-The `jdbi3-json` module adds a `@Json` type qualifier that allows to store arbitrary Java objects as JSON data in your database.
+`jdbi3-json` 模块添加了一个 `@Json` 类型限定符，允许将任意 Java 对象作为 JSON 数据存储在数据库中。
 
-The actual JSON (de)serialization code is not included. For that, you must install a backing plugin (see below).
+不包括实际的 JSON（反）序列化代码。 为此，您必须安装一个支持插件（见下文）。
 
-|      | Backing plugins will install the `JsonPlugin` for you. You do **not** need to install it yourself or include the `jdbi3-json` dependency directly. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** 支持插件将为您安装`JsonPlugin`。 您**无需**自行安装或直接包含 `jdbi3-json` 依赖项。
 
-The feature has been tested with Postgres `json` columns and `varchar` columns in H2 and Sqlite.
+该功能已经在 H2 和 Sqlite 中使用 Postgres `json` 列和 `varchar` 列进行了测试。
 
 <a name="105_____7_3_1__Jackson_2"></a>
 #### 7.3.1. Jackson 2
 
-This plugin provides JSON backing through Jackson 2.
+这个插件通过 Jackson 2 提供 JSON 支持。
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-jackson2</artifactId>
 </dependency>
+```
+
+```java
 jdbi.installPlugin(new Jackson2Plugin());
-// optionally configure your ObjectMapper (recommended)
+// 可选配置您的 ObjectMapper（推荐）
 jdbi.getConfig(Jackson2Config.class).setMapper(myObjectMapper);
 
-// now with simple support for Json Views if you want to filter properties:
+// 如果要过滤属性，现在对 Json 视图提供简单支持：
 jdbi.getConfig(Jackson2Config.class).setView(ApiProperty.class);
 ```
 
 <a name="106_____7_3_2__Gson_2"></a>
 #### 7.3.2. Gson 2
 
-This plugin provides JSON backing through Gson 2.
+这个插件通过 Gson 2 提供 JSON 支持。
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-gson2</artifactId>
 </dependency>
+```
+
+```java
 jdbi.installPlugin(new Gson2Plugin());
 // optional
 jdbi.getConfig(Gson2Config.class).setGson(myGson);
 ```
 
-<a name="107_____7_3_3__Operation"></a>
-#### 7.3.3. Operation
+<a name="107_____7_3_3__moshi"></a>
+#### 7.3.3. Moshi
 
-Any bound object qualified as [@Json](apidocs/org/jdbi/v3/json/Json.html) — except `String` — will be converted by the [registered](apidocs/org/jdbi/v3/json/JsonConfig.html) [JsonMapper](apidocs/org/jdbi/v3/json/JsonMapper.html) and *requalified* as `@Json String`. A correspondingly qualified `ArgumentFactory` will then be called to store the JSON data, allowing special JSON handling for your database to be implemented. If none are found, a factory for plain `String` will be used instead, to handle the JSON as plaintext.
+这个插件通过 Moshi 提供 JSON 支持。
 
-Mapping works just the same way, but in reverse: an output type qualified as `@Json T` will be fetched from a `@Json String` or `String` ColumnMapper, and then passed through the `JsonMapper`.
-
-|      | Our PostgresPlugin provides qualified factories that will bind/map the `@Json String` to/from `json` or `jsonb`-typed columns. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
-
-<a name="108_____7_3_4__Usage"></a>
-#### 7.3.4. Usage
-
+```xml
+<dependency>
+  <groupId>org.jdbi</groupId>
+  <artifactId>jdbi3-moshi</artifactId>
+</dependency>
 ```
+
+```java
+jdbi.installPlugin(new MoshiPlugin());
+// optional
+jdbi.getConfig(MoshiConfig.class).setMoshi(myMoshi);
+```
+
+<a name="108_____7_3_4__Operation"></a>
+#### 7.3.4. Operation(操作)
+
+任何限定为 [@Json](apidocs/org/jdbi/v3/json/Json.html) 的绑定对象 - 除了 `String` - 将被 [registered](apidocs/org/jdbi/v3/json/JsonConfig .html) [JsonMapper](apidocs/org/jdbi/v3/json/JsonMapper.html) 并重新限定为 `@Json String`。 然后将调用相应限定的`ArgumentFactory`来存储 JSON 数据，从而允许为您的数据库实现特殊的 JSON 处理。 如果没有找到，则将使用纯字符串工厂，以将 JSON 处理为纯文本。
+
+映射的工作方式相同，但反过来：限定为 `@Json T` 的输出类型将从 `@Json String` 或 `String` 列映射器 中获取，然后通过 `JsonMapper`传递。
+
+> **💡提示:** 我们的 PostgresPlugin 提供了合格的工厂，可以将 `@Json String` 绑定/映射到/从 `json` 或 `jsonb` 类型的列。
+
+<a name="108_____7_3_5__Usage"></a>
+
+#### 7.3.5. Usage(用法)
+
+```java
 handle.execute("create table myjsons (id serial not null, value json not null)");
 ```
 
 SqlObject:
 
-```
+```java
 // any json-serializable type
 class MyJson {}
 
@@ -3713,9 +3926,9 @@ class MyBean {
 }
 ```
 
-With the Fluent API, you provide a `QualifiedType<T>` any place you’d normally provide a `Class<T>` or `GenericType<T>`:
+使用 Fluent API，你可以在通常提供 `Class<T>` 或 `GenericType<T>` 的任何地方提供 `QualifiedType<T>`：
 
-```
+```java
 QualifiedType<MyJson> qualifiedType = QualifiedType.of(MyJson.class).with(Json.class);
 
 h.createUpdate("insert into myjsons(json) values(:json)")
@@ -3728,23 +3941,21 @@ MyJson result = h.createQuery("select json from myjsons")
 ```
 
 <a name="109____7_4__Immutables"></a>
-### 7.4. Immutables
+### 7.4. Immutables(不可变的)
 
-[Immutables](https://immutables.github.io/) is an annotation processor that generates value types based on simple interface descriptions. The value types naturally map very well to `Jdbi` properties binding and row mapping.
+[Immutables](https://immutables.github.io/) 是一个注解处理器，根据简单的接口描述生成值类型。 值类型自然地很好地映射到`Jdbi` 属性绑定和行映射。
 
-|      | Immutables support is still experimental and does not yet support custom naming schemes. We do support the configurable `get`, `is`, and `set` prefixes. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **☢警告:** 不可变支持仍处于试验阶段，尚不支持自定义命名方案。 我们确实支持可配置的 `get`、`is` 和 `set` 前缀。
 
-Just tell us about your types by installing the plugin and configuring your `Immutables` type:
+只需通过安装插件并配置您的`Immutables`类型来告诉我们您的类型：
 
-```
+```java
 jdbi.getConfig(JdbiImmutables.class).registerImmutable(MyValueType.class)
 ```
 
-The configuration will both register appropriate `RowMapper`s as well as configure the new `bindPojo` (or `@BindPojo`) binders:
+该配置既会注册适当的`RowMapper`，也会配置新的`bindPojo`(或`@BindPojo`)绑定器:
 
-```
+```java
 @Value.Immutable
 public interface Train {
     String name();
@@ -3777,21 +3988,19 @@ public void simpleTest() {
 <a name="110____7_5__Freebuilder"></a>
 ### 7.5. Freebuilder
 
-[Freebuilder](https://https://freebuilder.inferred.org/) is an annotation processor that generates value types based on simple interface or abstract class descriptions. Jdbi supports Freebuilder in much the same way that it supports Immutables.
+[Freebuilder](https://https://freebuilder.inferred.org/) 是一个注解处理器，它根据简单的接口或抽象类描述生成值类型。 Jdbi 支持 Freebuilder 的方式与它支持 Immutables 的方式大致相同。
 
-|      | Freebuilder support is still experimental and may not support all Freebuilder implemented feaatures. We do support both JavaBean style getters and setters as well as unprefixed getters and setters. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **☢警告:** Freebuilder 支持仍处于试验阶段，可能不支持所有 Freebuilder 实现的功能。 我们支持 JavaBean 风格的 getter 和 setter 以及不带前缀的 getter 和 setter。
 
-Just tell us about your Freebuilder types by installing the plugin and configuring your `Freebuilder` type:
+只需通过安装插件并配置您的`Freebuilder`类型来告诉我们您的 Freebuilder 类型：
 
-```
+```java
 jdbi.getConfig(JdbiFreebuilder.class).registerFreebuilder(MyFreeBuilderType.class)
 ```
 
-The configuration will both register appropriate `RowMapper`s as well as configure the new `bindPojo` (or `@BindPojo`) binders:
+该配置既会注册适当的`RowMapper`，也会配置新的`bindPojo`(或`@BindPojo`)绑定器:
 
-```
+```java
 @FreeBuilder
 public interface Train {
     String name();
@@ -3832,57 +4041,57 @@ public void simpleTest() {
 <a name="111____7_6__JodaTime"></a>
 ### 7.6. JodaTime
 
-This plugin adds support for using joda-time’s `DateTime` type.
+这个插件增加了对使用 joda-time 的`DateTime` 类型的支持。
 
-To use this plugin, add a Maven dependency:
+要使用此插件，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-jodatime2</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance:
+然后将插件安装到你的 `Jdbi` 实例中：
 
-```
+```java
 jdbi.installPlugin(new JodaTimePlugin());
 ```
 
 <a name="112____7_7__JPA"></a>
-### 7.7. JPA
+### 7.7. JPA(Java持久化框架)
 
-Using the JPA plugin is a great way to trick your boss into letting you try Jdbi. "No problem boss, it already supports JPA annotations, easy peasy!"
+使用JPA插件是欺骗你的老板让你尝试Jdbi的好方法。“没问题，老板，它已经支持JPA注解了，很简单!”
 
-This plugin adds mapping support for a small subset of JPA entity annotations:
+此插件为 JPA 实体注释的一小部分添加了映射支持：
 
 - Entity
 - MappedSuperclass
 - Column
 
-To use this plugin, add a Maven dependency:
+要使用此插件，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-jpa</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance:
+然后将插件安装到你的 `Jdbi` 实例中：
 
-```
+```java
 jdbi.installPlugin(new JpaPlugin());
 ```
 
-Honestly though.. just tear off the bandage and switch to Jdbi proper.
+老实说虽然. .只要扯掉绷带，切换到正确的Jdbi。
 
 <a name="113____7_8__Kotlin"></a>
 ### 7.8. Kotlin
 
-[Kotlin](https://kotlinlang.org/) support is provided by **jdbi3-kotlin** and **jdbi3-kotlin-sqlobject** modules.
+[Kotlin](https://kotlinlang.org/) 支持由 **jdbi3-kotlin** 和 **jdbi3-kotlin-sqlobject** 模块提供。
 
-Kotlin API documentation:
+Kotlin API 文档：
 
 - [jdbi3-kotlin](apidocs-kotlin/jdbi3-kotlin/index.html)
 - [jdbi3-kotlin-sqlobject](apidocs-kotlin/jdbi3-kotlin-sqlobject/index.html)
@@ -3890,44 +4099,40 @@ Kotlin API documentation:
 <a name="114_____7_8_1__ResultSet_mapping"></a>
 #### 7.8.1. ResultSet mapping
 
-The **jdbi3-kotlin** plugin adds mapping to Kotlin data classes. It supports data classes where all fields are present in the constructor as well as classes with writable properties. Any fields not present in the constructor will be set after the constructor call. The mapper supports nullable types. It also uses default parameter values in the constructor if the parameter type is not nullable and the value absent in the result set.
+**jdbi3-kotlin** 插件添加到 Kotlin 数据类的映射。 它支持所有字段都存在于构造函数中的数据类以及具有可写属性的类。 构造函数中不存在的任何字段将在构造函数调用后设置。 映射器支持可为空类型。 如果参数类型不可为空且结果集中不存在该值，它还会在构造函数中使用默认参数值。
 
-To use this plugin, add a Maven dependency:
+要使用此插件，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-kotlin</artifactId>
 </dependency>
 ```
 
-Ensure the Kotlin compiler’s [JVM target version](https://kotlinlang.org/docs/reference/using-maven.html#attributes-specific-for-jvm) is set to at least 1.8:
+确保 Kotlin 编译器的 [JVM 目标版本](https://kotlinlang.org/docs/reference/using-maven.html#attributes-specific-for-jvm) 设置为至少 1.8：
 
-```
+```xml
 <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
 ```
 
-Then install the plugin into your `Jdbi` instance:
+然后将插件安装到你的 `Jdbi` 实例中：
 
-```
+```java
 jdbi.installPlugin(KotlinPlugin());
 ```
 
-The Kotlin mapper also supports `@ColumnName` annotation that allows to specify name for a property or parameter explicitly, as well as the `@Nested` annotation that allows mapping nested Kotlin objects.
+Kotlin 映射器还支持允许显式指定属性或参数名称的`@ColumnName`注解，以及允许映射嵌套 Kotlin 对象的`@Nested`注解。
 
-|      | Instead of using `@BindBean`, `bindBean()`, and `@RegisterBeanMapper` use `@BindKotlin`, `bindKotlin()`, and `KotlinMapper` for qualifiers on constrictor parameters, getter, setters, and setter parameters of Kotlin class. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 不要使用`@BindBean`， `bindBean()`和`@RegisterBeanMapper`，而是使用`@BindKotlin`， `bindKotlin()`和`KotlinMapper`'来修饰Kotlin类的构造器参数、getter、setter和setter参数。
 
-|      | The `@ColumnName` annotation only applies while mapping SQL data into Java objects. When binding object properties (e.g. with `bindBean()`), bind the property name (`:id`) rather than the column name (`:user_id`). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** `@ColumnName` 注解仅在将 SQL 数据映射到 Java 对象时适用。 当绑定对象属性时（例如使用`bindBean()`），绑定属性名（`:id`）而不是列名（`:user_id`）。
 
-If you load all Jdbi plugins via `Jdbi.installPlugins()` this plugin will be discovered and registered automatically. Otherwise, you can attach it using `Jdbi.installPlugin(KotlinPlugin())`.
+如果你通过 `Jdbi.installPlugins()` 加载所有 Jdbi 插件，这个插件将被自动发现和注册。 否则，您可以使用 `Jdbi.installPlugin(KotlinPlugin())` 附加它。
 
-An example from the test class:
+测试类的一个例子：
 
-```
+```java
 data class IdAndName(val id: Int, val name: String)
 data class Thing(@Nested val idAndName: IdAndName,
                  val nullable: String?,
@@ -3942,21 +4147,21 @@ data class Thing(@Nested val idAndName: IdAndName,
 }
 ```
 
-There are two extensions to help:
+有两个扩展可以提供帮助：
 
 - `<reified T : Any>ResultBearing.mapTo()`
 - `<T : Any>ResultIterable<T>.useSequence(block: (Sequence<T>) → Unit)`
 
-Allowing code like:
+允许代码如下：
 
-```
+```java
 val qry = handle.createQuery("select id, name from something where id = :id")
 val things = qry.bind("id", brian.id).mapTo<Thing>.list()
 ```
 
-and for using a Sequence that is auto closed:
+以及使用自动关闭的序列:
 
-```
+```java
 qryAll.mapTo<Thing>.useSequence {
     it.forEach(::println)
 }
@@ -3965,28 +4170,28 @@ qryAll.mapTo<Thing>.useSequence {
 <a name="115_____7_8_2__SqlObject"></a>
 #### 7.8.2. SqlObject
 
-The **jdbi3-kotlin-sqlobject** plugin adds automatic parameter binding by name for Kotlin methods in SqlObjects as well as support for Kotlin default methods.
+**jdbi3-kotlin-sqlobject** 插件通过名称为 SqlObjects 中的 Kotlin 方法添加了自动参数绑定以及对 Kotlin 默认方法的支持。
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-kotlin-sqlobject</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance:
+然后将插件安装到你的 `Jdbi` 实例中：
 
-```
+```java
 jdbi.installPlugin(KotlinSqlObjectPlugin());
 ```
 
-Parameter binding supports individual primitive types as well as Kotlin or JavaBean style objects as a parameter (referenced in binding as `:paramName.propertyName`). No annotations are needed.
+参数绑定支持单个原始类型以及 Kotlin 或 JavaBean 样式对象作为参数（在绑定中引用为`:paramName.propertyName`）。 不再需要注解。
 
-If you load all Jdbi plugins via `Jdbi.installPlugins()` this plugin will be discovered and registered automatically. Otherwise, you can attach the plugin via: `Jdbi.installPlugin(KotlinSqlObjectPlugin())`.
+如果你通过 `Jdbi.installPlugins()` 加载所有 Jdbi 插件，这个插件将被自动发现和注册。 否则，您可以通过以下方式附加插件：`Jdbi.installPlugin(KotlinSqlObjectPlugin())`。
 
-An example from the test class:
+测试类的一个例子：
 
-```
+```java
 interface ThingDao {
     @SqlUpdate("insert into something (id, name) values (:something.idAndName.id, :something.idAndName.name)")
     fun insert(something: Thing)
@@ -4018,9 +4223,9 @@ interface ThingDao {
 <a name="116____7_9__Lombok"></a>
 ### 7.9. Lombok
 
-Lombok is a great tool for cutting the boilerplate out of POJO classes.
+Lombok是一个很好的工具，可以从POJO类中删除冗余样板代码。
 
-```
+```java
 @Data
 public void DataClass {
   private Long id;
@@ -4036,23 +4241,23 @@ public void ValueClass {
 }
 ```
 
-Lombok and Jdbi mostly play nice out of the box:
+Lombok和Jdbi在开箱即用时表现得很好:
 
-- Use `BeanMapper` or `@RegisterBeanMapper` to map `@Data` classes.
-- Use `ConstructorMapper` or `@RegisterConstructorMapper` to map `@Value` classes.
-- Use `bindBean()` or `@BindBean` to bind `@Data` or `@Value` classes.
+- 使用 `BeanMapper` 或者 `@RegisterBeanMapper` 来映射 `@Data` 类.
+- 使用 `ConstructorMapper` 或者 `@RegisterConstructorMapper` 来映射 `@Value` 类.
+- 使用 `bindBean()` 或者 `@BindBean` 来绑定 `@Data` 或者 `@Value` 类.
 
-We say "mostly" because there’s a wrinkle once you start annotating fields with Jdbi annotations like `@Nested`, `@ColumnMapper`, or type qualifying annotations such as `@HStore`.
+我们之所以这么说，主要是因为一旦您开始使用 Jdbi 注释（如“@Nested”、“@ColumnMapper”）或类型限定注释（如“@HStore”）来注释字段，就会出现问题。
 
-- BeanMapper looks for these annotations on getters, setters, or setter parameters.
-- ConstructorMapper looks for them on constructor parameters.
-- Lombok doesn’t move them there by default.
+- BeanMapper 在 getter、setter 或 setter 参数上查找这些注解。
+- ConstructorMapper 在构造函数参数上查找它们。
+- 默认情况下，Lombok 不会将它们移动到那里。
 
-As of Lombok version 1.18.4, Lombok can be configured to copy any annotations you specify to generated getter, setter, setter parameters, and constructor parameters.
+从Lombok 1.18.4版本开始，可以将Lombok配置为将指定的任何注解复制到生成的getter、setter、setter参数和构造函数参数。
 
-Create a file `lombok.config` in your project src tree (or edit the existing one), and add a line for each annotation type which should be copied, as in the following example:
+在您的项目 src 树中创建一个文件 `lombok.config`（或编辑现有的），并为每个应该复制的注解类型添加一行，如下例所示：
 
-```
+```java
 lombok.copyableAnnotations += org.jdbi.v3.core.mapper.Nested
 lombok.copyableAnnotations += org.jdbi.v3.core.mapper.reflect.ColumnName
 lombok.copyableAnnotations += org.jdbi.v3.postgres.HStore
@@ -4061,65 +4266,63 @@ lombok.copyableAnnotations += org.jdbi.v3.postgres.HStore
 <a name="117____7_10__Oracle_12"></a>
 ### 7.10. Oracle 12
 
-This module adds support for Oracle `RETURNING` DML expressions.
+该模块添加了对 Oracle `RETURNING` DML 表达式的支持。
 
-To use this feature, add a Maven dependency:
+要使用此功能，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-oracle12</artifactId>
 </dependency>
 ```
 
-Then, use the `OracleReturning` class with an `Update` or `PreparedBatch` to get the returned DML.
+然后，使用带有 `Update` 或 `PreparedBatch` 的 `OracleReturning` 类来获取返回的 DML。
 
 <a name="118____7_11__PostgreSQL"></a>
 ### 7.11. PostgreSQL
 
-The **jdbi3-postgres** plugin provides enhanced integration with the [PostgreSQL JDBC Driver](https://jdbc.postgresql.org/).
+**jdbi3-postgres** 插件提供了与 [PostgreSQL JDBC 驱动程序](https://jdbc.postgresql.org/) 的增强集成。
 
-To use this feature, add a Maven dependency:
+要使用此功能，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-postgres</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance.
+然后将插件安装到您的`Jdbi`实例中。
 
-```
+```java
 Jdbi jdbi = Jdbi.create("jdbc:postgresql://host:port/database")
                 .installPlugin(new PostgresPlugin());
 ```
 
-The plugin configures mappings for the Java 8 **java.time** types like **Instant** or **Duration**, **InetAddress**, **UUID**, typed enums, and **hstore**.
+该插件为 Java 8 **java.time** 类型配置映射，如 **Instant** 或 **Duration**、**InetAddress**、**UUID**、类型枚举和 **hstore** .
 
-It also configures SQL array type support for `int`, `long`, `float`, `double`, `String`, and `UUID`.
+它还为 `int`、`long`、`float`、`double`、`String` 和 `UUID` 配置 SQL 数组类型支持。
 
-See the [javadoc](apidocs/org/jdbi/v3/postgres/package-summary.html) for an exhaustive list.
+有关详尽列表，请参阅 [javadoc](apidocs/org/jdbi/v3/postgres/package-summary.html)。
 
-|      | Some Postgres operators, for example the `?` query operator, collide with `jdbi` or `JDBC` special characters. In such cases, you may need to escape operators to e.g. `??` or `\:`. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 一些 Postgres 操作符，例如 `?` 查询操作符，会与 `jdbi` 或 `JDBC` 特殊字符发生冲突。 在这种情况下，您可能需要将操作符转义到例如 `??` 或 `\:`。
 
 <a name="119_____7_11_1__hstore"></a>
 #### 7.11.1. hstore
 
-The Postgres plugin provides an `hstore` to `Map<String, String>` column mapper and vice versa argument factory:
+Postgres 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器，反之亦然：
 
-```
+```java
 Map<String, String> accountAttributes = handle
     .select("select attributes from account where id = ?", userId)
     .mapTo(new GenericType<Map<String, String>>() {})
     .one();
 ```
 
-With `@HStore` qualified type:
+使用 `@HStore` 限定类型：
 
-```
+```java
 QualifiedType<> HSTORE_MAP = QualifiedType.of(new GenericType<Map<String, String>>() {})
     .with(HStore.class);
 
@@ -4128,9 +4331,9 @@ Map<String, String> caps = handle.createUpdate("update account set attributes = 
     .execute();
 ```
 
-By default, SQL Object treats `Map` return types as a collection of `Map.Entry` values. Use the `@SingleValue` annotation to override this, so that the return type is treated as a single value instead of a collection:
+默认情况下，SQL 对象将`Map` 返回类型视为`Map.Entry` 值的集合。 使用 `@SingleValue` 注释覆盖它，以便将返回类型视为单个值而不是集合：
 
-```
+```java
 public interface AccountDao {
   @SqlQuery("select attributes from account where id = ?")
   @SingleValue
@@ -4138,12 +4341,21 @@ public interface AccountDao {
 }
 ```
 
+> **🏷注意:** 安装插件的默认变体添加了来自和到 `hstore` Postgres 数据类型的原始 `Map` 类型的非限定映射。 在某些情况下，这会干扰Map的其他映射。 建议始终使用带有 `@HStore` 限定类型的变体。
+
+为了避免绑定不合格的 Argument 和 ColumnMapper 绑定，请使用静态工厂方法安装插件：
+
+```java
+Jdbi jdbi = Jdbi.create("jdbc:postgresql://host:port/database")
+                .installPlugin(PostgresPlugin.noUnqualifiedHstoreBindings());
+```
+
 <a name="120_____7_11_2__@GetGeneratedKeys"></a>
 #### 7.11.2. @GetGeneratedKeys
 
-In Postgres, `@GetGeneratedKeys` can return the entire modified row if you request generated keys without naming any columns.
+在 Postgres 中，如果您在不命名任何列的情况下请求生成的键，`@GetGeneratedKeys` 可以返回整个修改后的行。
 
-```
+```java
 public interface UserDao {
   @SqlUpdate("insert into users (id, name, created_on) values (nextval('user_seq'), ?, now())")
   @GetGeneratedKeys
@@ -4154,7 +4366,7 @@ public interface UserDao {
 
 If a database operation modifies multiple rows (e.g. an update that will modify several rows), your method can return all the modified rows in a collection:
 
-```
+```java
 public interface UserDao {
   @SqlUpdate("update users set active = false where id = any(?)")
   @GetGeneratedKeys
@@ -4194,8 +4406,8 @@ public interface Lobject {
 
 Please refer to [Pg-JDBC docs](https://jdbc.postgresql.org/documentation/head/binary-data.html) for upstream driver documentation.
 
-<a name="122____7_12__Spring"></a>
-### 7.12. Spring
+<a name="122____7_12__Spring5"></a>
+### 7.12. Spring5
 
 This module provides `JdbiFactoryBean`, a factory bean which sets up a `Jdbi` singleton.
 
@@ -4220,25 +4432,25 @@ Then configure the Jdbi factory bean in your Spring container, e.g.:
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
-  
+  //<1>
   <bean id="db" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
     <property name="url" value="jdbc:h2:mem:testing"/>
   </bean>
 
-  
+  //<2>
   <bean id="transactionManager"
     class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="db"/>
   </bean>
   <tx:annotation-driven transaction-manager="transactionManager"/>
 
-  
+  //<3>
   <bean id="jdbi"
     class="org.jdbi.v3.spring4.JdbiFactoryBean">
     <property name="dataSource" ref="db"/>
   </bean>
 
-  
+  //<4>
   <bean id="service"
     class="com.example.service.MyService">
     <constructor-arg ref="jdbi"/>
@@ -4246,15 +4458,10 @@ Then configure the Jdbi factory bean in your Spring container, e.g.:
 </beans>
 ```
 
-|      | The SQL data source that Jdbi will connect to. In this example we use an H2 database, but it can be any JDBC-compatible database. |
-| ---- | ------------------------------------------------------------ |
-|      | Enable configuration of transactions via annotations.        |
-|      | Configure `JdbiFactoryBean` using the data source configured earlier. |
-|      | Inject `Jdbi` into a service class. Alternatively, use standard JSR-330 `@Inject` annotations on the target class instead of configuring it in your `beans.xml`. |
-
-|      | This module has been tested to be compatible with Spring 5.1.8 (used by Spring Boot 2.1.4) as well. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **<1>** The SQL data source that Jdbi will connect to. In this example we use an H2 database, but it can be any JDBC-compatible database. 
+> **<2>** Enable configuration of transactions via annotations.
+> **<3>** Configure `JdbiFactoryBean` using the data source configured earlier.
+> **<4>** Inject `Jdbi` into a service class. Alternatively, use standard JSR-330 `@Inject` annotations on the target class instead of configuring it in your `beans.xml`.
 
 <a name="123_____7_12_1__Installing_plugins"></a>
 #### 7.12.1. Installing plugins
@@ -4366,10 +4573,11 @@ List<Account> accounts = handle.createQuery(sql)
       .mapTo(Account.class)
       .list();
 ```
+> **☢警告:** Since StringTemplate by default uses the `<` character to mark ST expressions, you might need to escape some SQL: `String datePredSql = "<if(datePredicate)> <dateColumn> \\< :dateFilter <endif>"`
 
 Alternatively, SQL templates can be loaded from StringTemplate group files on the classpath:
 
-com/foo/AccountDao.sql.stg
+`com/foo/AccountDao.sql.stg`
 
 ```
 group AccountDao;
@@ -4532,16 +4740,16 @@ Bear in mind:
 - Tuples are always mapped fully column-wise or fully via row mappers. If you want to mix row-mapped types and single-column mappings the `TupleMappers` must be configured properly i.e. all non row-mapped tuple indices must be provided with a column configuration!
 
 <a name="128___8__Cookbook"></a>
-## 8. Cookbook
+## 8. Cookbook(烹饪书)
 
-This section includes examples of various things you might like to do with `Jdbi`.
+本节包括您可能喜欢用 `Jdbi` 做的各种事情的示例。
 
 <a name="129____8_1__Simple_Dependency_Injection"></a>
-### 8.1. Simple Dependency Injection
+### 8.1. 简单的依赖注入
 
-`Jdbi` tries to be independent of using a dependency injection framework, but it’s straightforward to integrate yours. Just do field injection on a simple custom config type:
+`Jdbi`试图独立于使用依赖项注入框架，但它很容易集成您的框架中。只需在一个简单的自定义配置类型上进行字段注入:
 
-```
+```java
 class InjectedDependencies implements JdbiConfig<InjectedDependencies> {
     @Inject
     SomeDependency dep;
@@ -4562,47 +4770,45 @@ getHandle().getConfig(InjectedDependencies.class).dep
 ```
 
 <a name="130____8_2__LIKE_clauses_with_Parameters"></a>
-### 8.2. LIKE clauses with Parameters
+### 8.2. LIKE clauses with Parameters(带参数的 LIKE 子句)
 
-Since JDBC (and therefore `Jdbi`) does not allow binding parameters into the middle of string literals, you cannot interpolate bindings into `LIKE` clauses (`LIKE '%:param%'`).
+由于 JDBC（因此`Jdbi`）不允许将参数绑定到字符串文字的中间，你不能将绑定插入到`LIKE` 子句（`LIKE '%:param%'`）中。
 
 Incorrect usage:
 
-```
+```java
 handle.createQuery("select name from things where name like '%:search%'")
     .bind("search", "foo")
     .mapTo(String.class)
     .list()
 ```
 
-This query would try to select `where name like '%:search%'` *literally*, without binding any arguments. This is because JDBC drivers will not bind arguments *inside string literals*.
+此查询将尝试按**字面意思**选择 `where name like '%:search%'`，而不绑定任何参数。 这是因为 JDBC 驱动程序不会在**字符串文字中**绑定参数。
 
-It never gets that far, though — this query will throw an exception, because we don’t allow unused argument bindings by default.
+但是，它永远不会到达那一步——这个查询将抛出一个异常，因为默认情况下我们不允许未使用的参数绑定。
 
-The solution is to use SQL string concatenation:
+解决方案是使用SQL字符串连接:
 
-```
+```java
 handle.createQuery("select name from things where name like '%' || :search || '%'")
     .bind("search", "foo")
     .mapTo(String.class)
     .list()
 ```
 
-Now, `search` can be properly bound as a parameter to the statement, and it all works as desired.
+现在，可以将 `search` 作为参数正确绑定到语句，并且一切都按预期工作。
 
-|      | Check the string concatenation syntax of your database before doing this. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** 在执行此操作之前，请检查数据库的字符串连接语法。
 
 <a name="131___9__Advanced_Topics"></a>
-## 9. Advanced Topics
+## 9. Advanced Topics(高级主题)
 
 <a name="132____9_1__High_Availability"></a>
-### 9.1. High Availability
+### 9.1. High Availability(高可用性)
 
-Jdbi can be combined with connection pools and high-availability features in your database driver. We’ve used [HikariCP](https://brettwooldridge.github.io/HikariCP/) in combination with the [PgJDBC connection load balancing](https://jdbc.postgresql.org/documentation/head/connect.html) features with good success.
+Jdbi可以与数据库驱动程序中的连接池和高可用性特性结合使用。我们已经成功地将[HikariCP](https://brettwooldridge.github.io/HikariCP/)与[PgJDBC连接负载平衡](https://jdbc.postgresql.org/documentation/head/connect.html)结合使用。
 
-```
+```java
 PGSimpleDataSource ds = new PGSimpleDataSource();
 ds.setServerName("host1,host2,host3");
 ds.setLoadBalanceHosts(true);
@@ -4612,9 +4818,9 @@ hc.setMaximumPoolSize(6);
 Jdbi jdbi = Jdbi.create(new HikariDataSource(hc)).installPlugin(new PostgresPlugin());
 ```
 
-Each Jdbi may be backed by a pool of any number of hosts, but the connections should all be alike. Exactly which parameters must stay the same and which may vary depends on your database and driver.
+每个Jdbi可以由任意数量的主机池支持，但是连接应该都是相同的。确切地说，哪些参数必须保持不变，哪些参数可能有所不同，这取决于数据库和驱动程序。
 
-If you want to have two separate pools, for example a read-only set that connects to read replicas and a smaller pool of writers that go only to a single host, you currently should have separate `Jdbi` instances each pointed at a separate `DataSource`.
+如果您希望有两个单独的池，例如一个连接读副本的只读集和一个较小的只访问单个主机的写入池，那么当前应该有单独的`Jdbi`实例，每个实例都指向单独的`DataSource`。
 
 <a name="133____9_2__使用参数名称编译"></a>
 
@@ -4702,7 +4908,7 @@ List<Optional<String>> middleNames = handle
 `GenericType.getType()` 返回原始 [java.lang.reflect.Type](https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Type.html) 对象 用于表示 Java 中的泛型。
 
 <a name="139_____9_3_2__GenericTypes"></a>
-#### 9.3.2. GenericTypes
+#### 9.3.2. GenericTypes(泛型类型帮助类)
 
 [GenericTypes](apidocs/org/jdbi/v3/core/generic/GenericTypes.html) 提供了处理 Java 泛型类型签名的方法。
 
