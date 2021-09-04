@@ -242,7 +242,7 @@ Jdbi jdbi = Jdbi.create(ds);
 
 `Handle`在创建时从`Jdbi`继承配置。更多细节请参见[Configuration](#_configuration)。
 
-> **👁小心:** 因为`Handle`持有一个打开的连接，所以必须小心确保当您使用完它时，每个Handle都是关闭的。如果关闭句柄失败，将会导致数据库被打开的连接淹没，或者耗尽连接池。
+> **⚠小心:** 因为`Handle`持有一个打开的连接，所以必须小心确保当您使用完它时，每个Handle都是关闭的。如果关闭句柄失败，将会导致数据库被打开的连接淹没，或者耗尽连接池。
 
 有几种方法可以在运行时获得`Handle`实例。
 
@@ -278,7 +278,7 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-> **👁小心:** 当使用`jdbc.open()`时，应该始终使用try-with-resources或try-finally块来确保数据库连接被释放。不释放Handle将泄漏连接。我们建议在可能的情况下使用`withHandle`或`useHandle`而不是`open`。
+> **⚠小心:** 当使用`jdbc.open()`时，应该始终使用try-with-resources或try-finally块来确保数据库连接被释放。不释放Handle将泄漏连接。我们建议在可能的情况下使用`withHandle`或`useHandle`而不是`open`。
 
 <a name="10____3_3__参数"></a>
 ### 3.3. 参数
@@ -1699,7 +1699,7 @@ public static class StringBean implements Bean<Value<String>> {
 
 模板的典型用途是可选或重复段（条件和循环）、复杂变量（如 IN 子句的逗号分隔列表）以及不可绑定 SQL 元素（如表名）的变量替换。 与*参数绑定*不同，由 TemplateEngines 执行的属性呈现**不是** SQL 感知的。 由于它们执行通用字符串操作，如果您不小心使用它们，TemplateEngines 很容易产生严重损坏或有细微缺陷的查询。
 
-> **👁小心:** [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
+> **⚠小心:** [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
 
 ```java
 handle.createQuery("select * from <TABLE> where name = :n")
@@ -1713,7 +1713,7 @@ handle.createQuery("select * from <TABLE> where name = :n")
 
 > **💡提示:** 使用 TemplateEngine 对查询执行粗略的字符串操作。 查询参数应该由 Arguments 处理。
 
-> **👁小心:** TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
+> **⚠小心:** TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
 
 如果TemplateEngine输出与SqlParser的参数格式匹配的文本，解析器将尝试将Argument绑定到它。这可能是有用的，例如有命名参数的名称本身也是一个变量，但也可能导致令人困惑的错误:
 
@@ -1932,11 +1932,11 @@ TODO(要做):
   - mapTo(Type | Class | GenericType) 如果映射器已注册类型
   - map(RowMapper | ColumnMapper)
   - mapToBean() 用于bean类型
-  - mapToMap()返回Map<string，对象>，将小写列名映射到值</string，对象>
+  - mapToMap() 返回 Map<String,Object> 将小写列名映射到值
 - reduceRows
   - RowView
 - reduceResultSet
-- collectInto 例如 带有 GenericType 标记。 在一个操作中隐含一个 mapTo() 和一个 collect() 。 例如 collectInto(new GenericType<List<User>>(){}) 与 mapTo(User.class).collect(toList()) 相同
+- **collectInto** 例如 带有 GenericType 标记。 在一个操作中隐含一个 mapTo() 和一个 collect() 。 例如 `collectInto(new GenericType<List<User>>(){})` 与 `mapTo(User.class).collect(toList())` 相同
 - 提供开箱即用支持的容器类型列表
 
 <a name="43_____3_8_2__ResultIterable"></a>
@@ -2593,7 +2593,7 @@ query.bindByType("jsonValue", "{\"foo\":1}", json);
 
 > **☢警告:** 限定符是注释**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
 
-> **👁小心:** 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
+> **⚠小心:** 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
 
 这些功能目前使用限定类型：
 
@@ -4981,19 +4981,19 @@ stmt.bindNamedArgumentFinder(cacheFinder);
 > **💡提示:** 在幕后，[SqlStatement.bindBean()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindBean-java.lang.Object-), [SqlStatement.bindMethods()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMethods-java.lang.Object-), [SqlStatement.bindFields()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindFields-java.lang.Object-), and [SqlStatement.bindMap()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMap-java.util.Map-) 方法只是创建和绑定的自定义实现 `NamedArgumentFinder` 分别用于  beans, methods, fields, 和 maps。
 
 <a name="141____9_5__JdbiConfig"></a>
-### 9.5. JdbiConfig
+### 9.5. JdbiConfig(Jdbi配置)
 
-Configuration is managed by the [ConfigRegistry](apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) class. Each Jdbi object that represents a distinct database context (for example, **Jdbi** itself, a **Handle** instance, or an attached SqlObject class) gets its own configuration registry. Most contexts implement the [Configurable](apidocs/org/jdbi/v3/core/config/Configurable.html) interface which allows modification of its configuration as well as retrieving the current context’s configuration for use by Jdbi core or extensions.
+配置由 [ConfigRegistry](apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 类管理。每个代表不同数据库上下文的 Jdbi 对象（例如，**Jdbi** 本身、**Handle** 实例或附加的 SqlObject 类）都有自己的配置注册表。大多数上下文实现了 [Configurable](apidocs/org/jdbi/v3/core/config/Configurable.html) 接口，它允许修改其配置以及检索当前上下文的配置以供 Jdbi 核心或扩展使用。
 
-When a new configurable context is created, it inherits a copy of its parent configuration at the time of creation - further modifications to the original will not affect already created configuration contexts. Configuration context copies happen when producing a Handle from Jdbi, when opening a **SqlStatement** from the Handle, and when attaching or creating an on-demand extension such as **SqlObject**.
+创建新的可配置上下文时，它会在创建时继承其父配置的副本 - 对原始配置的进一步修改不会影响已创建的配置上下文。 当从 Jdbi 生成Handle、从Handle打开 **SqlStatement** 以及附加或创建按需扩展（如 **SqlObject**）时，会发生配置上下文复制。
 
-The configuration itself is stored in various implementations of the [JdbiConfig](apidocs/org/jdbi/v3/core/config/JdbiConfig.html) interface. Each implementation must adhere to the contract of the interface; in particular it must have a public no-argument constructor that provides useful defaults and a **createCopy** method that is invoked when a configuration registry is cloned.
+配置本身存储在 [JdbiConfig](apidocs/org/jdbi/v3/core/config/JdbiConfig.html) 接口的各种实现中。 每个实现都必须遵守接口的约定； 特别是它必须有一个提供有用默认值的公共无参数构造函数和一个在配置注册表被克隆时调用的 **createCopy** 方法。
 
-Generally, configuration should be set on a context before that context is used, and not changed later. Some configuration classes may be thread safe but most are not.
+通常，应该在使用上下文之前在上下文上设置配置，并且以后不要更改。 一些配置类可能是线程安全的，但大多数不是。
 
-Many of Jdbi’s core features, for example argument or mapper registries, are simply implementations of **JdbiConfig** that store the registered mappings for later use during query execution.
+Jdbi 的许多核心功能，例如参数或映射器注册表，都是 **JdbiConfig** 的简单实现，用于存储已注册的映射以供以后在查询执行期间使用。
 
-```
+```java
 public class ExampleConfig implements JdbiConfig<ExampleConfig> {
 
     private String color;
@@ -5036,33 +5036,31 @@ public class ExampleConfig implements JdbiConfig<ExampleConfig> {
 ```
 
 <a name="142_____9_5_1__Creating_a_custom_JdbiConfig_type"></a>
-#### 9.5.1. Creating a custom JdbiConfig type
+#### 9.5.1. Creating a custom JdbiConfig type(创建自定义 JdbiConfig 类型)
 
-- Create a public class that implements JdbiConfig.
-- Add a public, no-argument constructor
-- Add a private, copy constructor.
-- Implement `createCopy()` to call the copy constructor.
-- Add config properties, and provide sane defaults for each property.
-- Ensure that all config properties get copied to the new instance in the copy constructor.
-- Override `setConfig(ConfigRegistry)` if your config class wants to be able to use other config classes in the registry. E.g. RowMappers registry delegates to ColumnMappers registry, if it doesn’t have a mapper registered for a given type.
-- Use that configuration object from other classes that are interested in it.
-  - e.g. BeanMapper, FieldMapper, and ConstructorMapper all use the ReflectionMappers config class to keep common configuration.
+- 创建一个实现 JdbiConfig 的公共类。
+- 添加一个公共的、无参数的构造函数
+- 添加私有的复制构造函数。
+- 实现 `createCopy()` 来调用复制构造函数。
+-添加配置属性，并为每个属性提供合理的默认值。
+- 确保所有配置属性都被复制到复制构造函数中的新实例中。
+- 如果您的配置类希望能够使用注册表中的其他配置类，请重写`setConfig(ConfigRegistry)`。例如，如果RowMappers注册表心没有为给定类型注册一个映射器，则它将委托给ColumnMappers注册表。
+- 从其他感兴趣的类中使用该配置对象。
+  - 例如 BeanMapper、FieldMapper 和 ConstructorMapper 都使用 ReflectionMappers 配置类来保持通用配置。
 
 <a name="143____9_6__JdbiPlugin"></a>
 ### 9.6. JdbiPlugin
 
-JdbiPlugin can be used to bundle bulk configuration. Plugins may be installed explicitly via `Jdbi.installPlugin(JdbiPlugin)`, or may be installed automagically from the classpath using the ServiceLoader mechanism via `installPlugins()`.
+JdbiPlugin 可用于捆绑批量配置。 插件可以通过`Jdbi.installPlugin(JdbiPlugin)`显式安装，也可以通过`installPlugins()`使用ServiceLoader机制从类路径自动安装。
 
-Jars may provide a file in `META-INF/services/org.jdbi.v3.core.spi.JdbiPlugin` containing the fully qualified class name of your plugin.
+Jars 可能会在`META-INF/services/org.jdbi.v3.core.spi.JdbiPlugin` 中提供一个文件，其中包含你插件的完全限定类名。
 
-In general, Jdbi’s separate artifacts each provide a single relevant plugin (e.g. `jdbi3-sqlite`), and such modules will be auto-loadable. Modules that provide no (e.g. `jdbi3-commons-text`) or multiple (e.g. `jdbi3-core`) plugins typically will not be.
+一般来说，Jdbi 的单独模块每个都提供一个相关的插件（例如`jdbi3-sqlite`），并且这些模块将是可自动加载的。 不提供（例如`jdbi3-commons-text`）或多个（例如`jdbi3-core`）插件的模块通常不会。
 
-|      | The developers encourage you to install plugins explicitly. Code with declared dependencies on the module it uses is more robust to refactoring and provides useful data for static analysis tools about what code is or isn’t used. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** 开发人员鼓励您显式地安装插件。在所使用的模块上声明依赖项的代码对于重构来说更加健壮，并为静态分析工具提供关于哪些代码被使用，哪些代码没有被使用的有用数据。
 
 <a name="144____9_7__StatementContext"></a>
-### 9.7. StatementContext
+### 9.7. StatementContext(Statement上下文)
 
 The [StatementContext](apidocs/org/jdbi/v3/core/statement/StatementContext.html) class is a carrier for various state related to the creation and execution of statements that is not appropriate to hold on the **Query** or other particular statement class itself. Among other things, it holds open **JDBC** resources, processed SQL statements, and accumulated bindings. It is exposed to implementations of most user extension points, for example **RowMapper, \*ColumnMapper\*s, or \*CollectorFactory**.
 
