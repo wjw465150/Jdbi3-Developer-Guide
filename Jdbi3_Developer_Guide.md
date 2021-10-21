@@ -5231,40 +5231,36 @@ handle.createQuery("select <columns> from <table>")
       .list() // => "select id, name from customers"
 ```
 
-|      | The `defineList` method defines a list of elements as the comma-separated splice of String values of the individual elements. In the above example, the `columns` attribute is defined as `"id, name"`. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:** `defineList` 方法将元素列表定义为单个元素的字符串值的逗号分隔拼接。 在上面的例子中，`columns` 属性被定义为 `"id, name"`。
 
-Any custom template engine can be used. Simply implement the `TemplateEngine` interface, then call `setTemplateEngine()` on the `Jdbi`, `Handle`, or on a SQL statement like `Update` or `Query`:
+可以使用任何自定义模板引擎。 只需实现`TemplateEngine`接口，然后在`Jdbi`、`Handle`或像`Update`或`Query`这样的SQL语句上调用`setTemplateEngine()`：
 
-```
+```java
 TemplateEngine templateEngine = (template, ctx) -> {
-  ...
+  //...
 };
 
 jdbi.setTemplateEngine(templateEngine);
 ```
 
-|      | Jdbi also provides `StringTemplateEngine`, which renders templates using the StringTemplate library. See [StringTemplate 4](#_stringtemplate_4). |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **💡提示:** Jdbi 还提供了 `StringTemplateEngine`，它使用 StringTemplate 库呈现模板。 参见 [StringTemplate 4](#_stringtemplate_4)。
 
-### 9.10. SqlParser
+### 9.10. SqlParser(Sql解析器)
 
-After the SQL template has been rendered, Jdbi uses a [SqlParser](apidocs/org/jdbi/v3/core/statement/SqlParser.html) to parse out any named parameters from the SQL statement. This Produces a `ParsedSql` object, which contains all the information Jdbi needs to bind parameters and execute your SQL statement.
+渲染 SQL 模板后，Jdbi 使用 [SqlParser](apidocs/org/jdbi/v3/core/statement/SqlParser.html) 从 SQL 语句中解析出任何命名参数。 这会产生一个 `ParsedSql` 对象，其中包含 Jdbi 绑定参数和执行 SQL 语句所需的所有信息。
 
-Out of the box, Jdbi is configured to use `ColonPrefixSqlParser`, which recognizes colon-prefixed named parameters, e.g. `:name`.
+开箱即用，Jdbi 被配置为使用`ColonPrefixSqlParser`，它识别以冒号为前缀的命名参数，例如 `:name`。
 
-```
+```java
 handle.createUpdate("insert into characters (id, name) values (:id, :name)")
       .bind("id", 1)
       .bind("name", "Dolores Abernathy")
       .execute();
 ```
 
-Jdbi also provides `HashPrefixSqlParser`, which recognizes hash-prefixed parameters, e.g. `#hashtag`. Use this parser by calling `setSqlParser()` on the `Jdbi`, `Handle`, or any SQL statement such as `Query` or `Update`.
+Jdbi 还提供了`HashPrefixSqlParser`，它识别带有哈希前缀的参数，例如 `#hashtag`。 通过在 `Jdbi`、`Handle` 或任何 SQL 语句（如 `Query` 或 `Update`）上调用 `setSqlParser()` 来使用此解析器。
 
-```
+```java
 handle.setSqlParser(new HashPrefixSqlParser());
 handle.createUpdate("insert into characters (id, name) values (#id, #name)")
       .bind("id", 2)
@@ -5272,17 +5268,12 @@ handle.createUpdate("insert into characters (id, name) values (#id, #name)")
       .execute();
 ```
 
-|      | The default parsers recognize any Java identifier as a parameter or attribute name. Even some strange cases like emoji are allowed, although the Jdbi authors encourage appropriate discretion 🧐. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+> **🏷注意:**默认解析器将任何Java标识符识别为参数或属性名。即使是一些奇怪的情况，如表情符号，也被允许，尽管Jdbi的作者鼓励适当的谨慎 🧐.
+> **🏷注意:** 默认的解析器尝试忽略字符串字面量中的类似参数的结构，因为JDBC驱动程序无论如何都不允许在那里绑定参数。
 
-|      | The default parsers try to ignore parameter-like constructions inside of string literals, since JDBC drivers wouldn’t let you bind parameters there anyway. |
-| ---- | ------------------------------------------------------------ |
-|      |                                                              |
+对于读过[Dragon book](https://www.amazon.com/Compilers-Principles-Techniques-Tools-2nd/dp/0321486811)的无畏冒险者，任何自定义SQL解析器都可以使用。 只需实现`SqlParser`接口，然后在Jdbi、Handle或SQL语句上设置：
 
-For you fearless adventurers who have read the [Dragon book](https://www.amazon.com/Compilers-Principles-Techniques-Tools-2nd/dp/0321486811), any custom SQL parser can be used. Simply implement the `SqlParser` interface, then set it on the Jdbi, Handle, or SQL statement:
-
-```
+```java
 SqlParser parser = (sql, ctx) -> {
   ...
 };
@@ -5290,7 +5281,7 @@ SqlParser parser = (sql, ctx) -> {
 jdbi.setParser(parser);
 ```
 
-### 9.11. SqlLogger
+### 9.11. SqlLogger(Sql日志记录器)
 
 The [SqlLogger](apidocs/org/jdbi/v3/core/statement/SqlLogger.html) interface is called before and after executing each statement, and given the current `StatementContext`, to log any relevant information desired: mainly the query in various compilation stages, attributes and bindings, and important timestamps.
 
