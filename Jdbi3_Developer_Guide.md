@@ -5283,15 +5283,15 @@ jdbi.setParser(parser);
 
 ### 9.11. SqlLogger(Sql日志记录器)
 
-The [SqlLogger](apidocs/org/jdbi/v3/core/statement/SqlLogger.html) interface is called before and after executing each statement, and given the current `StatementContext`, to log any relevant information desired: mainly the query in various compilation stages, attributes and bindings, and important timestamps.
+[SqlLogger](apidocs/org/jdbi/v3/core/statement/SqlLogger.html) 接口在执行每个语句之前和之后被调用，并给定当前的`StatementContext`，记录所需的任何相关信息：主要是在各个编译阶段的查询，属性和绑定，以及重要的时间戳。
 
-### 9.12. ResultProducer
+### 9.12. ResultProducer(Result生产者)
 
-A **ResultProducer** takes a lazily supplied **PreparedStatement** and produces a result. The most common producer path, **execute()**, retrieves the **ResultSet** over the query results and then uses a **ResultSetScanner** or higher level mapper to produce results.
+**ResultProducer** 采用延迟提供的 **PreparedStatement** 并产生结果。 最常见的生产者路径 **execute()** 检索查询结果上的 **ResultSet**，然后使用 **ResultSetScanner** 或更高级别的映射器来生成结果。
 
-An example alternate use is to just return the number of rows modified, as in an UPDATE or INSERT statement:
+另一个例子是只返回修改的行数，如在UPDATE或INSERT语句中:
 
-```
+```java
 public static ResultProducer<Integer> returningUpdateCount() {
     return (statementSupplier, ctx) -> {
         try {
@@ -5303,101 +5303,101 @@ public static ResultProducer<Integer> returningUpdateCount() {
 }
 ```
 
-If you acquire the lazy statement, you are responsible for ensuring that the context is closed eventually to release database resources.
+如果您获得了lazy语句，则负责确保上下文最终关闭以释放数据库资源。
 
-Most users will not need to implement the **ResultProducer** interface.
+大多数用户将不需要实现**ResultProducer**接口。
 
-### 9.13. Generator
+### 9.13. Generator(生成器)
 
-Jdbi includes an experimental SqlObject code generator. If you include the `jdbi3-generator` artifact as an annotation processor and annotate your SqlObject definitions with `@GenerateSqlObject`, the generator will produce an implementing class and avoid using `Proxy` instances. This may be useful for `graal-native` compilation.
+Jdbi 包括一个实验性的 SqlObject 代码生成器。 如果你包含 `jdbi3-generator` 工件作为注释处理器并使用 `@GenerateSqlObject` 注释你的 SqlObject 定义，生成器将生成一个实现类并避免使用 `Proxy` 实例。 这对于 `graal-native` 编译可能很有用。
 
-## 10. Appendix
+## 10. Appendix(附录)
 
-### 10.1. Best Practices
+### 10.1. 最佳实践
 
-- Test your SQL Objects (DAOs) against real databases when possible. Jdbi tries to be defensive and fail eagerly when you hold it wrong.
-- Use the `-parameters` compiler flag to avoid all those `@Bind("foo") String foo` redundant qualifiers in SQL Object method parameters. See [使用参数名称编译](#133____9_2__使用参数名称编译).
-- Use a profiler! The true root cause of performance problems can often be a surprise. Measure first, *then* tune for performance. And then measure again to be sure it made a difference.
-- Don’t forget to bring a towel!
+- 如果可能的话，针对真实的数据库测试SQL对象(dao)。Jdbi试图采取防御态度，当你错误地把握它时，它会急切地失败。
+- 使用 `-parameters` 编译器标志来避免 SQL 对象方法参数中的所有那些 `@Bind("foo") String foo` 冗余限定符。参见 [使用参数名称编译](#133____9_2__使用参数名称编译).
+- 使用一个分析器!性能问题的真正根本原因往往出人意料。首先测量，然后调整性能。然后再次测量，以确保它有所不同。
+- 别忘了带毛巾！
 
-### 10.2. API Reference
+### 10.2. API 参考
 
 - [Javadoc](apidocs/index.html)
 - [jdbi3-kotlin](apidocs-kotlin/jdbi3-kotlin/index.html)
 - [jdbi3-kotlin-sqlobject](apidocs-kotlin/jdbi3-kotlin-sqlobject/index.html)
 
-### 10.3. Related Projects
+### 10.3. 相关项目
 
-[Embedded Postgres](https://github.com/opentable/otj-pg-embedded) makes testing against a real database quick and easy.
+[Embedded Postgres](https://github.com/opentable/otj-pg-embedded) 使针对真实数据库的测试变得快速而简单。
 
-[dropwizard-jdbi3](https://github.com/arteam/dropwizard-jdbi3) provides integration with DropWizard.
+[dropwizard-jdbi3](https://github.com/arteam/dropwizard-jdbi3) 提供与 DropWizard 的集成。
 
-[metrics-jdbi3](https://github.com/arteam/metrics-jdbi3) instruments using DropWizard-Metrics to emit statement timing statistics.
+[metrics-jdbi3](https://github.com/arteam/metrics-jdbi3) 工具使用DropWizard-Metrics发出语句计时统计数据。
 
-Do you know of a project related to Jdbi? Send us an issue and we’ll add a link here!
+你知道一个与Jdbi相关的项目吗?给我们发送一个issue，我们会在这里添加一个链接!
 
-### 10.4. Contributing
+### 10.4. 捐献
 
-**jdbi** uses GitHub for collaboration. Please check out the [project page](https://github.com/jdbi/jdbi) for more information.
+**jdbi** 使用 GitHub 进行协作。 请查看[项目页面](https://github.com/jdbi/jdbi) 了解更多信息。
 
-If you have a question, we have a [Google Group mailing list](https://groups.google.com/group/jdbi)
+如果您有问题，我们有 [Google Group 邮件列表](https://groups.google.com/group/jdbi)
 
-Users sometimes hang out on [IRC in #jdbi on Freenode](irc://irc.freenode.net/#jdbi).
+用户有时会在 [IRC in #jdbi on Freenode](irc://irc.freenode.net/#jdbi) 上闲逛。
 
-### 10.5. Upgrading from v2 to v3
+### 10.5. 从 v2 升级到 v3
 
-Already using Jdbi v2?
+已经在使用 Jdbi v2？
 
-Here’s a quick summary of differences to help you upgrade:
+以下是一个快速的差异总结，以帮助您升级:
 
-General:
+总体:
 
-- Maven artifacts renamed and split out:
-- Old: `org.jdbi:jdbi`
-- New: `org.jdbi:jdbi3-core`, `org.jdbi:jdbi3-sqlobject`, etc.
-- Root package renamed: `org.skife.jdbi.v2` → `org.jdbi.v3`
+- Maven 工件重命名和拆分：
+- 旧的: `org.jdbi:jdbi`
+- 新的: `org.jdbi:jdbi3-core`, `org.jdbi:jdbi3-sqlobject`, etc.
+- 根 package 重命名: `org.skife.jdbi.v2` 到 `org.jdbi.v3`
 
 Core API:
 
 - `DBI`, `IDBI` → `Jdbi`
-  - Instantiate with `Jdbi.create()` factory methods instead of constructors.
+  - 使用`Jdbi.create()`工厂方法而不是构造函数进行实例化。
 - `DBIException` → `JdbiException`
-- `Handle.select(String, …)` now returns a `Query` for further method chaining, instead of a `List<Map<String, Object>>`. Call `Handle.select(sql, …).mapToMap().list()` for the same effect as v2.
-- `Handle.insert()` and `Handle.update()` have been coalesced into `Handle.execute()`.
-- `ArgumentFactory` is no longer generic.
-- `AbstractArgumentFactory` is a generic implementation of `ArgumentFactory` for factories that handle a single argument type.
-- Argument and mapper factories now operate in terms of `java.lang.reflect.Type` instead of `java.lang.Class`. This allows Jdbi to handle arguments and mappers for generic types.
-- Argument and mapper factories now have a single `build()` method that returns an `Optional`, instead of separate `accepts()` and `build()` methods.
-- `ResultSetMapper` → `RowMapper`. The row index parameter was also removed from `RowMapper`--the current row number can be retrieved directly from the `ResultSet`.
+- `Handle.select(String, ...)` 现在返回一个 `Query` 用于进一步的方法链接，而不是 `List<Map<String, Object>>`。 调用 `Handle.select(sql, ...).mapToMap().list()` 以获得与 v2 相同的效果。
+- `Handle.insert()` 和 `Handle.update()` 已合并为 `Handle.execute()`。
+- `ArgumentFactory` 不再是通用的。
+- `AbstractArgumentFactory` 是用于处理单个参数类型的工厂的 `ArgumentFactory` 的通用实现。
+- 参数和映射器工厂现在根据 `java.lang.reflect.Type` 而不是 `java.lang.Class` 运行。 这允许 Jdbi 处理泛型类型的参数和映射器。
+- 参数和映射器工厂现在有一个单独的 `build()` 方法，它返回一个 `Optional`，而不是单独的 `accepts()` 和 `build()` 方法。
+- `ResultSetMapper` → `RowMapper`. 行索引参数也从 `RowMapper` 中删除——当前行号可以直接从 `ResultSet` 中检索。
 - `ResultColumnMapper` → `ColumnMapper`
 - `ResultSetMapperFactory` → `RowMapperFactory`
 - `ResultColumnMapperFactory` → `ColumnMapperFactory`
-- `Query` no longer maps to `Map<String, Object>` by default. Call `Query.mapToMap()`, `.mapToBean(type)`, `.map(mapper)` or `.mapTo(type)`.
-- `ResultBearing<T>` was refactored into `ResultBearing` (no generic parameter) and `ResultIterable<T>`. Call `.mapTo(type)` to get a `ResultIterable<T>`.
-- `TransactionConsumer` and `TransactionCallback` only take a `Handle` now—the `TransactionStatus` argument is removed. Just rollback the handle now.
-- `TransactionStatus` class removed.
-- `CallbackFailedException` class removed. The functional interfaces like `HandleConsumer`, `HandleCallback`, `TransactionCallback`, etc can now throw any exception type. Methods like `Jdbi.inTransaction` that take these callbacks use exception transparency to throw only the exception thrown by the callback. If your callback throws no checked exceptions, you don’t need a try/catch block.
-- `StatementLocator` interface removed from core. All core statements expect to receive the actual SQL string now. A similar concept, `SqlLocator` was added but is specific to SQL Object.
-- `StatementRewriter` refactored into `TemplateEngine`, and `SqlParser`.
-- StringTemplate no longer required to process `<name>`-style tokens in SQL.
-- Custom SqlParser implementations must now provide a way to transform raw parameter names to names that will be properly parsed out as named params.
+- 默认情况下，`Query` 不再映射到 `Map<String, Object>`。 调用`Query.mapToMap()`、`.mapToBean(type)`、`.map(mapper)` 或`.mapTo(type)`。
+- `ResultBearing<T>` 被重构为 `ResultBearing`（无通用参数）和 `ResultIterable<T>`。 调用 `.mapTo(type)` 以获得一个 `ResultIterable<T>`。
+- `TransactionConsumer` 和 `TransactionCallback` 现在只接受一个 `Handle`——移除了 `TransactionStatus` 参数。 现在只需rollback句柄即可。
+- 删除了`TransactionStatus` 类。
+- 删除了`CallbackFailedException` 类。 像`HandleConsumer`、`HandleCallback`、`TransactionCallback` 等功能接口现在可以抛出任何异常类型。 像`Jdbi.inTransaction` 这样的接受这些回调的方法使用异常透明性来只抛出回调抛出的异常。 如果你的回调没有抛出任何检查异常，你就不需要 try/catch 块。
+- 从core中删除了`StatementLocator` 接口。 所有core statements 现在都希望接收实际的 SQL 字符串。 添加了一个类似的概念，`SqlLocator`，但它是特定于 SQL 对象的。
+- `StatementRewriter` 重构为 `TemplateEngine` 和 `SqlParser`。
+- StringTemplate 不再需要在 SQL 中处理 `<name>` 样式的标记。
+- 自定义 SqlParser 实现现在必须提供一种方法来将原始参数名称转换为将被正确解析为命名参数的名称。
 
 SQL Object API:
 
-- SQL Object support is not installed by default. It must be added as a separate dependency, and the plugin installed into the `Jdbi` object:
+- 默认情况下不安装 SQL 对象支持。 它必须作为单独的依赖项添加，并将插件安装到 `Jdbi` 对象中：
 
-```
+```java
 Jdbi jdbi = Jdbi.create(...);
 jdbi.installPlugin(new SqlObjectPlugin());
 ```
 
-- SQL Object types in v3 must be public interfaces—no classes. Method return types must likewise be public. This is due to SQL Object implementation switching from CGLIB to `java.lang.reflect.Proxy`, which only supports interfaces.
+- v3 中的 SQL 对象类型必须是公共接口——没有类。 方法返回类型同样必须是公共的。 这是由于 SQL 对象实现从 CGLIB 切换到`java.lang.reflect.Proxy`，它只支持接口。
 - `GetHandle` → `SqlObject`
-- `SqlLocator` replaces `StatementLocator`, and only applies to SQL Objects.
-- `@RegisterMapper` divided into `@RegisterRowMapper` and `@RegisterColumnMapper`.
-- `@Bind` annotations on SQL Object method parameters can be made optional, by compiling your code with the `-parameters` compiler flag enabled.
-- `@BindIn` → `@BindList`, and no longer requires StringTemplate
-- On-demand SQL objects don’t play well with methods that return `Iterable` or `FluentIterable`. On-demand objects strictly close the handle after each method call, and no longer "hold the door open" for you to finish consuming the interable as they did in v2. This forecloses a major source of connection leaks.
-- SQL Objects are no longer closeable — they are either on-demand, or their lifecycle is tied to the lifecycle of the `Handle` they are attached to.
-- `@BindAnnotation` meta-annotation removed. Use `@SqlStatementCustomizingAnnotation` instead.
-- `@SingleValueResult` → `@SingleValue`. The annotation may be used for method return types, or on `@SqlBatch` parameters.
+- `SqlLocator` 取代了 `StatementLocator`，并且只适用于 SQL 对象。
+- `@RegisterMapper` 被分为`@RegisterRowMapper` 和`@RegisterColumnMapper`。
+- 通过在启用 `-parameters` 编译器标志的情况下编译代码，可以将 SQL 对象方法参数上的 `@Bind` 注释设为可选。
+- `@BindIn` → `@BindList`，不再需要 StringTemplate
+- 按需 SQL 对象不适用于返回“Iterable”或“FluentIterable”的方法。 按需对象在每次方法调用后都严格关闭句柄，不再像 v2 中那样“让门打开”让您完成对可交互对象的消费。 这排除了连接泄漏的主要来源。
+- SQL 对象不再是可关闭的 — 它们要么是按需的，要么它们的生命周期与它们所附加的`Handle`的生命周期相关联。
+- `@BindAnnotation` 元注解已删除。 改用`@SqlStatementCustomizingAnnotation`。
+- `@SingleValueResult` → `@SingleValue`. 此注解可用于方法返回类型，也可用于`@SqlBatch` 参数。
