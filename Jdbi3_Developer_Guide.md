@@ -4,17 +4,20 @@
 >
 > 开源地址: https://github.com/wjw465150/Jdbi3-Developer-Guide
 
-## 1. Jdbi 简介
+<a name="introduction_to_jdbi"></a>
+## [1. Jdbi 简介](#introduction_to_jdbi)
 
 Jdbi提供了对Java中关系数据的方便、惯用的访问。Jdbi 3是第三个主要版本，它引入了对Java 8的增强支持，对设计和实现的无数改进，以及对模块化插件的增强支持。
 
-> **💡提示:** 不想升级了吗?[v2文档](jdbi2/index.html)仍然可用。
+> **💡提示:** 不想升级了吗?[v2文档](https://jdbi.org/jdbi2/)仍然可用。
 
 Jdbi构建在JDBC之上。如果您的数据库有JDBC驱动程序，则可以使用Jdbi。Jdbi改进了JDBC的粗糙接口，提供了更自然的Java数据库接口，易于绑定到域数据类型。与ORM不同的是，我们的目标不是提供一个完整的对象关系映射框架—与隐藏的复杂性不同，我们提供的构建块允许您根据您的应用程序构建关系和对象之间的映射。
+  
 
 Jdbi的API有两种形式:
 
-### 1.1. 流式 API
+<a name="fluent_api"></a>
+### [1.1. 流式 API](#fluent_api)
 
 Core API 提供了一个流畅的命令式接口。 使用 Builder 样式对象将 SQL 连接到丰富的 Java 数据类型。
 
@@ -57,7 +60,8 @@ assertThat(users).containsExactly(
         new User(3, "David"));
 ```
 
-### 1.2. 声明式 API
+<a name="declarative_api"></a>
+### [1.2. 声明式 API](#declarative_api)
 
 SQL Object扩展位于Core之上，并提供了一个声明式接口。通过声明一个带注解的Java“接口”，告诉Jdbi要执行什么SQL以及您喜欢的结果的形状，并且提供实现。
 
@@ -111,9 +115,10 @@ Jdbi不是ORM。没有会话缓存、更改跟踪、“视图中打开的会话�
 
 您可以使用自己的SQL，而Jdbi只运行您告诉它的命令——按照上帝希望的方式。
 
-> **💡提示:**已经在使用Jdbi v2了吗?参见[从v2升级到v3](#_upgrading_from_v2_to_v3).
+> **💡提示:**已经在使用Jdbi v2了吗?参见[从v2升级到v3](#upgrading_from_v2_to_v3).
 
-## 2. 开始
+<a name="getting_started"></a>
+## [2. 开始](#getting_started)
 
 Jdbi很容易包含在您的Java项目 - 一个[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)许可证,一些外部依赖,和通过[Maven Central](http://search.maven.org/#search|ga|1|g%3A"org.jdbi" AND v%3A"3.16.0")发布的JARs,你可以在POM中包含相关的工件:
 
@@ -154,11 +159,15 @@ dependencies {
 }
 ```
 
+<a name="java_compatibility"></a>
+### [2.1. Java兼容性](#java_compatibility)
+`Jdbi` 在所有 Java 版本 8 或更高版本上运行。 构建需要 11 或更高版本。
+> **☢警告:** Java 8的支持被认为是不赞成的，目前将会尽最大努力维护，但很快就会消失!为了在8上运行，你可能需要依赖你的咖啡因版本回到2.x。3.x需要在新的jdk上运行，但不能在8上运行。
 
+<a name="modules"></a>
+### [2.2. 模块](#modules)
 
-### 2.1. 模块
-
-- **jdbi3-sqlobject**
+- jdbi3-sqlobject
 
   SQL对象扩展。大多数Jdbi用户使用这个。
 
@@ -202,17 +211,20 @@ dependencies {
 
   支持Vavr元组，集合和值参数
 
-### 2.2. 事先申明
+<a name="forethoughts"></a>  
+### [2.3. 事先申明](#forethoughts)
 
 > **💡提示:** 您可能想要添加我们的注解`org.jdbi.v3.meta.Beta` 将被列入IDE的“不稳定API使用”黑名单。
 
 > **☢警告:** 我们的`org.jdbi.*.internal`包不被认为是公共API;它们的内容可能会在没有警告的情况下发生根本变化。
 
-## 3. 核心 API
+<a name="core_api"></a>
+## [3. 核心 API](#core_api)
 
-### 3.1. Jdbi
+<a name="jdbi"></a>
+### [3.1. Jdbi](#jdbi)
 
-这个 [Jdbi](apidocs/org/jdbi/v3/core/Jdbi.html) 类是库的主要入口点。
+这个 [Jdbi](https://jdbi.org/apidocs/org/jdbi/v3/core/Jdbi.html) 类是库的主要入口点。
 
 每个`Jdbi`实例包装一个JDBC [DataSource](https://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html)。它也是数据库会话的配置存储库。
 
@@ -232,25 +244,27 @@ Jdbi jdbi = Jdbi.create(ds);
 
 **`Jdbi`实例是线程安全的，不拥有任何数据库资源。**
 
-通常，应用程序创建一个单例的、共享的`Jdbi`实例，并在那里设置任何公共配置。更多细节请参见[Configuration](#_configuration)。
+通常，应用程序创建一个单例的、共享的`Jdbi`实例，并在那里设置任何公共配置。更多细节请参见[Configuration](#configuration)。
 
-`Jdbi `本身不提供连接池或其他[高可用性](#_high_availability)特性，但它可以与其他提供这些特性的软件结合使用。
+`Jdbi `本身不提供连接池或其他[高可用性](#high_availability)特性，但它可以与其他提供这些特性的软件结合使用。
 
 在一个更有限的范围内(比如HTTP请求或事件回调)，您将从您的`Jdbi`实例请求一个`Handle`对象。
 
-### 3.2. Handle(句柄)
+<a name="handle"></a>
+
+### [3.2. Handle(句柄)](#handle)
 
 句柄表示一个活动的[数据库连接](https://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html).
 
-[Handle](apidocs/org/jdbi/v3/core/Handle.html)用于准备和运行针对数据库的SQL语句，并管理数据库事务。它提供对流式语句API的访问，这些API可以绑定参数、执行语句，然后将任何结果映射到Java对象。
+[Handle](https://jdbi.org/apidocs/org/jdbi/v3/core/Handle.html)用于准备和运行针对数据库的SQL语句，并管理数据库事务。它提供对流式语句API的访问，这些API可以绑定参数、执行语句，然后将任何结果映射到Java对象。
 
-`Handle`在创建时从`Jdbi`继承配置。更多细节请参见[Configuration](#_configuration)。
+`Handle`在创建时从`Jdbi`继承配置。更多细节请参见[Configuration](#configuration)。
 
 > **⚠小心:** 因为`Handle`持有一个打开的连接，所以必须小心确保当您使用完它时，每个Handle都是关闭的。如果关闭句柄失败，将会导致数据库被打开的连接淹没，或者耗尽连接池。
 
 有几种方法可以在运行时获得`Handle`实例。
 
-如果您的操作将返回一些结果，请使用 [jdbi.withHandle()](apidocs/org/jdbi/v3/core/Jdbi.html#withHandle-org.jdbi.v3.core.HandleCallback-):
+如果您的操作将返回一些结果，请使用 [jdbi.withHandle()](https://jdbi.org/apidocs/org/jdbi/v3/core/Jdbi.html#withHandle-org.jdbi.v3.core.HandleCallback-):
 
 ```java
 List<String> names = jdbi.withHandle(handle ->
@@ -284,17 +298,19 @@ try (Handle handle = jdbi.open()) {
 
 > **⚠小心:** 当使用`jdbi.open()`时，应该始终使用try-with-resources或try-finally块来确保数据库连接被释放。不释放Handle将泄漏连接。我们建议在可能的情况下使用`withHandle`或`useHandle`而不是`open`。
 
-### 3.3. 参数
+<a name="arguments"></a>
+### [3.3. 参数](#arguments)
 
 Arguments是Jdbi对JDBC语句参数的表示(the `?` in `select * from Foo where bar = ?`).
 
 在JDBC `PreparedStatement`上设置参数`?`，您可以使用`ps.setString(1, "Baz")`。 使用Jdbi，当你绑定字符串`"Baz"`时，它会搜索所有注册的*ArgumentFactory*实例，直到找到一个愿意将String转换为*Argument*的实例。参数负责为占位符设置字符串，就像`setString`所做的那样。
 
-参数可以执行比简单JDBC支持的更高级的绑定:BigDecimal可以绑定为SQL decimal，java.time.Year可以绑定为SQL int，或者一个复杂对象可以序列化为字节数组并绑定为SQL blob。
+参数可以执行比简单JDBC支持的更高级的绑定:*BigDecimal*可以绑定为SQL decimal，*java.time.Year*可以绑定为SQL int，或者一个复杂对象可以序列化为字节数组并绑定为SQL blob。
 
-> **🏷注意:** Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#36____3_6__Templating) 和 [TemplateEngine](#150____9_9__TemplateEngine)。
+> **🏷注意:** Jdbi参数的使用仅限于JDBC `prepared statement`语句参数。 值得注意的是，arguments通常不能用于改变查询的结构(例如表或列名，`SELECT`或`INSERT`等)，也不能将参数插入到字符串字面量中。 更多信息请参见[Templating](#templating) 和 [TemplateEngine](#templateengine)。
 
-#### 3.3.1. 位置参数
+<a name="positional_arguments"></a>
+#### [3.3.1. 位置参数](#positional_arguments)
 
 当SQL语句使用`?`令牌，Jdbi可以将值绑定到对应索引的参数上(以0开始):
 
@@ -310,7 +326,8 @@ String name = handle.createQuery("select name from contacts where id = ?")
                     .one();
 ```
 
-#### 3.3.2. Named Arguments(命名参数)
+<a name="named_arguments"></a>
+#### [3.3.2. Named Arguments(命名参数)](#named_arguments)
 
 当SQL语句使用`:name`这样的冒号前缀标记时，Jdbi可以通过名称绑定参数:
 
@@ -330,7 +347,8 @@ String name = handle.createQuery("select name from contacts where id = :id")
 
 > **💡提示:** 不允许混合命名参数和位置参数，因为这会变得混乱。
 
-#### 3.3.3. Supported Argument Types(支持的参数类型)
+<a name="supported_argument_types"></a>
+#### [3.3.3. Supported Argument Types(支持的参数类型)](#supported_argument_types)
 
 开箱即用，Jdbi 支持以下类型作为 SQL 语句参数：
 
@@ -345,7 +363,8 @@ String name = handle.createQuery("select name from contacts where id = :id")
 
 您还可以配置Jdbi以支持其他参数类型。稍后再详细介绍。
 
-#### 3.3.4. Binding Arguments(绑定参数)
+<a name="binding_arguments"></a>
+#### [3.3.4. Binding Arguments(绑定参数)](#binding_arguments)
 
 SQL语句的参数可以通过几种不同的方式绑定。
 
@@ -434,7 +453,7 @@ handle.createUpdate("insert into contacts (id, name) values (:theId, :theName)")
       .execute();
 ```
 
-或者，您可以使用前缀限定每个绑定的 bean/对象。 在两个或多个绑定 bean 具有相似属性名称的情况下，这有助于消除歧义：
+或者，您可以使用前缀限定每个绑定的 *bean/object* 。 这可以帮助消除两个或多个绑定 bean 具有相似属性名称的情况下的歧义：
 
 ```java
 Folder folder = new Folder(1, "Important Documents");
@@ -453,19 +472,21 @@ handle.createUpdate("insert into documents (id, folder_id, name, contents) " +
 
 > **☢警告:** `bindMap()` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
 
-> **💡提示:** 作者建议检查[Immutables](#109____7_4__Immutables)对高级方法的支持，方便地绑定和映射值类型。
+> **💡提示:** 作者建议检查[Immutables](#immutables)对高级方法的支持，方便地绑定和映射值类型。
 
-#### 3.3.5. Custom Arguments(自定义参数)
+<a name="custom_arguments"></a>
+#### [3.3.5. Custom Arguments(自定义参数)](#custom_arguments)
 
-有时，您的数据模型将使用 Jdbi 本身不支持的数据类型（请参阅 [支持的参数类型](#_supported_argument_types)）。
+有时，您的数据模型将使用 Jdbi 本身不支持的数据类型（请参阅 [支持的参数类型](#supported_argument_types)）。
 
 幸运的是，通过实现一些简单的接口，Jdbi 可以配置为将自定义数据类型绑定为参数。
 
 > **🏷注意:** JDBC的核心特性通常得到所有数据库供应商的良好支持。然而，更高级的用法，如数组支持或几何类型，往往很快就会变成特定于供应商的。
 
-##### Argument(参数)
+<a name="argument"></a>
+##### [Argument(参数)](#argument)
 
-[Argument](apidocs/org/jdbi/v3/core/argument/Argument.html)接口将单个值封装到绑定中。
+[Argument](https://jdbi.org/apidocs/org/jdbi/v3/core/argument/Argument.html)接口将单个值封装到绑定中。
 
 ```java
 static class UUIDArgument implements Argument {
@@ -496,9 +517,10 @@ public void uuidArgument() {
 
 这里我们使用 **Argument** 直接绑定一个 UUID。 在这种特殊情况下，最明显的方法是将 UUID 作为字符串发送到数据库。 如果您的 JDBC 驱动程序直接支持自定义类型或高效的二进制传输，您可以在此处轻松利用它们。
 
-##### ArgumentFactory(参数工厂)
+<a name="ArgumentFactory"></a>
+##### [ArgumentFactory(参数工厂)](#ArgumentFactory)
 
-[ArgumentFactory](apidocs/org/jdbi/v3/core/argument/ArgumentFactory.html) 接口为它知道的任何数据类型提供 [Argument](#16______Argument) 实例。 通过实现和注册一个参数工厂，可以绑定自定义数据类型，而不必将它们显式地包装在 `Argument` 对象中。
+[ArgumentFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/argument/ArgumentFactory.html) 接口为它知道的任何数据类型提供 [Argument](#argument) 实例。 通过实现和注册一个参数工厂，可以绑定自定义数据类型，而不必将它们显式地包装在 `Argument` 对象中。
 
 Jdbi 提供了一个 `AbstractArgumentFactory` 类，它简化了 `ArgumentFactory` 接口的实现：
 
@@ -526,16 +548,17 @@ public void uuidArgumentFactory() {
 ```
 
 > **<1>** 绑定 UUID 时使用的 JDBC [SQL 类型常量](https://docs.oracle.com/javase/8/docs/api/java/sql/Types.html)。 Jdbi 需要这个来绑定 `null` 的 UUID 值。 参见 [PreparedStatement.setNull(int,int)](https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#setNull-int-int-)
-> **<2>** 由于 `Argument` 是一个函数式接口，它可以实现为一个简单的 lambda 表达式。                                                                                                                                                                                                               |
+> **<2>** 由于 `Argument` 是一个函数式接口，它可以实现为一个简单的 lambda 表达式。                                                                                                                                                                                                               
 
-
-##### Prepared Arguments(准备参数)
+<a name="preparedarguments"></a>
+##### [Prepared Arguments(准备参数)](#preparedarguments)
 
 传统的参数工厂根据绑定的类型和实际值来决定绑定。 这是非常灵活的，但是当绑定一个大的 `PreparedBatch` 时，它会导致严重的性能损失，因为必须为每批添加的参数咨询整个参数工厂链。 为了解决这个问题，实现 `ArgumentFactory.Preparable`，它承诺处理给定 `Type` 的所有值。 大多数内置参数工厂现在都实现了 Preparable 接口。
 
-##### Arguments Registry(参数注册表)
+<a name="argumentsregistry"></a>
+##### [Arguments Registry(参数注册表)](#argumentsregistry)
 
-当您注册一个 `ArgumentFactory` 时，注册信息存储在 Jdbi 持有的 [Arguments](apidocs/org/jdbi/v3/core/argument/Arguments.html) 实例中。 `Arguments` 是一个配置类，它存储所有注册的参数工厂（包括内置参数的工厂）。
+当您注册一个 `ArgumentFactory` 时，注册信息存储在 Jdbi 持有的 [Arguments](https://jdbi.org/apidocs/org/jdbi/v3/core/argument/Arguments.html) 实例中。 `Arguments` 是一个配置类，它存储所有注册的参数工厂（包括内置参数的工厂）。
 
 实际上，当您将参数绑定到语句时，Jdbi会查询`Arguments`配置对象，并搜索`ArgumentFactory`，该对象知道如何将绑定对象转换为`Argument`。
 
@@ -543,9 +566,10 @@ public void uuidArgumentFactory() {
 
 > **🏷注意:**  有时，两个或多个参数工厂将支持相同数据类型的参数。 当这种情况发生时，最后注册的工厂获胜。 可准备参数工厂总是优先于基本参数工厂。 这意味着您可以覆盖任何数据类型的绑定方式，包括开箱即用支持的数据类型。
 
-### 3.4. Queries(查询)
+<a name="queries"></a>
+### [3.4. Queries(查询)](#queries)
 
-[Query](apidocs/org/jdbi/v3/core/statement/Query.html) 是一个 [result-bearing](apidocs/org/jdbi/v3/core/result/ResultBearing.html) SQL 语句，它返回一个 来自数据库的结果集。
+[Query](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/Query.html) 是一个 [result-bearing](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html) SQL 语句，它返回一个 来自数据库的结果集。
 
 ```java
 List<Map<String, Object>> users =
@@ -633,16 +657,18 @@ LocalDate releaseDate = handle.createQuery(
     .one();
 ```
 
-### 3.5. Mappers(映射器)
+<a name="mappers"></a>
+### [3.5. Mappers(映射器)](#mappers)
 
 Jdbi 使用映射器将结果数据转换为 Java 对象。 有两种类型的映射器：
 
-- [Row Mappers](#22_____3_5_1__Row_Mappers), 映射整行结果集数据。
-- [Column Mappers](#25_____3_5_2__Column_Mappers), 映射结果集行的单个列。
+- [Row Mappers](#row_mappers), 映射整行结果集数据。
+- [Column Mappers](#column_mappers), 映射结果集行的单个列。
 
-#### 3.5.1. Row Mappers(行映射器)
+<a name="row_mappers"></a>
+#### [3.5.1. Row Mappers(行映射器)](#row_mappers)
 
-[RowMapper](apidocs/org/jdbi/v3/core/mapper/RowMapper.html)是一个函数式接口，映射一个JDBC的当前行[ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html)  到映射类型。 为结果集中的每一行调用一次行映射器。
+[RowMapper](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/RowMapper.html)是一个函数式接口，映射一个JDBC的当前行[ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html)  到映射类型。 为结果集中的每一行调用一次行映射器。
 
 由于 `RowMapper` 是一个函数式接口，它们可以使用 lambda 表达式内联到查询中：
 
@@ -670,7 +696,8 @@ List<User> users = handle.createQuery("SELECT id, name FROM user ORDER BY id ASC
 
 这个 `RowMapper` 相当于上面的 lambda 映射器，但更明确。
 
-##### RowMappers registry(行映射器注册表)
+<a name="rowmappers_registry"></a>
+##### [RowMappers registry(行映射器注册表)](#rowmappers_registry)
 
 可以为特定类型注册行映射器。这简化了使用，只需要指定要映射到的类型。Jdbi自动从注册表查找映射器，并使用它。
 
@@ -696,14 +723,15 @@ handle.registerRowMapper(new UserMapper());
 
 可以为任何给定类型注册多个映射器。 发生这种情况时，给定类型的最后注册的映射器优先。 这允许优化，比如为某种类型注册一个“默认”映射器，同时允许在适当的时候用不同的映射器覆盖默认映射器。
 
-##### RowMapperFactory(行映射器工厂)
+<a name="rowmapperfactory"></a>
+##### [RowMapperFactory(行映射器工厂)](#rowmapperfactory)
 
-[RowMapperFactory](apidocs/org/jdbi/v3/core/mapper/RowMapperFactory.html) 可以为任意类型生成行映射器。
+[RowMapperFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/RowMapperFactory.html) 可以为任意类型生成行映射器。
 
-在以下情况下，实现工厂可能比常规行映射器更可取：
+在以下情况下，实现工厂可能比常规RowMapper更可取：
 
-- 映射器实现是通用的，可以应用于多个映射类型。 例如，Jdbi 提供了一个通用的 [BeanMapper](#33______BeanMapper)，它将列映射到任何 bean 类的 bean 属性。
-- 映射类型具有通用签名，和/或映射器可以由其他注册的映射器组成。 例如，Jdbi 提供了一个 [Map.Entry mapper](#35______Map_Entry_mapping)，前提是为类型 `K` 和 `V` 注册了一个映射器。
+- 映射器实现是通用的，可以应用于多个映射类型。 例如，Jdbi 提供了一个通用的 [BeanMapper](#beanmapper)，它将数据库列映射到任何 bean 类的 bean 属性。
+- 映射类型具有通用签名，和/或映射器可以由其他注册的映射器组成。 例如，Jdbi 提供了一个 [Map.Entry mapper](#map_entry_mapping)，前提是为类型 `K` 和 `V` 注册了一个映射器。
 - 您想将多个映射器捆绑到一个类中。
 
 让我们以`Pair<L, R>`类为例：
@@ -742,7 +770,7 @@ if (!Pair.class.equals(GenericTypes.getErasedType(type))) {
 }
 ```
 
-> **💡提示:** `GenericTypes`实用程序类在[使用泛型类型](#137____9_3__Working_with_Generic_Types)中进行了讨论。
+> **💡提示:** `GenericTypes`实用程序类在[使用泛型类型](#working_with_generic_types)中进行了讨论。
 
 接下来，我们从映射类型中提取 `L` 和 `R` 泛型参数：
 
@@ -827,11 +855,12 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types)中讨论.
+> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#working_with_generic_types)中讨论.
 
-#### 3.5.2. Column Mappers(列映射器)
+<a name="#column_mappers"></a>
+#### [3.5.2. Column Mappers(列映射器)](#column_mappers)
 
-[ColumnMapper](apidocs/org/jdbi/v3/core/mapper/ColumnMapper.html) 是一个函数接口，从一个JDBC [ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html) 到映射类型。
+[ColumnMapper](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/ColumnMapper.html) 是一个函数接口，从一个JDBC [ResultSet](https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html) 到映射类型。
 
 由于 `ColumnMapper` 是一个函数式接口，所以可以使用 lambda 表达式将它们内联提供给查询：
 
@@ -860,7 +889,8 @@ List<Money> amounts = handle
 
 这个 `ColumnMapper` 相当于上面的 lambda 映射器，但更明确。
 
-##### ColumnMappers registry(列映射器注册表)
+<a name="columnmappers_registry"></a>
+##### [ColumnMappers registry(列映射器注册表)](#columnmappers_registry)
 
 可以为特定类型注册列映射器。 这简化了使用，只需要您指定要映射到的类型。 Jdbi 会自动从注册表中查找映射器并使用它。
 
@@ -894,32 +924,34 @@ handle.registerColumnMapper(new MoneyMapper());
 - java.sql: `Timestamp`
 - java.time: `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `ZonedDateTime`, and `ZoneId` (`翻译者WJW`注: 不包括`java.util.Date`)
 - java.util: `UUID`
-- `java.util.Collection` 和 Java 数组（用于数组列）。 根据数组元素的类型，可能需要一些额外的设置——请参阅 [SQL 数组](#37____3_7__SQL_Arrays).
+- `java.util.Collection` 和 Java 数组（用于数组列）。 根据数组元素的类型，可能需要一些额外的设置——请参阅 [SQL 数组](#sql_arrays).
 
-> **🏷注意:** 枚举值的绑定和映射方法可以通过 [Enums](apidocs/org/jdbi/v3/core/enums/Enums.html) 配置以及 [EnumByName](apidocs/org/jdbi/v3 /core/enums/EnumByName.html) 和 [EnumByOrdinal](apidocs/org/jdbi/v3/core/enums/EnumByOrdinal.html) 注解。
+> **🏷注意:** 枚举值的绑定和映射方法可以通过 [Enums](https://jdbi.org/apidocs/org/jdbi/v3/core/enums/Enums.html) 配置以及 [EnumByName](https://jdbi.org/apidocs/org/jdbi/v3 /core/enums/EnumByName.html) 和 [EnumByOrdinal](https://jdbi.org/apidocs/org/jdbi/v3/core/enums/EnumByOrdinal.html) 注解。
 
 > `翻译者WJW`添加: 如何注册`java.util.Date`的列映射器
+>
 > ```java
->     jdbi3.registerColumnMapper(new ColumnMapper<java.util.Date>() {
->       public java.util.Date map(ResultSet rs, int columnNumber, StatementContext ctx) throws SQLException {
->         return rs.getTimestamp(columnNumber);
->       }
->     });
->     
->     jdbi3.useHandle(handle -> {
->       java.util.Date releaseDate = handle.select("select create_time from e_bi limit 3")
->           .mapTo(java.util.Date.class)
->           .first();
->       
->       System.out.println("create_time: " + releaseDate);
->     });
+>  jdbi3.registerColumnMapper(new ColumnMapper<java.util.Date>() {
+>    public java.util.Date map(ResultSet rs, int columnNumber, StatementContext ctx) throws SQLException {
+>      return rs.getTimestamp(columnNumber);
+>    }
+>  });
+> 
+>  jdbi3.useHandle(handle -> {
+>    java.util.Date releaseDate = handle.select("select create_time from e_bi limit 3")
+>        .mapTo(java.util.Date.class)
+>        .first();
+> 
+>    System.out.println("create_time: " + releaseDate);
+>  });
 > ```
 
-##### ColumnMapperFactory(列映射器工厂)
+<a name="columnmapperfactory"></a>
+##### [ColumnMapperFactory(列映射器工厂)](#columnmapperfactory)
 
-[ColumnMapperFactory](apidocs/org/jdbi/v3/core/mapper/ColumnMapperFactory.html) 可以生成任意类型的列映射器。
+[ColumnMapperFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/ColumnMapperFactory.html) 可以生成任意类型的列映射器。
 
-在以下情况下，实现工厂可能比常规列映射器更可取：
+在以下情况下，实现工厂可能比常规ColumnMapper更可取：
 
 - 映射器类是泛型的，可以应用于多个映射类型。
 - 被映射的类型是泛型的，并且/或者映射器可以由其他已注册的映射器组成。
@@ -947,7 +979,7 @@ if (!Optional.class.equals(GenericTypes.getErasedType(type))) {
 }
 ```
 
-> **💡提示:** `GenericTypes` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types) 中讨论.
+> **💡提示:** `GenericTypes` 实用程序类在 [使用泛型类型](#working_with_generic_types) 中讨论.
 
 接下来，从映射类型中提取 `T` 泛型参数：
 
@@ -1020,23 +1052,27 @@ try (Handle handle = jdbi.open()) {
 }
 ```
 
-> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#137____9_3__Working_with_Generic_Types) 中讨论。
+> **💡提示:** `GenericType` 实用程序类在 [使用泛型类型](#working_with_generic_types) 中讨论。
 
-#### 3.5.3. Primitive Mapping(基本类型映射)
+<a name="primitive_mapping"></a>
+#### [3.5.3. Primitive Mapping(基本类型映射)](#primitive_mapping)
 
 所有 Java 基本类型都有到它们相应的 JDBC 类型的默认映射。 一般情况下，Jdbi 在遇到包装器类型时会自动进行适当的装箱和拆箱。
 
 默认情况下，映射到原始类型的 SQL `null` 将采用 Java 默认值。 这可以通过配置`jdbi.getConfig(ColumnMappers.class).setCoalesceNullPrimitivesToDefaults(false)`来禁用。
 
-#### 3.5.4. Immutables Mapping(不可变映射)
+<a name="immutables_mapping"></a>
+#### [3.5.4. Immutables Mapping(不可变映射)](#immutables_mapping)
 
-`Immutables` 值对象可能会被映射，详情参见 [Immutables](#109____7_4__Immutables) 部分。
+`Immutables` 值对象可能会被映射，详情参见 [Immutables](#immutables) 部分。
 
-#### 3.5.5. Freebuilder Mapping(自由建造器映射)
+<a name="freebuilder_mapping"></a>
+#### [3.5.5. Freebuilder Mapping(自由建造器映射)](#freebuilder_mapping)
 
-`Freebuilder` 值对象可能会被映射，详情参见 [Freebuilder](#110____7_5__Freebuilder) 部分。
+`Freebuilder` 值对象可能会被映射，详情参见 [Freebuilder](#freebuilder) 部分。
 
-#### 3.5.6. Reflection Mappers(反射映射器)
+<a name="reflection_mappers"></a>
+#### [3.5.6. Reflection Mappers(反射映射器)](#reflection_mappers)
 
 Jdbi 提供了一些开箱即用的基于反射的映射器。
 
@@ -1045,6 +1081,8 @@ Jdbi 提供了一些开箱即用的基于反射的映射器。
 反射映射器可以识别蛇形大小写，并且会自动将这些列与驼峰式字段/参数/属性名称匹配。
 
 > **💡提示:** 要指示 Jdbi 忽略其他可映射的方法，请将其注解为 `@Unmappable`。
+>
+> **对于RowMapper`@ColumnName` 注解要放在字段上; 对于BenMapper`@ColumnName` 注解要放置在 getter 或 setter 方法上。**
 
 ##### ConstructorMapper(构造器映射器)
 
@@ -1062,7 +1100,7 @@ public User(int id, String name) {
 
 > **💡提示:** Lombok的 `@AllArgsConstructor` 注解会为您生成 `@ConstructorProperties`注解。
 
-启用`-parameters` Java 编译器标志消除了对`@ConstructorProperties` 注解的需要——参见[使用参数名称编译](#133____9_2__使用参数名称编译)。 因此：
+启用`-parameters` Java 编译器标志消除了对`@ConstructorProperties` 注解的需要——参见[使用参数名称编译](#compiling_with_parameter_names)。 因此：
 
 ```java
 public User(int id, String name) {
@@ -1182,7 +1220,8 @@ public class User {
 
 > **💡提示:** 可以使用任何包中的任何 `@Nullable` 注解。 `javax.annotation.Nullable` 是一个不错的选择。
 
-##### BeanMapper(Bean映射器)
+<a name="beanmapper"></a>
+##### [BeanMapper(Bean映射器)](#beanmapper)
 
 我们还提供映射 bean 的基本支持：
 
@@ -1253,7 +1292,7 @@ public class User {
 }
 ```
 
-`@ColumnName` 注解可以放置在 getter 或 setter 方法上。
+`@ColumnName` 注解可以放置在 getter 或 setter 方法上(<mark>**不要放在字段上**</mark>)。
 
 > **🏷注意:** `@ColumnName` 注解仅在将 SQL 数据映射到 Java 对象时适用。 当绑定对象属性时（例如使用`bindBean()`），绑定属性名（`:id`）而不是列名（`:user_id`）。
 
@@ -1310,9 +1349,10 @@ List<User> users = handle
 > **🏷注意:** 如果结果集没有与嵌套对象的任何属性匹配的列，则 `@Nested` 属性保持不变（即 null）。
 
 
-##### FieldMapper(字段映射器)
+<a name="fieldmapper"></a>
+##### [FieldMapper(字段映射器)](#fieldmapper)
 
-[FieldMapper](apidocs/org/jdbi/v3/core/mapper/reflect/FieldMapper.html) 使用反射将数据库列直接映射到对象字段（包括私有字段）。
+[FieldMapper](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/reflect/FieldMapper.html) 使用反射将数据库列直接映射到对象字段（包括私有字段）。
 
 ```java
 public class User {
@@ -1347,7 +1387,7 @@ List<JoinRow> contactPhones = handle.select("select " +
     .list();
 ```
 
-对于与字段名称不匹配的列名称，请使用 `@ColumnName` 注解提供准确的列名称：
+对于与字段名称不匹配的列名称，请使用 `@ColumnName` 注解提供准确的列名称(<mark>**这时候是放在字段上面的**</mark>)：
 
 ```java
 public class User {
@@ -1411,7 +1451,8 @@ List<User> users = handle
 
 > **🏷注意:** 如果结果集没有与嵌套对象的任何字段匹配的列，则 `@Nested` 字段保持不变（即 null）。
 
-##### Map.Entry mapping(Map条目映射)
+<a name="map_entry_mapping"></a>
+##### [Map.Entry mapping(Map条目映射)](#map_entry_mapping)
 
 开箱即用，Jdbi 注册了一个 `RowMapper<Map.Entry<K,V>>`。 由于结果集中的每一行都是一个`Map.Entry<K,V>`，整个结果集可以很容易地收集到一个`Map<K,V>`（或Guava的`Multimap<K,V>`） .
 
@@ -1453,7 +1494,7 @@ Map<String, String> map = h.createQuery("select key, value from config")
 
 Google Guava 提供了一个 `Multimap` 类型，它支持每个键映射多个值。
 
-首先，按照 [Google Guava](#102____7_1__Google_Guava) 部分中的说明将 `GuavaPlugin` 安装到 Jdbi 中。
+首先，按照 [Google Guava](#google_guava) 部分中的说明将 `GuavaPlugin` 安装到 Jdbi 中。
 
 然后，简单地请求一个 `Multimap` 而不是 `Map`：
 
@@ -1468,7 +1509,7 @@ Multimap<User, Phone> map = h.createQuery(sql)
 
 `collectInto()`方法值得解释。当你调用它时，有几件事情会在幕后发生:
 
-- 参考`JdbiCollectors`注册表获取[CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，它支持给定的容器类型。
+- 参考`JdbiCollectors`注册表获取[CollectorFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，它支持给定的容器类型。
 - 接下来，要求`CollectorFactory` 从容器类型签名中提取元素类型。 在上面的例子中，`Multimap<User,Phone>` 的元素类型是`Map.Entry<User,Phone>`。
 - 从映射注册表中获取该元素类型的映射器。
 - 从`CollectorFactory`获取容器类型的[Collector](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collector.html)。
@@ -1476,10 +1517,10 @@ Multimap<User, Phone> map = h.createQuery(sql)
 
 > **🏷注意:** 如果对`收集器(collector )`工厂、元素类型或元素映射器的查找失败，则会引发异常。
 
-可以增强Jdbi以支持任意容器类型。 有关更多信息，请参阅 [[JdbiCollectors\]](#JdbiCollectors)。
+可以增强Jdbi以支持任意容器类型。 有关更多信息，请参阅 [JdbiCollectors](#jdbicollectors)。
 
-
-### 3.6. Codecs
+<a name="codecs"></a>
+### [3.6. Codecs(编解码器)](#codecs)
 
 > **🏷注意:** Codec API 仍然不稳定，可能会发生变化。 `翻译者WJW`提示: 先不要使用此功能!
 
@@ -1591,9 +1632,10 @@ public interface CounterDao {
     Counter restoredCounter = jdbi.withExtension(CounterDao.class, dao -> dao.loadCounter(counterId));
 ```
 
-#### 3.6.1. Resolving Types(解析类型)
+<a name="resolving_types"></a>
+#### [3.6.1. Resolving Types(解析类型)](#resolving_types)
 
-通过使用 [guava](apidocs/org/jdbi/v3/guava/package-summary.html) 模块中的 `TypeResolvingCodecFactory`，可以使用为具体类的子类或接口类型注册的编解码器。这是必要的，例如 将 [Auto Value](https://github.com/google/auto/blob/master/value/userguide/index.md) 生成的类映射到数据库列。
+通过使用 [guava](https://jdbi.org/apidocs/org/jdbi/v3/guava/package-summary.html) 模块中的 `TypeResolvingCodecFactory`，可以使用为具体类的子类或接口类型注册的编解码器。这是必要的，例如 将 [Auto Value](https://github.com/google/auto/blob/master/value/userguide/index.md) 生成的类映射到数据库列。
 
 在下面的例子中，只注册了一个用于 `Value<String>` 的编解码器，但是代码使用了 bean 和具体实现的类（`StringBean` 包含一个 `StringValue`，`StringValue` 实现了 `Value<String> `接口）。 如果找不到完美匹配，`TypeResolvingCodecFactory` 将检查类型以查找接口或超类的编解码器。
 
@@ -1665,16 +1707,16 @@ public static class StringBean implements Bean<Value<String>> {
 }
 ```
 
-
-### 3.7. Templating(模板)
+<a name="templating"></a>
+### [3.7. Templating(模板)](#templating)
 
 如上所述，绑定查询参数非常适合向数据库引擎发送一组静态参数。 绑定确保参数化查询字符串（`... where foo = ?`）被传输到数据库，而不允许恶意参数值注入 SQL。
 
-绑定参数并不总是足够的。 有时，查询在执行之前需要进行复杂的或结构化的更改，而参数就是无法削减它。 模板化（使用`TemplateEngine`）允许你通过一般的字符串操作来改变查询的内容。
+绑定参数并不总是足够的。 有时，查询在执行之前需要进行复杂的或结构化的更改，而参数并不能解决问题。 模板化（使用`TemplateEngine`）允许你通过一般的字符串操作来改变查询的内容。
 
-模板的典型用途是可选或重复段（条件和循环）、复杂变量（如 IN 子句的逗号分隔列表）以及不可绑定 SQL 元素（如表名）的变量替换。 与*参数绑定*不同，由 TemplateEngines 执行的属性呈现**不是** SQL 感知的。 由于它们执行通用字符串操作，如果您不小心使用它们，TemplateEngines 很容易产生严重损坏或有细微缺陷的查询。
+模板的典型用途是可选或重复段（条件和循环）、复杂变量（如 IN 子句的逗号分隔列表）以及不可绑定 SQL 元素（如表名）的变量替换。 与*参数绑定*不同，由 TemplateEngines 执行的属性呈现**不是** SQL 感知的。 由于它们执行通用字符串操作，如果您不小心使用它们，TemplateEngines很容易产生可怕的混乱或微妙的缺陷查询。
 
-> **⚠小心:** [查询模板是一种常见的攻击向量！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
+> **⚠小心:** [查询模板是一种常见的攻击载体！](https://www.xkcd.com/327/) 在可能的情况下，始终更喜欢将参数绑定到静态 SQL 而不是动态 SQL。
 
 ```java
 handle.createQuery("select * from <TABLE> where name = :n")
@@ -1688,7 +1730,7 @@ handle.createQuery("select * from <TABLE> where name = :n")
 
 > **💡提示:** 使用 TemplateEngine 对查询执行粗略的字符串操作。 查询参数应该由 Arguments 处理。
 
-> **⚠小心:** TemplateEngines 和 SqlParsers 依次操作：初始 String 将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
+> **⚠小心:** TemplateEngines 和 SqlParsers 按顺序依次操作：初始字符串将由 TemplateEngine 使用属性呈现，然后由 SqlParser 与 Argument 绑定解析。
 
 如果TemplateEngine输出与SqlParser的参数格式匹配的文本，解析器将尝试将Argument绑定到它。这可能是有用的，例如有命名参数的名称本身也是一个变量，但也可能导致令人困惑的错误:
 
@@ -1727,9 +1769,41 @@ handle.createUpdate("update mybeans set <if(a)>a = :a,<endif> <if(b)>b = :b,<end
     .execute();
 ```
 
-另请参阅有关 [TemplateEngine](#150____9_9__TemplateEngine)的部分。
+另请参阅有关 [TemplateEngine](#templateengine)的部分。
 
-### 3.8. SQL Arrays(SQL数组)
+<a name="classpathsqllocator"></a>
+#### [3.7.1. ClasspathSqlLocator](#classpathsqllocator)
+
+您可能会发现，将SQL模板存储在类路径上的单个文件中，而不是存储在Java代码中的字符串中是很有帮助的。
+
+`ClasspathSqlLocator` 将 Java 类型和方法名称转换为类路径位置，然后读取、解析和缓存加载的语句。
+
+```java
+// reads classpath resource com/foo/BarDao/query.sql
+ClasspathSqlLocator.create().locate(com.foo.BarDao.class, "query");
+
+// same resource as above
+ClasspathSqlLocator.create().locate("com.foo.BarDao.query");
+```
+
+默认情况下，加载文件中的任何注释都保持不变。 可以通过使用 `removingComments()` 方法实例化 `ClasspathSqlLocator` 来删除注释：
+
+```java
+// reads classpath resource com/foo/BarDao/query.sql, stripping all comments
+ClasspathSqlLocator.removingComments().locate(com.foo.BarDao.class, "query");
+
+// same resource as above
+ClasspathSqlLocator.removingComments().locate("com.foo.BarDao.query");
+```
+
+支持多种注释样式：
+
+- C-风格 (`/* … */` 和 `//` 到行尾)
+- SQL 风格 (`--` 到行尾)
+- shell 风格 (`#` 到行尾; 除非紧跟 `>` 字符； 这是 Postgres `#>` 和 `#>>` 运算符所必需的).
+
+<a name="sql_arrays"></a>
+### [3.8. SQL Arrays(SQL数组)](#sql_arrays)
 
 Jdbi 可以绑定/映射 Java 数组到/从 SQL 数组：
 
@@ -1769,7 +1843,8 @@ public interface GroupsDao {
 }
 ```
 
-#### 3.8.1. Registering array types(注册数组类型)
+<a name="registering_array_types"></a>
+#### [3.8.1. Registering array types(注册数组类型)](#registering_array_types)
 
 你想要绑定支持的任何 Java 数组元素类型都需要在 Jdbi 的 `SqlArrayTypes` 注册表中注册。 可以使用以下方式注册 JDBC 驱动程序直接支持的数组类型：
 
@@ -1783,7 +1858,8 @@ jdbi.registerArrayType(int.class, "integer");
 
 > **💡提示:** Postgres 支持枚举数组类型，因此您可以使用 `jdbi.registerArrayType(Colors.class, "colors")` 为 `enum Colors { red, blue }` 注册数组类型，其中 `"colors"` 是用户定义的枚举 在您的数据库中键入名称。
 
-#### 3.8.2. Binding custom array types(绑定自定义数组类型)
+<a name="binding_custom_array_types"></a>
+#### [3.8.2. Binding custom array types(绑定自定义数组类型)](#binding_custom_array_types)
 
 您还可以提供您自己的 SqlArrayType 实现，它将自定义 Java 元素类型转换为 JDBC 驱动程序支持的类型：
 
@@ -1815,11 +1891,12 @@ handle.createUpdate("insert into groups (id, user_ids) values (:id, :users)")
       .execute();
 ```
 
-> **🏷注意:** 和[Arguments Registry](#_arguments_registry)一样，如果有多个`SqlArrayType`为同一个数据类型注册，最后注册的获胜。
+> **🏷注意:** 和[Arguments Registry](#arguments_registry)一样，如果有多个`SqlArrayType`为同一个数据类型注册，最后注册的获胜。
 
-#### 3.8.3. Mapping array types(映射数组类型)
+<a name="mapping_array_types"></a>
+#### [3.8.3. Mapping array types(映射数组类型)](#mapping_array_types)
 
-`SqlArrayType` only allows you to bind Java array/collection arguments to their SQL counterparts. To map SQL array columns back to Java types, you can register a regular `ColumnMapper`:
+`SqlArrayType` 只允许您将 Java 数组/集合参数绑定到它们的 SQL 对应项。 要将 SQL 数组列映射回 Java 类型，可以注册一个常规的 `ColumnMapper`：
 
 ```java
 public class UserIdColumnMapper implements ColumnMapper<UserId> {
@@ -1840,7 +1917,8 @@ List<UserId> userIds = handle.createQuery("select user_ids from groups where id 
 
 > **🏷注意:** 数组列可以映射到任何在“JdbiCollectors”注册表中注册的容器类型。 例如。 如果安装了 guava 插件，则 `VARCHAR[]` 可以映射到 `ImmutableList<String>`。
 
-### 3.9. Results(结果)
+<a name="results"></a>
+### [3.9. Results(结果)](#results)
 
 执行数据库查询后，您需要解释结果。 JDBC 提供了 **ResultSet** 类，它可以简单地映射到 Java 基本类型和内置类，但 API 使用起来往往很麻烦。 **Jdbi** 提供可配置的映射，包括为行和列注册自定义映射器的能力。
 
@@ -1888,29 +1966,31 @@ public Optional<User> findUserById(long id) {
 }
 ```
 
-#### 3.9.1. ResultBearing(结果承载)
+<a name="resultbearing"></a>
+#### [3.9.1. ResultBearing(结果承载)](#resultbearing)
 
-[ResultBearing](apidocs/org/jdbi/v3/core/result/ResultBearing.html) 接口代表一个数据库操作的结果集，它没有映射到任何特定的结果类型。
+[ResultBearing](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html) 接口代表一个数据库操作的结果集，它没有映射到任何特定的结果类型。
 
 TODO(要做):
 
-- Query 实现了 ResultBearing
-- Update.executeAndReturnGeneratedKeys() 返回 ResultBearing
-- PreparedBatch.executeAndReturnGeneratedKeys() 返回 ResultBearing
+- *Query* 实现了 ResultBearing
+- *Update.executeAndReturnGeneratedKeys()* 返回 ResultBearing
+- *PreparedBatch.executeAndReturnGeneratedKeys()* 返回 ResultBearing
 - 可以映射 ResultBearing 对象，它返回映射类型的 ResultIterable。
-  - mapTo(Type | Class | GenericType) 如果映射器已注册类型
-  - map(RowMapper | ColumnMapper)
-  - mapToBean() 用于bean类型
-  - mapToMap() 返回 Map<String,Object> 将小写列名映射到值
+  - *mapTo(Type | Class | GenericType)* 如果映射器已注册类型
+  - *map(RowMapper | ColumnMapper)*
+  - *mapToBean()* 用于bean类型
+  - *mapToMap()* 返回 Map<String,Object> 将小写列名映射到值
 - reduceRows
   - RowView
 - reduceResultSet
-- **collectInto** 例如 带有 GenericType 标记。 在一个操作中隐含一个 mapTo() 和一个 collect() 。 例如 `collectInto(new GenericType<List<User>>(){})` 与 `mapTo(User.class).collect(toList())` 相同
+- **collectInto** 例如 带有 GenericType 标记。 在一个操作中隐含一个 *mapTo()* 和一个 *collect()* 。 例如 `collectInto(new GenericType<List<User>>(){})` 与 `mapTo(User.class).collect(toList())` 相同
 - 提供开箱即用支持的容器类型列表
 
-#### 3.9.2. ResultIterable(结果可迭代)
+<a name="resultiterable"></a>
+#### [3.9.2. ResultIterable(结果可迭代)](#resultiterable)
 
-[ResultIterable](apidocs/org/jdbi/v3/core/result/ResultIterable.html) 表示已映射到特定类型的结果集，例如 `ResultIterable<用户>`。
+[ResultIterable](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultIterable.html) 表示已映射到特定类型的结果集，例如 `ResultIterable<用户>`。
 
 TODO(要做):
 
@@ -1933,7 +2013,7 @@ TODO(要做):
 
 **Stream** 集成允许您使用 RowMapper 将 ResultSet 适配到新的 Java 8 Streams 框架中。 只要您的数据库支持流式结果（例如，只要您在事务中并设置提取大小，PostgreSQL 就会这样做），流将根据需要从数据库中延迟提取行。
 
-**#stream** 返回 **Stream<T>**。 然后您应该处理流并产生结果。 必须关闭此流以释放持有的任何数据库资源，因此我们建议使用 **useStream**、**withStream** 或 **try-with-resources** 块以确保没有资源泄漏。
+**#stream** 返回 *Stream<T>*。 然后您应该处理流并产生结果。 必须关闭此流以释放持有的任何数据库资源，因此我们建议使用 **useStream**、**withStream** 或 **try-with-resources** 块以确保没有资源泄漏。
 
 ```java
 handle.createQuery("SELECT id, name FROM user ORDER BY id ASC")
@@ -1951,7 +2031,7 @@ handle.createQuery("SELECT id, name FROM user ORDER BY id ASC")
 
 ##### List(列表)
 
-**#list** 发出 **List<T>**。 这必然会在内存中缓冲所有结果。
+**#list** 发出 *List<T>*。 这必然会在内存中缓冲所有结果。
 
 ```java
 List<User> users =
@@ -1992,7 +2072,8 @@ Map<Integer, Something> users = h.createQuery("select id, name from something")
 
 大多数用户应该更喜欢使用上面描述的更高级别的结果收集器，但总得有人做脏活。
 
-#### 3.9.3. Joins(连接)
+<a name="joins"></a>
+#### [3.9.3. Joins(连接)](#joins)
 
 将多个表连接在一起是一项非常常见的数据库任务。 这也是关系模型和 Java 对象模型之间的不匹配开始抬头的地方。
 
@@ -2038,7 +2119,7 @@ Jdbi 提供了一些不同的 API 来处理连接数据。
 
 ##### ResultBearing.reduceRows()
 
-[ResultBearing.reduceRows(U, BiFunction)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-U-java.util.function.BiFunction-) 方法接受一个累加器种子值和一个 lambda 函数。 对于结果集中的每一行，Jdbi 使用当前累加器值和结果集当前行上的 [RowView](apidocs/org/jdbi/v3/core/result/RowView.html) 调用 lambda。 每行返回的值成为为下一行传入的输入累加器。 在处理完最后一行后，`reducedRows()` 返回从 lambda 返回的最后一个值。
+[ResultBearing.reduceRows(U, BiFunction)](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-U-java.util.function.BiFunction-) 方法接受一个累加器种子值和一个 lambda 函数。 对于结果集中的每一行，Jdbi 使用当前累加器值和结果集当前行上的 [RowView](https://jdbi.org/apidocs/org/jdbi/v3/core/result/RowView.html) 调用 lambda。 每行返回的值成为为下一行传入的输入累加器。 在处理完最后一行后，`reducedRows()` 返回从 lambda 返回的最后一个值。
 
 ```java
 List<Contact> contacts = handle.createQuery(SELECT_ALL)
@@ -2061,7 +2142,7 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
     .collect(Collectors.toList()); //<7>
 ```
 
-> **<1>** 为`Contact` 和 `Phone`注册行映射器。 注意使用的 `"c"` 和 `"p"` 参数——这些是列名前缀。 通过使用前缀注册映射器，`Contact`映射器将只映射`c_id`和`c_name`列，而`Phone`映射器将仅映射`p_id`、`p_type`和`p_phone`。
+> **<1>** 为`Contact` 和 `Phone`注册行映射器。 注意使用的 `"c"` 和 `"p"` 参数 - 这些是列名前缀。 通过使用前缀注册映射器，`Contact`映射器将只映射`c_id`和`c_name`列，而`Phone`映射器将仅映射`p_id`、`p_type`和`p_phone`。
 > **<2>** 使用一个空的[LinkedHashMap](https://docs.oracle.com/javase/8/docs/api/java/util/LinkedHashMap.html)作为累加器种子，按联系人ID映射。当选择多个主记录时，`LinkedHashMap`是一个很好的累加器，因为它有快速的存储和查找，同时保留插入顺序(这有助于尊重`order BY`子句)。如果排序不重要，那么HashMap也足够了。
 > **<3>** 如果我们已经有了它，则从累加器中加载`ontact`； 否则，通过`RowView`初始化它。
 > **<4>** 如果 `p_id` 列不为空，则从当前行加载电话号码并将其添加到当前联系人。
@@ -2069,9 +2150,9 @@ List<Contact> contacts = handle.createQuery(SELECT_ALL)
 > **<6>** 此时，所有行都已读入内存，我们不需要联系人 ID 键。 所以我们调用`Map.values()`来获得一个`Collection<Contact>`。
 > **<7>** 将联系人收集到一个 `List<Contact>` 中。
 
-或者，[ResultBearing.reduceRows(RowReducer)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-org.jdbi.v3.core.result.RowReducer-) 接受一个 [RowReducer](apidocs/org/jdbi/v3/core/result/RowReducer.html) 并返回一个被简化的元素流。
+或者，[ResultBearing.reduceRows(RowReducer)](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-org.jdbi.v3.core.result.RowReducer-) 接受一个 [RowReducer](https://jdbi.org/apidocs/org/jdbi/v3/core/result/RowReducer.html) 并返回一个被简化的元素流。
 
-对于简单的主从连接，[ResultBearing.reduceRows(BiConsumer,RowView>)](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-java.util.function.BiConsumer-) 方法可以轻松地将这些连接简化为主元素流。
+对于简单的主从连接，[ResultBearing.reduceRows(BiConsumer,RowView>)](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceRows-java.util.function.BiConsumer-) 方法可以轻松地将这些连接简化为主元素流。
 
 修改上面的例子：
 
@@ -2119,7 +2200,7 @@ Optional<Contact> contact = handle.createQuery(SELECT_ONE)
 
 ##### ResultBearing.reduceResultSet()
 
-[ResultBearing.reduceResultSet()](apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceResultSet-U-org.jdbi.v3.core.result.ResultSetAccumulator-) 是一个类似于` reduceRows()`，除了它提供对 JDBC `ResultSet` 的直接访问，而不是每行的 `RowView`。
+[ResultBearing.reduceResultSet()](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultBearing.html#reduceResultSet-U-org.jdbi.v3.core.result.ResultSetAccumulator-) 是一个类似于` reduceRows()`，除了它提供对 JDBC `ResultSet` 的直接访问，而不是每行的 `RowView`。
 
 与“reduceRows()”相比，此方法可以提供更出色的性能，但代价是冗长：
 
@@ -2197,7 +2278,8 @@ handle.attach(UserArticleDao.class)
 assertThat(joined).isEqualTo(JoinRowMapperTest.getExpected());
 ```
 
-### 3.10. Updates(更新)
+<a name="updates"></a>
+### [3.10. Updates(更新)](#updates)
 
 更新是返回整数行修改的操作，例如数据库 **INSERT**、**UPDATE** 或 **DELETE**。
 
@@ -2218,9 +2300,11 @@ int count = handle.createUpdate("INSERT INTO user(id, name) VALUES(:id, :name)")
 assertThat(count).isEqualTo(1);
 ```
 
-更新可能返回[Generated Keys](#58____3_12__Generated_Keys)而不是一个结果计数。
+更新可能返回[Generated Keys](#generated_keys)而不是一个结果计数。
 
-### 3.11. Batches(批处理)
+<a name="batches"></a>
+
+### [3.11. Batches(批处理)](#batches)
 
 **Batch** 向服务器批量发送许多命令。
 
@@ -2237,8 +2321,8 @@ int[] rowsModified = batch.execute();
 
 语句被批量发送到数据库，但每个语句是单独执行的。 没有参数。 每个语句都返回一个修改计数，就像更新一样，然后这些计数在一个 `int[]` 数组中返回。 在常见情况下，所有元素都将为“1”。
 
-
-### 3.12. Prepared Batches(准备好了的批处理)
+<a name="prepared_batches"></a>
+### [3.12. Prepared Batches(准备好了的批处理)](#prepared_batches)
 
 **PreparedBatch** 向服务器发送一个带有多个参数集的语句。 该语句被重复执行，每批 **添加** 的参数执行一次。
 
@@ -2277,11 +2361,12 @@ public interface BasketOfFruit {
 
 > **💡提示:** 与重复执行单条语句相比，批处理显着提高了效率，但许多数据库也不能很好地处理非常大的批处理。 使用您的数据库配置进行测试，但通常应将极大的数据集分割并提交——否则可能会使您的数据库瘫痪。
 
-#### 3.12.1. Exception Rewriting(异常重写)
+<a name="exception_rewriting"></a>
+#### [3.12.1. Exception Rewriting(异常重写)](#exception_rewriting)
 
-`JDBC SQLException` 类非常古老并且比更现代的异常工具如 Throwable 的抑制异常早。 当一个批次失败时，可能会报告多个失败，这无法用当天的基本异常类型来表示。
+JDBC SQLException类非常古老，比现代异常工具更早，比如Throwable的抑制异常。当批处理失败时，可能需要报告多个失败，这些失败无法用当时的基本Exception类型表示。
 
-所以 SQLException 有一个定制的 [getNextException](https://docs.oracle.com/javase/8/docs/api/java/sql/SQLException.html#getNextException--) 链来表示批处理失败的原因。 不幸的是，默认情况下，大多数日志库不会打印出这些异常，而是将它们的处理推入您的代码中。 忘记处理这种情况并最终得到的日志除了
+因此SQLException有一个定制的getNextException链来表示批处理失败的原因。不幸的是，默认情况下，大多数日志库不会打印出这些异常，而是将它们的处理推到您的代码中。经常会忘记处理这种情况，最终日志中只显示了这些内容
 
 ```log
 java.sql.BatchUpdateException: Batch entry 1 insert into something (id, name) values (0, '') was aborted. Call getNextException to see the cause.
@@ -2295,7 +2380,8 @@ Suppressed: org.postgresql.util.PSQLException: ERROR: duplicate key value violat
   Detail: Key (id)=(0) already exists.
 ```
 
-### 3.13. Generated Keys(生成的键)
+<a name="generated_keys"></a>
+### [3.13. Generated Keys(生成的键)](#generated_keys)
 
 Update 或 PreparedBatch 可以自动生成键。 这些键与正常结果分开处理。 根据您的数据库和配置，整个插入行可能可用。
 
@@ -2340,7 +2426,8 @@ public void fluentInsertKeys() {
 }
 ```
 
-### 3.14. Stored Procedure Calls(存储过程调用)
+<a name="stored_procedure_calls"></a>
+### [3.14. Stored Procedure Calls(存储过程调用)](#stored_procedure_calls)
 
 **Call** 调用数据库存储过程。
 
@@ -2371,7 +2458,7 @@ OutParameters result = handle
 > **<4>** 如果 SQL 使用位置参数，则输出参数可以按名称（如示例所示）或从零开始的索引进行注册。 可以注册多个输出参数，具体取决于存储过程本身的输出。
 > **<5>** 最后，调用 `invoke()` 来执行该过程。
 
-调用存储过程会返回一个 [OutParameters](apidocs/org/jdbi/v3/core/statement/OutParameters.html) 对象，其中包含从存储过程调用返回的值。
+调用存储过程会返回一个 [OutParameters](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/OutParameters.html) 对象，其中包含从存储过程调用返回的值。
 
 现在我们可以从 `OutParameters` 中提取结果：
 
@@ -2383,7 +2470,8 @@ int sum = result.getInt("sum");
 
 > **☢警告:** 由于 JDBC 中的设计限制，通过 `OutParameters` 可用的参数数据类型仅限于 JDBC 直接支持的那些类型。 这不能通过例如扩展 映射器注册。
 
-### 3.15. Scripts(脚本)
+<a name="scripts"></a>
+### [3.15. Scripts(脚本)](#scripts)
 
 **Script** 将 String 解析为分号终止的语句。 这些语句可以在单个 **Batch** 中执行，也可以单独执行。
 
@@ -2396,7 +2484,8 @@ int[] results = handle.createScript(
 assertThat(results).containsExactly(1, 1);
 ```
 
-### 3.16. Transactions(事务)
+<a name="transactions"></a>
+### [3.16. Transactions(事务)](#transactions)
 
 **jdbi** 完全支持 JDBC 事务。
 
@@ -2416,10 +2505,10 @@ public Optional<User> findUserById(long id) {
 
 在这里，我们（可能是不必要地）用事务保护一个简单的 *SELECT* 语句。
 
-此外，Handle 有许多用于直接事务管理的方法：begin()、savepoint()、rollback()、commit() 等。通常，您不需要使用这些方法。 如果您没有明确提交手动打开的事务，它将被回滚。
+此外，Handle 有许多用于直接事务管理的方法：*begin()、savepoint()、rollback()、commit()* 等。通常，您不需要使用这些方法。 如果您没有明确提交手动打开的事务，它将被回滚。
 
-
-#### 3.16.1. Serializable Transactions(可序列化事务)
+<a name="serializable_transactions"></a>
+#### [3.16.1. Serializable Transactions(可序列化事务)](#serializable_transactions)
 
 对于更高级的查询，有时需要可序列化的事务。 **jdbi** 包括一个事务运行器，它能够重试由于序列化失败而中止的事务。 重要的是您的事务没有副作用，因为它可能会被执行多次。
 
@@ -2469,7 +2558,8 @@ executor.shutdown();
 
 使用可序列化隔离，两个事务中的一个将被迫中止并重试。在第二次循环中，它计算出10 + 20 + 30 = 60。加上另一个的30，我们得到30 + 60 = 90，断言成功。
 
-### 3.17. ClasspathSqlLocator(类路径SqlLocator)
+<a name="ClasspathSqlLocator"></a>
+### [3.17. ClasspathSqlLocator(类路径SqlLocator)](#ClasspathSqlLocator)
 
 您可能会发现将 SQL 模板存储在类路径上的单个文件中而不是 Java 代码中的字符串中很有帮助。
 
@@ -2483,7 +2573,8 @@ ClasspathSqlLocator.findSqlOnClasspath(com.foo.BarDao.class, "query");
 ClasspathSqlLocator.findSqlOnClasspath("com.foo.BarDao.query");
 ```
 
-## 4. Configuration(配置)
+<a name="configuration"></a>
+## [4. Configuration(配置)](#configuration)
 
 `Jdbi` 旨在以最少的配置开箱即用。 有时您需要更改默认行为，或添加扩展以处理其他数据库类型。每一个希望参与配置的核心或扩展都定义了一个配置类，例如`SqlStatements`类存储了SqlStatement相关的配置。 然后，在任何`Configurable`上下文（如`Jdbi` 或 `Handle`）上，您都可以以类型安全的方式更改配置：
 
@@ -2503,19 +2594,20 @@ jdbi.configure(RowMappers.class, rm -> {
 
 创建新上下文时，它会在创建时继承父上下文配置的副本。 因此，`Handle` 从创建的 `Jdbi` 初始化其配置，但更改永远不会传播回来。
 
-有关更高级的实现细节，请参阅 [JdbiConfig](#141____9_5__JdbiConfig)
+有关更高级的实现细节，请参阅 [JdbiConfig](#jdbiconfig)
 
-### 4.1. Qualified Types(限定类型)
+<a name="qualified_types"></a>
+### [4.1. Qualified Types(限定类型)](#qualified_types)
 
 有时，同一个 Java 对象可以对应数据库中的多种数据类型。 例如，`String` 可以是 `varchar` 纯文本、`nvarchar` 文本、`json` 数据等，所有这些都有不同的处理要求。
 
-[QualifiedType](apidocs/org/jdbi/v3/core/qualifier/QualifiedType.html)允许您添加这样的上下文到Java类型:
+[QualifiedType](https://jdbi.org/apidocs/org/jdbi/v3/core/qualifier/QualifiedType.html)允许您添加这样的上下文到Java类型:
 
 ```java
 QualifiedType.of(String.class).with(Json.class);
 ```
 
-这个 `QualifiedType` 仍然代表 `String` *类型*，但使用 `@Json` 注解进行限定。 它可以以类似于 [GenericType](#138_____9_3_1__GenericType) 的方式使用，使组件处理值（主要是 `ArgumentFactories` 和 `ColumnMapperFactories`）以不同的方式执行它们的工作，并让不同的实现完全处理这些值：
+这个 `QualifiedType` 仍然代表 `String` *类型*，但使用 `@Json` 注解进行限定。 它可以以类似于 [GenericType](#generictype) 的方式使用，使组件处理值（主要是 `ArgumentFactories` 和 `ColumnMapperFactories`）以不同的方式执行它们的工作，并让不同的实现完全处理这些值：
 
 ```java
 @Json
@@ -2538,15 +2630,15 @@ query.bindByType("jsonValue", "{\"foo\":1}", json);
 
 > **🏷注意:** 限定符实现为“注解”。 这允许工厂在源头独立检查限定符的值，例如在他们的“类”上，以改变他们自己的行为或*重新限定*一个值并让它由 Jdbi 的查找链重新评估。
 
-> **☢警告:** 限定符是注释**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
+> **☢警告:** 限定符是注解**并不**意味着它们在放置在源类中时会固有地激活它们的功能。 每个功能都有自己的使用规则。
 
 > **⚠小心:** 参数只能通过`bindByType` 调用进行绑定，而不是常规的`bind` 或`update.execute(Object...)`。 此外，数组不能被限定。
 
 这些功能目前使用限定类型：
 
 - `@NVarchar` 和 `@MacAddr`（后者在 `jdbi3-postgres` 中）分别将字符串绑定和映射为 `nvarchar` 和 `macaddr`，而不是通常的 `varchar`。
-- `jdbi3-postgres` 提供 [HStore](#_hstore).
-- [JSON](#jdbi3-json)
+- `jdbi3-postgres` 提供 [HStore](#hstore).
+- [JSON](#jdbi3_json)
 - `BeanMapper`、`@BindBean`、`@RegisterBeanMapper`、`mapTobean()` 和 `bindBean()` 尊重 getter、setter 和 setter 参数的限定符。
 - `ConstructorMapper` 和 `@RegisterConstructorMapper` 尊重构造函数参数的限定符。
 - `@BindMethods` 和 `bindMethods()` 尊重方法的限定符。
@@ -2557,7 +2649,8 @@ query.bindByType("jsonValue", "{\"foo\":1}", json);
 - `@BindJpa` 和 `JpaMapper` 尊重 getter 和 setter 的限定符。
 - `@BindKotlin`、`bindKotlin()` 和 `KotlinMapper` 尊重构造函数参数、getter、setter 和 setter 参数的限定符。
 
-## 5. SQL Objects(SQL对象)
+<a name="sql_objects"></a>
+## [5. SQL Objects(SQL对象)](#sql_objects)
 
 SQL对象是流畅式核心API的声明式替代。
 
@@ -2586,11 +2679,13 @@ jdbi.installPlugin(new SqlObjectPlugin());
 
 在运行时，您可以请求接口的实例，Jdbi 会根据您声明的注解和方法合成一个实现。
 
-### 5.1. Annotated Methods(注解方法)
+<a name="annotated_methods"></a>
+### [5.1. Annotated Methods(注解方法)](#annotated_methods)
 
-使用Jdbi的SQL方法注解 ([@SqlBatch](apidocs/org/jdbi/v3/sqlobject/statement/SqlBatch.html), [@SqlCall](apidocs/org/jdbi/v3/sqlobject/statement/SqlCall.html), [@SqlQuery](apidocs/org/jdbi/v3/sqlobject/statement/SqlQuery.html), or [@SqlUpdate](apidocs/org/jdbi/v3/sqlobject/statement/SqlUpdate.html))注解的方法将基于方法上的注解及其参数自动生成实现。方法的参数用作语句的参数，SQL语句结果映射到方法返回类型。
+使用Jdbi的SQL方法注解 ([@SqlBatch](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/statement/SqlBatch.html), [@SqlCall](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/statement/SqlCall.html), [@SqlQuery](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/statement/SqlQuery.html), or [@SqlUpdate](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/statement/SqlUpdate.html))注解的方法将基于方法上的注解及其参数自动生成实现。方法的参数用作语句的参数，SQL语句结果映射到方法返回类型。
 
-#### 5.1.1. @SqlUpdate
+<a name="sqlupdate"></a>
+#### [5.1.1. @SqlUpdate](#sqlupdate)
 
 将 `@SqlUpdate` 注解用于修改数据的操作（即插入、更新、删除）。
 
@@ -2638,9 +2733,10 @@ public interface UserDao {
 }
 ```
 
-> **💡提示:** One True Database在返回生成的键时支持附加功能。详见[PostgreSQL](#__getgeneratedkeys_4)。
+> **💡提示:** One True Database在返回生成的键时支持附加功能。详见[PostgreSQL](#getgeneratedkeys_4)。
 
-#### 5.1.2. 绑定参数
+<a name="binding_arguments_2"></a>
+#### [5.1.2. 绑定参数](#binding_arguments_2)
 
 在我们继续使用其他 `@Sql__` 注解之前，让我们讨论如何将方法参数作为参数绑定到 SQL 语句。
 
@@ -2660,7 +2756,7 @@ public interface UserDao {
 void insert(@Bind("id") long id, @Bind("name") String name);
 ```
 
-[使用参数名称编译](#133____9_2__使用参数名称编译) 消除了对`@Bind` 注解的需要。 然后 Jdbi 会将每个未注解的参数绑定到参数的名称。
+[使用参数名称编译](#compiling_with_parameter_names) 消除了对`@Bind` 注解的需要。 然后 Jdbi 会将每个未注解的参数绑定到参数的名称。
 
 ```java
 @SqlUpdate("insert into users (id, name) values (:id, :name)")
@@ -2722,7 +2818,8 @@ void insert(@BindBean("user") User user);
 
 > **☢警告:** `@BindMap` 不绑定嵌套属性——映射键应该与绑定的参数名称完全匹配。
 
-#### 5.1.3. @SqlQuery
+<a name="sqlquery"></a>
+#### [5.1.3. @SqlQuery](#sqlquery)
 
 使用 `@SqlQuery` 注解进行选择操作。
 
@@ -2746,11 +2843,11 @@ public interface UserDao {
 > **<3>** 如果单行方法返回空结果集，则返回 `null`。
 > **<4>** 方法可能返回“可选”值。 如果查询没有返回任何行（或者如果行中的值为 null），则返回 `Optional.empty()` 而不是 null。 如果查询返回多于一行，SQL 对象将引发异常。
 
-> **💡提示:** 通过向 [JdbiCollectors](#JdbiCollectors) 配置注册表注册 [CollectorFactory](apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，可以“教”Jdbi 识别新的集合类型。
+> **💡提示:** 通过向 [JdbiCollectors](#jdbicollectors) 配置注册表注册 [CollectorFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/collector/CollectorFactory.html)，可以“教”Jdbi 识别新的集合类型。
 
-请参阅 [BuiltInCollectorFactory](apidocs/org/jdbi/v3/core/collector/BuiltInCollectorFactory.html) 以获取开箱即用支持的集合类型的完整列表。 某些 Jdbi 插件（例如`GuavaPlugin`）注册额外的集合类型。
+请参阅 [BuiltInCollectorFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/collector/BuiltInCollectorFactory.html) 以获取开箱即用支持的集合类型的完整列表。 某些 Jdbi 插件（例如`GuavaPlugin`）注册额外的集合类型。
 
-查询方法也可能返回 [ResultIterable](#_resultiterable)、[ResultIterator](apidocs/org/jdbi/v3/core/result/ResultIterator.html) 或 `Stream`。
+查询方法也可能返回 [ResultIterable](#resultiterable)、[ResultIterator](https://jdbi.org/apidocs/org/jdbi/v3/core/result/ResultIterator.html) 或 `Stream`。
 
 ```java
 public interface UserDao {
@@ -2781,7 +2878,7 @@ try (Stream<String> names = dao.getNamesAsStream()) {
 }
 ```
 
-> **☢警告:** `ResultIterable`、`ResultIterator` 和 `Stream` 方法不适用于按需(on-demand) SQL对象。 除非以嵌套方式调用方法（请参阅 [On-Demand](#97_____5_5_3__On_Demand)），返回的对象将已经关闭。
+> **☢警告:** `ResultIterable`、`ResultIterator` 和 `Stream` 方法不适用于按需(on-demand) SQL对象。 除非以嵌套方式调用方法（请参阅 [On-Demand](#on_demand)），返回的对象将已经关闭。
 
 
 ##### @RegisterRowMapper
@@ -2912,7 +3009,7 @@ public class UserMapperFactory implements ColumnMapperFactory { //<1>
 
 ##### @RegisterBeanMapper
 
-使用 `@RegisterBeanMapper` 为 bean 类注册一个 [BeanMapper](#33______BeanMapper)：
+使用 `@RegisterBeanMapper` 为 bean 类注册一个 [BeanMapper](#beanmapper)：
 
 ```java
 public interface UserDao {
@@ -2969,7 +3066,7 @@ public interface UserDao {
 
 ##### @RegisterFieldMapper
 
-使用 `@RegisterFieldMapper` 为给定的类注册一个 [FieldMapper](#34______FieldMapper)。
+使用 `@RegisterFieldMapper` 为给定的类注册一个 [FieldMapper](#fieldmapper)。
 
 ```java
 public interface UserDao {
@@ -3029,7 +3126,7 @@ public interface UserDao {
 
 ##### Map<K,V> Results
 
-SQL 对象方法可能返回`Map<K,V>` 类型（参见核心API 中的[Map.Entry mapping](#35______Map_Entry_mapping)）。 在这种情况下，每一行都映射到一个 `Map.Entry<K,V>`，每行的条目都被收集到一个 单一的`Map` 实例中。
+SQL 对象方法可能返回`Map<K,V>` 类型（参见核心API 中的[Map.Entry mapping](#map_entry_mapping)）。 在这种情况下，每一行都映射到一个 `Map.Entry<K,V>`，每行的条目都被收集到一个 单一的`Map` 实例中。
 
 > **🏷注意:** 必须为键和值类型注册映射器。
 
@@ -3067,7 +3164,7 @@ Map<String, String> getAll();
 
 如果存在一对多关系怎么办？ Google Guava 提供了一个 `Multimap` 类型，它支持每个键映射多个值。
 
-首先，按照 [Google Guava](#102____7_1__Google_Guava) 部分中的说明安装 `GuavaPlugin`。
+首先，按照 [Google Guava](#google_guava) 部分中的说明安装 `GuavaPlugin`。
 
 然后，只需指定一个 `Multimap` 返回类型而不是 `Map`：
 
@@ -3081,7 +3178,7 @@ Multimap<User, Phone> getMultimap();
 
 到目前为止，所有示例都是“Map”类型，其中结果集中的每一行都是一个“Map.Entry”。 但是，如果我们要返回的 `Map` 实际上是单行甚至单列怎么办？
 
-Jdbi 的 [MapMapper](apidocs/org/jdbi/v3/core/mapper/MapMapper.html) 将每一行映射到一个 `Map<String, Object>`，其中列名映射到列值。
+Jdbi 的 [MapMapper](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/MapMapper.html) 将每一行映射到一个 `Map<String, Object>`，其中列名映射到列值。
 
 > **🏷注意:** Jdbi 的默认设置是将列名转换为 Map 键的小写。 可以通过`MapMappers` 配置类更改此行为。
 
@@ -3094,7 +3191,7 @@ Jdbi 的 [MapMapper](apidocs/org/jdbi/v3/core/mapper/MapMapper.html) 将每一�
 Map<String, Object> getById(long userId);
 ```
 
-从 Jdbi 3.6.0 开始，有 [GenericMapMapperFactory](apidocs/org/jdbi/v3/core/mapper/GenericMapperFactory.html)，它提供了相同的功能，但允许==除“Object”以外(对于`Map<String, Object>`还是要用MapMapper)==的值类型，只要合适的 ColumnMapper 已注册并且所有列都属于这种类型：
+从 Jdbi 3.6.0 开始，有 [GenericMapMapperFactory](https://jdbi.org/apidocs/org/jdbi/v3/core/mapper/GenericMapperFactory.html)，它提供了相同的功能，但允许<mark>除“Object”以外(对于Map<String, Object>还是要用MapMapper)</mark>的值类型，只要合适的 ColumnMapper 已注册并且所有列都属于这种类型：
 
 ```java
 @SqlQuery("select 1.0 as LOW, 2.0 as MEDIUM, 3.0 as HIGH")
@@ -3103,12 +3200,12 @@ Map<String, Object> getById(long userId);
 Map<String, BigDecimal> getNumericLevels();
 ```
 
-> **💡提示:** 你使用 PostgreSQL 的 `hstore` 列吗？ [PostgreSQL](#_postgresql) 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器。 有关更多信息，请参阅 [hstore](#_hstore)。
+> **💡提示:** 你使用 PostgreSQL 的 `hstore` 列吗？ [PostgreSQL](#postgresql) 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器。 有关更多信息，请参阅 [hstore](#hstore)。
 
 
 ##### @UseRowReducer
 
-`@SqlQuery` 方法使用连接查询可以将主从连接减少到一个或多个主级对象。 请参阅 [ResultBearing.reduceRows()](#51______ResultBearing_reduceRows__) 以了解行减行器的介绍。
+`@SqlQuery` 方法使用连接查询可以将主从连接减少到一个或多个主级对象。 请参阅 [ResultBearing.reduceRows()](#resultbearing) 以了解行减行器的介绍。
 
 考虑一个包含文件夹和文档的文件系统比喻。 在连接中，我们将使用 `f_` 作为文件夹列的前缀，并使用 `d_` 作为文档列的前缀。
 
@@ -3149,16 +3246,17 @@ public interface DocumentDao {
 }
 ```
 
-> **<1>** 在此示例中，我们使用前缀注册文件夹和文档映射器，以便每个映射器仅查看具有该前缀的列。 这些映射器由 `getRow(Folder.class)` 和 `getRow(Document.class)` 调用中的行缩减器间接使用。
+> **<1>** 在此示例中，我们使用前缀注册 Folder 和 Document 映射器，以便每个映射器仅查看具有该前缀的列。 这些映射器由 `getRow(Folder.class)` 和 `getRow(Document.class)` 调用中的行缩减器间接使用。
 > **<2>** 用`@UseRowReducer`注解该方法，并指定`RowReducer`实现类。
 > **<3>** 同样的' RowReducer '实现可以用于单主记录和多主记录查询。
-> **<4>** [LinkedHashMapRowReducer](apidocs/org/jdbi/v3/core/result/LinkedHashMapRowReducer.html) 是一个抽象的`RowReducer` 实现，它使用`LinkedHashMap` 作为结果容器，并返回`values()` 集合作为结果。
+> **<4>** [LinkedHashMapRowReducer](https://jdbi.org/apidocs/org/jdbi/v3/core/result/LinkedHashMapRowReducer.html) 是一个抽象的`RowReducer` 实现，它使用`LinkedHashMap` 作为结果容器，并返回`values()` 集合作为结果。
 > **<5>** 通过 ID 从map中获取此行的`Folder`，如果不在map中，则创建它。
 > **<6>** 在映射文档并将其添加到文件夹之前，确认该行有一个文档（这是左联接）。
 
-#### 5.1.4. @SqlBatch
+<a name="sqlbatch"></a>
+#### [5.1.4. @SqlBatch](#sqlbatch)
 
-使用 `@SqlBatch` 注解进行批量更新操作。 `@SqlBatch` 类似于 Core 中的 [PreparedBatch](#56____3_11__Prepared_Batches)。
+使用 `@SqlBatch` 注解进行批量更新操作。 `@SqlBatch` 类似于 Core 中的 [PreparedBatch](#prepared_batches)。
 
 ```java
 public interface ContactDao {
@@ -3214,7 +3312,7 @@ public interface UserDao {
 
 ##### @GetGeneratedKeys
 
-与`@SqlUpdate` 类似，`@GetGeneratedKeys` 注解告诉 SQL 对象返回值应该是每个 SQL 语句生成的键，而不是更新计数。 有关更深入的讨论，请参阅 [@GetGeneratedKeys](#__getgeneratedkeys)。
+与`@SqlUpdate` 类似，`@GetGeneratedKeys` 注解告诉 SQL 对象返回值应该是每个 SQL 语句生成的键，而不是更新计数。 有关更深入的讨论，请参阅 [@GetGeneratedKeys](#getgeneratedkeys)。
 
 ```java
 public interface UserDao {
@@ -3252,7 +3350,8 @@ public interface UserDao {
 
 在上面的例子中，每个新行都会在 `roles` 列中获得相同的 `varchar[]` 值。
 
-#### 5.1.5. @SqlCall
+<a name="sqlcall"></a>
+#### [5.1.5. @SqlCall](#sqlcall)
 
 使用`@SqlCall` 注解来调用存储过程。
 
@@ -3274,7 +3373,7 @@ public interface OrderDao {
 }
 ```
 
-可以从方法返回的 [OutParameters](apidocs/org/jdbi/v3/core/statement/OutParameters.html) 中提取单个输出参数：
+可以从方法返回的 [OutParameters](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/OutParameters.html) 中提取单个输出参数：
 
 ```java
 OutParameters outParams = orderDao.prepareOrderFromCart(cartId);
@@ -3284,7 +3383,8 @@ double orderTotal = outParams.getDouble("orderTotal");
 
 通过传递 `Consumer<OutParameters>` 或 `Function<OutParameters, T>`，您可以在语句关闭之前处理结果。 这对于处理游标类型的结果很有用。
 
-#### 5.1.6. @SqlScript
+<a name="sqlscript"></a>
+#### [5.1.6. @SqlScript](#sqlscript)
 
 使用`@SqlScript` 批量执行一个或多个语句。 您可以定义要使用的模板引擎的属性。
 
@@ -3302,7 +3402,7 @@ int[] doSomeUpdates(); // returns [ 3, 2 ]
 int[] externalScript();
 ```
 
-#### 5.1.7. @GetGeneratedKeys
+#### [5.1.7. @GetGeneratedKeys](#getgeneratedkeys_3)
 
 `@GetGeneratedKeys` z注解可用于 `@SqlUpdate` 或 `@SqlBatch` 方法以返回从 SQL 语句生成的键：
 
@@ -3330,7 +3430,8 @@ public interface UserDao {
 }
 ```
 
-#### 5.1.8. SqlLocator
+<a name="sqllocator"></a>
+#### [5.1.8. SqlLocator](#sqllocator)
 
 当 SQL 语句变得越来越复杂时，在 `@Sql__` 方法注解中将语句作为 Java 字符串提供可能会很麻烦。
 
@@ -3349,11 +3450,11 @@ interface BarDao {
 }
 ```
 
-**@UseClasspathSqlLocator** 使用 [ClasspathSqlLocator](#63____3_16__ClasspathSqlLocator)实现，如上所述。
+**@UseClasspathSqlLocator** 使用 [ClasspathSqlLocator](#classpathsqllocator)实现，如上所述。
 
-如果你喜欢 StringTemplate，[StringTemplate 4](#126____7_14__StringTemplate_4) 模块还提供了一个 SqlLocator，它可以从类路径上的 StringTemplate 4 文件中加载 SQL 模板。
+如果你喜欢 StringTemplate，[StringTemplate 4](#stringtemplate_4) 模块还提供了一个 SqlLocator，它可以从类路径上的 StringTemplate 4 文件中加载 SQL 模板。
 
-#### 5.1.9. @CreateSqlObject
+#### [5.1.9. @CreateSqlObject](#createsqlobject)
 
 使用@CreateSqlObject注解在另一个SqlObject中重用一个SqlObject。例如，您可以构建一个事务方法，该方法执行在其他SqlObject中定义的SQL更新，作为事务的一部分。Jdbi不会为对子SqlObject的调用打开新的句柄。
 
@@ -3381,7 +3482,8 @@ public interface Foo {
 }
 ```
 
-#### 5.1.10. @Timestamped
+<a name="timestamped"></a>
+#### [5.1.10. @Timestamped](#timestamped)
 
 你可以用`@Timestamped`注解任何语句，在`now`绑定下绑定一个`OffsetDateTime`，其值为当前时间：
 
@@ -3399,9 +3501,9 @@ public interface Bar {
 @Timestamped("timestamp")
 ```
 
-[TimestampedConfig](apidocs/org/jdbi/v3/sqlobject/customizer/TimestampedConfig.html) 允许您控制用于此的时区。
+[TimestampedConfig](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/TimestampedConfig.html) 允许您控制用于此的时区。
 
-### 5.2. Consumer Methods
+### [5.2. Consumer Methods](#consumer_methods)
 
 作为一种特殊情况，除了其他绑定参数之外，您还可以额外在最后提供一个 `Consumer<T>` 参数。 提供的使用者对结果集中的每一行执行一次。 参数 T 的静态类型决定了行类型。
 
@@ -3410,7 +3512,8 @@ public interface Bar {
 void forEachUser(Consumer<User> consumer);
 ```
 
-### 5.3. Default Methods
+<a name="default_methods"></a>
+### [5.3. Default Methods](#default_methods)
 
 偶尔会出现不适合SQL方法注解的用例。在这些情况下，您可以使用Java 8的 `default` 方法“drop down(下拉)”到 Core API。
 
@@ -3443,7 +3546,8 @@ public interface ContactPhoneDao {
 }
 ```
 
-### 5.4. Transaction Management
+<a name="transaction_management"></a>
+### [5.4. Transaction Management](#transaction_management)
 
 您可以使用 SqlObject 注解声明事务：
 
@@ -3499,11 +3603,13 @@ default void outerMethodWithOneLevelCallsInnerMethodWithAnotherLevel() throws Tr
 default void innerMethodWithADifferentLevel() {}
 ```
 
-### 5.5. Using SQL Objects(使用 SQL 对象)
+<a name="using_sql_objects"></a>
+### [5.5. Using SQL Objects(使用 SQL 对象)](#using_sql_objects)
 
 定义接口后，有几种方法可以获取它的实例：
 
-#### 5.5.1. Attached to Handle(附加到Handle)
+<a name="attached_to_handle"></a>
+#### [5.5.1. Attached to Handle(附加到Handle)](#attached_to_handle)
 
 您可以获得附加到打开Handle的 SQL 对象。
 
@@ -3516,10 +3622,11 @@ try (Handle handle = jdbi.open()) {
 
 附加的 `SQL对象`与句柄具有相同的生命周期——当句柄关闭时，`SQL对象`将变得不可用。
 
-#### 5.5.2. Temporary SQL Objects(临时SQL对象)
+<a name="temporary_sql_objects"></a>
+#### [5.5.2. Temporary SQL Objects(临时SQL对象)](#temporary_sql_objects)
 
-还可以通过传递回调(通常是lambda)，从Jdbi对象获得临时SQL对象。 使用[Jdbi.withExtension](apidocs/org/jdbi/v3/core/Jdbi.html#withExtension-java.lang.Class-org.jdbi.v3.core.extension.ExtensionCallback-)操作返回结果
-, 或者[useExtension](apidocs/org/jdbi/v3/core/Jdbi.html#useExtension-java.lang.Class-org.jdbi.v3.core.extension.ExtensionConsumer-)用于没有结果的操作。
+还可以通过传递回调(通常是lambda)，从Jdbi对象获得临时SQL对象。 使用[Jdbi.withExtension](https://jdbi.org/apidocs/org/jdbi/v3/core/Jdbi.html#withExtension-java.lang.Class-org.jdbi.v3.core.extension.ExtensionCallback-)操作返回结果
+, 或者[useExtension](https://jdbi.org/apidocs/org/jdbi/v3/core/Jdbi.html#useExtension-java.lang.Class-org.jdbi.v3.core.extension.ExtensionConsumer-)用于没有结果的操作。
 
 ```java
 jdbi.useExtension(ContactPhoneDao.class, dao -> dao.insertFullContact(alice));
@@ -3528,8 +3635,8 @@ long bobId = jdbi.withExtension(ContactPhoneDao.class, dao -> dao.insertFullCont
 
 临时 `SQL对象` 仅在传递给方法的回调中有效。 当回调返回时，`SQL对象`（和关联的临时句柄）将关闭。
 
-
-#### 5.5.3. On-Demand(按需)
+<a name="on_demand"></a>
+#### [5.5.3. On-Demand(按需)](#on_demand)
 
 “On-demand(按需)”实例有一个开放式的生命周期，因为它们为每个方法调用获取和释放一个连接。它们是线程安全的，可以跨应用程序重用。当您一次只需要进行“单个调用”时，这很方便。
 
@@ -3551,29 +3658,30 @@ dao.useTransaction(txn -> {
 });
 ```
 
-> ==wjw_note:==  DAO要扩展`org.jdbi.v3.sqlobject.transaction.Transactional`接口才能使用`useTransaction`
->
+> <mark>wjw_note:</mark>  DAO要扩展`org.jdbi.v3.sqlobject.transaction.Transactional`接口才能使用`useTransaction`
 > 例如:  `public interface StoreDetailInfoDao extends Transactional<StoreDetailInfoDao> {`
 
-接口 `default` 方法，以及混入，例如 [SqlObject](apidocs/org/jdbi/v3/sqlobject/SqlObject.html) 和 [Transactional](apidocs/org/jdbi/v3/sqlobject/transaction/Transactional.html)，允许您在按需句柄保持打开状态的情况下运行代码。 同一线程上的重入调用将收到相同的“句柄”。 当最外面的按需调用完成时，句柄将关闭。
+
+接口的 `default` 方法，以及[SqlObject](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/SqlObject.html) 和 [Transactional](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/transaction/Transactional.html)等的混入(mix-ins)，允许您在按需句柄保持打开状态的情况下运行代码。 同一线程上的重入调用将收到相同的“句柄”。 当最外面的按需调用完成时，句柄将关闭。
 
 > **☢警告:** 在最外层的按需调用之外返回类似游标的类型，例如 `Stream<T>` 或 `Iterable<T>` 不起作用。 由于`Handle`关闭，数据库游标被释放，读取将失败。
 
-### 5.6. Additional Annotations
+<a name="additional_annotations"></a>
+### [5.6. Additional Annotations](#additional_annotations)
 
 Jdbi provides dozens of annotations out of the box:
 
-- [org.jdbi.v3.sqlobject.config](apidocs/org/jdbi/v3/sqlobject/config/package-summary.html) 为可以在`Jdbi` 或`Handle` 级别配置的事物提供注解。 这包括映射器和参数的注册，以及用于配置 SQL 语句呈现和解析。
-- [org.jdbi.v3.sqlobject.customizer](apidocs/org/jdbi/v3/sqlobject/customizer/package-summary.html) 为绑定参数、定义属性和控制语句结果集的获取行为提供了注解。
-- [org.jdbi.v3.jpa](apidocs/org/jdbi/v3/jpa/package-summary.html) 提供了`@BindJpa`注解，用于根据JPA`@Column`注解将属性绑定到列。
-- [org.jdbi.v3.sqlobject.locator](apidocs/org/jdbi/v3/sqlobject/locator/package-summary.html) 提供注解，配置Jdbi从其他源加载SQL语句，例如类路径上的文件。
-- [org.jdbi.v3.sqlobject.statement](apidocs/org/jdbi/v3/sqlobject/statement/package-summary.html) 提供了`@MapTo`注解，用于在调用方法时动态指定映射类型。
-- [org.jdbi.v3.stringtemplate4](apidocs/org/jdbi/v3/stringtemplate4/package-summary.html) 提供配置 Jdbi 以从类路径上的 StringTemplate 4 `.stg` 文件加载 SQL 和/或使用 ST4 模板引擎解析 SQL 模板的注解。
-- [org.jdbi.v3.sqlobject.transaction](apidocs/org/jdbi/v3/sqlobject/transaction/package-summary.html) 为 SQL 对象中的事务管理提供注解。 详见 [Transaction Management](#_transaction_management)。
+- [org.jdbi.v3.sqlobject.config](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/config/package-summary.html) 为可以在`Jdbi` 或`Handle` 级别配置的事物提供注解。 这包括映射器和参数的注册，以及用于配置 SQL 语句呈现和解析。
+- [org.jdbi.v3.sqlobject.customizer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/package-summary.html) 为绑定参数、定义属性和控制语句结果集的获取行为提供了注解。
+- [org.jdbi.v3.jpa](https://jdbi.org/apidocs/org/jdbi/v3/jpa/package-summary.html) 提供了`@BindJpa`注解，用于根据JPA`@Column`注解将属性绑定到列。
+- [org.jdbi.v3.sqlobject.locator](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/locator/package-summary.html) 提供注解，配置Jdbi从其他源加载SQL语句，例如类路径上的文件。
+- [org.jdbi.v3.sqlobject.statement](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/statement/package-summary.html) 提供了`@MapTo`注解，用于在调用方法时动态指定映射类型。
+- [org.jdbi.v3.stringtemplate4](https://jdbi.org/apidocs/org/jdbi/v3/stringtemplate4/package-summary.html) 提供配置 Jdbi 以从类路径上的 StringTemplate 4 `.stg` 文件加载 SQL 和/或使用 ST4 模板引擎解析 SQL 模板的注解。
+- [org.jdbi.v3.sqlobject.transaction](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/transaction/package-summary.html) 为 SQL 对象中的事务管理提供注解。 详见 [Transaction Management](#transaction_management)。
 
-Jdbi被设计为支持用户定义的注解。请参阅[自定义注解](#145____9_8__User_Defined_Annotations)以获得创建自己的注解的指南。
+Jdbi被设计为支持用户定义的注解。请参阅[自定义注解](#user_defined_annotations)以获得创建自己的注解的指南。
 
-### 5.7. Annotations and Inheritance(注解 和 继承)
+### 5.7. [Annotations and Inheritance(注解 和 继承)](#additional_annotations)
 
 SQL 对象从它们扩展的接口继承方法和注解：
 
@@ -3599,7 +3707,7 @@ public interface CrudDao<T, ID> {
 }
 ```
 
-> **<1>** 参见 [SqlLocator](#88_____5_1_8__SqlLocator).
+> **<1>** 参见 [SqlLocator](#sqllocator).
 > **<2>** 类注解由子类型继承。
 > **<3>** 方法和参数注解由子类型继承，除非子类型覆盖了方法。
 
@@ -3654,9 +3762,10 @@ public interface AccountDao extends CrudDao<Account, UUID> {
 
 > **<1>** 方法注解不会在`override`上继承，因此必须复制想要保留的注解。
 
-## 6. Testing(测试)
+<a name="testing"></a>
+## [6. Testing(测试)](#testing)
 
-`jdbi3-testing` 工件提供了一个 [JdbiRule](apidocs/org/jdbi/v3/testing/JdbiRule.html) 类，它为编写与托管数据库实例集成的 JUnit 测试提供帮助。 这使得编写单元测试变得快速而简单！ 你必须记住包含数据库依赖本身，例如获得一个纯 H2 Java 数据库：
+`jdbi3-testing` 工件提供了一个 [JdbiRule](https://jdbi.org/apidocs/org/jdbi/v3/testing/JdbiRule.html) 类，它为编写与托管数据库实例集成的 JUnit 测试提供帮助。 这使得编写单元测试变得快速而简单！ 你必须记住包含数据库依赖本身，例如获得一个纯 H2 Java 数据库：
 
 ```xml
 <dependency>
@@ -3678,14 +3787,16 @@ public interface AccountDao extends CrudDao<Account, UUID> {
 </dependency>
 ```
 
-## 7. Third-Party Integration(第三方集成)
+<a name="third_party_integration"></a>
+## [7. Third-Party Integration(第三方集成)](#third_party_integration)
 
-### 7.1. Google Guava(谷歌Guava)
+<a name="google_guava"></a>
+### [7.1. Google Guava(谷歌Guava)](#google_guava)
 
 这个插件增加了对以下类型的支持：
 
 - `Optional<T>` - 注册一个参数和映射器。 对于注册映射器/参数工厂的任何包装类型`T`，支持`Optional`。
-- 大多数 Guava 集合和Map类型 - 请参阅 [GuavaCollectors](apidocs/org/jdbi/v3/guava/GuavaCollectors.html) 以获取支持类型的完整列表。
+- 大多数 Guava 集合和Map类型 - 请参阅 [GuavaCollectors](https://jdbi.org/apidocs/org/jdbi/v3/guava/GuavaCollectors.html) 以获取支持类型的完整列表。
 
 要使用此插件，请添加 Maven 依赖项：
 
@@ -3714,7 +3825,7 @@ public interface UserDao {
 }
 ```
 
-### 7.2. H2 Database(H2数据库)
+### [7.2. H2 Database(H2数据库)](#h2_database)
 
 该插件配置 Jdbi 以正确处理 H2 数据库中的 `integer[]` 和 `uuid[]` 数据类型。
 
@@ -3724,7 +3835,8 @@ public interface UserDao {
 jdbi.installPlugin(new H2DatabasePlugin());
 ```
 
-### 7.3. JSON
+<a name="jdbi3_json"></a>
+### [7.3. JSON](#jdbi3_json)
 
 `jdbi3-json` 模块添加了一个 `@Json` 类型限定符，允许将任意 Java 对象作为 JSON 数据存储在数据库中。
 
@@ -3734,7 +3846,8 @@ jdbi.installPlugin(new H2DatabasePlugin());
 
 该功能已经在 H2 和 Sqlite 中使用 Postgres `json` 列和 `varchar` 列进行了测试。
 
-#### 7.3.1. Jackson 2
+<a name="jackson_2"></a>
+#### [7.3.1. Jackson 2](#jackson_2)
 
 这个插件通过 Jackson 2 提供 JSON 支持。
 
@@ -3754,7 +3867,8 @@ jdbi.getConfig(Jackson2Config.class).setMapper(myObjectMapper);
 jdbi.getConfig(Jackson2Config.class).setView(ApiProperty.class);
 ```
 
-#### 7.3.2. Gson 2
+<a name="gson_2"></a>
+#### [7.3.2. Gson 2](#gson_2)
 
 这个插件通过 Gson 2 提供 JSON 支持。
 
@@ -3771,7 +3885,8 @@ jdbi.installPlugin(new Gson2Plugin());
 jdbi.getConfig(Gson2Config.class).setGson(myGson);
 ```
 
-#### 7.3.3. Moshi
+<a name="moshi"></a>
+#### [7.3.3. Moshi](#moshi)
 
 这个插件通过 Moshi 提供 JSON 支持。
 
@@ -3788,16 +3903,17 @@ jdbi.installPlugin(new MoshiPlugin());
 jdbi.getConfig(MoshiConfig.class).setMoshi(myMoshi);
 ```
 
-#### 7.3.4. Operation(操作)
+<a name="operation"></a>
+#### [7.3.4. Operation(操作)](#operation)
 
-任何限定为 [@Json](apidocs/org/jdbi/v3/json/Json.html) 的绑定对象 - 除了 `String` - 将被 [registered](apidocs/org/jdbi/v3/json/JsonConfig .html) [JsonMapper](apidocs/org/jdbi/v3/json/JsonMapper.html) 并重新限定为 `@Json String`。 然后将调用相应限定的`ArgumentFactory`来存储 JSON 数据，从而允许为您的数据库实现特殊的 JSON 处理。 如果没有找到，则将使用纯字符串工厂，以将 JSON 处理为纯文本。
+任何限定为 [@Json](https://jdbi.org/apidocs/org/jdbi/v3/json/Json.html) 的绑定对象 - 除了 `String` - 将被 [registered](https://jdbi.org/apidocs/org/jdbi/v3/json/JsonConfig .html) [JsonMapper](https://jdbi.org/apidocs/org/jdbi/v3/json/JsonMapper.html) 并重新限定为 `@Json String`。 然后将调用相应限定的`ArgumentFactory`来存储 JSON 数据，从而允许为您的数据库实现特殊的 JSON 处理。 如果没有找到，则将使用纯字符串工厂，以将 JSON 处理为纯文本。
 
 映射的工作方式相同，但反过来：限定为 `@Json T` 的输出类型将从 `@Json String` 或 `String` 列映射器 中获取，然后通过 `JsonMapper`传递。
 
 > **💡提示:** 我们的 PostgresPlugin 提供了合格的工厂，可以将 `@Json String` 绑定/映射到/从 `json` 或 `jsonb` 类型的列。
 
-
-#### 7.3.5. Usage(用法)
+<a name="usage"></a>
+#### [7.3.5. Usage(用法)](#usage)
 
 ```java
 handle.execute("create table myjsons (id serial not null, value json not null)");
@@ -3843,7 +3959,8 @@ MyJson result = h.createQuery("select json from myjsons")
     .one();
 ```
 
-### 7.4. Immutables(不可变的)
+<a name="immutables"></a>
+### [7.4. Immutables(不可变的)](#immutables)
 
 [Immutables](https://immutables.github.io/) 是一个注解处理器，根据简单的接口描述生成值类型。 值类型自然地很好地映射到`Jdbi` 属性绑定和行映射。
 
@@ -3887,7 +4004,8 @@ public void simpleTest() {
 }
 ```
 
-### 7.5. Freebuilder
+<a name="freebuilder"></a>
+### [7.5. Freebuilder](#freebuilder)
 
 [Freebuilder](https://https://freebuilder.inferred.org/) 是一个注解处理器，它根据简单的接口或抽象类描述生成值类型。 Jdbi 支持 Freebuilder 的方式与它支持 Immutables 的方式大致相同。
 
@@ -3939,7 +4057,8 @@ public void simpleTest() {
 }
 ```
 
-### 7.6. JodaTime
+<a name="jodatime"></a>
+### [7.6. JodaTime](#jodatime)
 
 这个插件增加了对使用 joda-time 的`DateTime` 类型的支持。
 
@@ -3958,7 +4077,8 @@ public void simpleTest() {
 jdbi.installPlugin(new JodaTimePlugin());
 ```
 
-### 7.7. JPA(Java持久化框架)
+<a name="jpa"></a>
+### [7.7. JPA(Java持久化框架)](#jpa)
 
 使用JPA插件是欺骗你的老板让你尝试Jdbi的好方法。“没问题，老板，它已经支持JPA注解了，很简单!”
 
@@ -3985,7 +4105,8 @@ jdbi.installPlugin(new JpaPlugin());
 
 老实说虽然. .只要扯掉绷带，切换到正确的Jdbi。
 
-### 7.8. Kotlin
+<a name="kotlin"></a>
+### [7.8. Kotlin](#kotlin)
 
 [Kotlin](https://kotlinlang.org/) 支持由 **jdbi3-kotlin** 和 **jdbi3-kotlin-sqlobject** 模块提供。
 
@@ -3994,7 +4115,8 @@ Kotlin API 文档：
 - [jdbi3-kotlin](apidocs-kotlin/jdbi3-kotlin/index.html)
 - [jdbi3-kotlin-sqlobject](apidocs-kotlin/jdbi3-kotlin-sqlobject/index.html)
 
-#### 7.8.1. ResultSet mapping
+<a name="resultset_mapping"></a>
+#### [7.8.1. ResultSet mapping](#resultset_mapping)
 
 **jdbi3-kotlin** 插件添加到 Kotlin 数据类的映射。 它支持所有字段都存在于构造函数中的数据类以及具有可写属性的类。 构造函数中不存在的任何字段将在构造函数调用后设置。 映射器支持可为空类型。 如果参数类型不可为空且结果集中不存在该值，它还会在构造函数中使用默认参数值。
 
@@ -4064,7 +4186,8 @@ qryAll.mapTo<Thing>.useSequence {
 }
 ```
 
-#### 7.8.2. SqlObject
+<a name="sqlobject"></a>
+#### [7.8.2. SqlObject](#sqlobject)
 
 **jdbi3-kotlin-sqlobject** 插件通过名称为 SqlObjects 中的 Kotlin 方法添加了自动参数绑定以及对 Kotlin 默认方法的支持。
 
@@ -4116,7 +4239,8 @@ interface ThingDao {
 }
 ```
 
-### 7.9. Lombok
+<a name="lombok"></a>
+### [7.9. Lombok](#lombok)
 
 Lombok是一个很好的工具，可以从POJO类中删除冗余样板代码。
 
@@ -4158,7 +4282,8 @@ lombok.copyableAnnotations += org.jdbi.v3.core.mapper.reflect.ColumnName
 lombok.copyableAnnotations += org.jdbi.v3.postgres.HStore
 ```
 
-### 7.10. Oracle 12
+<a name="oracle_12"></a>
+### [7.10. Oracle 12](#oracle_12)
 
 该模块添加了对 Oracle `RETURNING` DML 表达式的支持。
 
@@ -4173,7 +4298,8 @@ lombok.copyableAnnotations += org.jdbi.v3.postgres.HStore
 
 然后，使用带有 `Update` 或 `PreparedBatch` 的 `OracleReturning` 类来获取返回的 DML。
 
-### 7.11. PostgreSQL
+<a name="postgresql"></a>
+### [7.11. PostgreSQL](#postgresql)
 
 **jdbi3-postgres** 插件提供了与 [PostgreSQL JDBC 驱动程序](https://jdbc.postgresql.org/) 的增强集成。
 
@@ -4197,11 +4323,12 @@ Jdbi jdbi = Jdbi.create("jdbc:postgresql://host:port/database")
 
 它还为 `int`、`long`、`float`、`double`、`String` 和 `UUID` 配置 SQL 数组类型支持。
 
-有关详尽列表，请参阅 [javadoc](apidocs/org/jdbi/v3/postgres/package-summary.html)。
+有关详尽列表，请参阅 [javadoc](https://jdbi.org/apidocs/org/jdbi/v3/postgres/package-summary.html)。
 
 > **🏷注意:** 一些 Postgres 操作符，例如 `?` 查询操作符，会与 `jdbi` 或 `JDBC` 特殊字符发生冲突。 在这种情况下，您可能需要将操作符转义到例如 `??` 或 `\:`。
 
-#### 7.11.1. hstore
+<a name="hstore"></a>
+#### [7.11.1. hstore](#hstore)
 
 Postgres 插件提供了一个 `hstore` 到 `Map<String, String>` 列映射器，反之亦然：
 
@@ -4242,7 +4369,8 @@ Jdbi jdbi = Jdbi.create("jdbc:postgresql://host:port/database")
                 .installPlugin(PostgresPlugin.noUnqualifiedHstoreBindings());
 ```
 
-#### 7.11.2. @GetGeneratedKeys
+<a name="getgeneratedkeys_4"></a>
+#### [7.11.2. @GetGeneratedKeys](#getgeneratedkeys_4)
 
 在 Postgres 中，如果您在不命名任何列的情况下请求生成的键，`@GetGeneratedKeys` 可以返回整个修改后的行。
 
@@ -4266,7 +4394,7 @@ public interface UserDao {
 }
 ```
 
-#### 7.11.3. Large Objects
+#### [7.11.3. Large Objects](#large_objects)
 
 Postgres supports storing large character or binary data in separate storage from table data. Jdbi allows you to stream this data in and out of the database as part of an enclosing transaction. Storing, reading, and a delete hook are provided. The test case serves as a simple example:
 
@@ -4296,22 +4424,23 @@ public interface Lobject {
 
 Please refer to [Pg-JDBC docs](https://jdbc.postgresql.org/documentation/head/binary-data.html) for upstream driver documentation.
 
-### 7.12. Spring5
+<a name="spring5"></a>
+### [7.12. Spring5](#spring5)
 
-This module provides `JdbiFactoryBean`, a factory bean which sets up a `Jdbi` singleton.
+这个模块提供了 `JdbiFactoryBean`，这是一个建立`jdbc`单例的工厂bean。
 
-To use this module, add a Maven dependency:
+要使用这个模块，添加一个Maven依赖:
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-spring4</artifactId>
 </dependency>
 ```
 
-Then configure the Jdbi factory bean in your Spring container, e.g.:
+然后在Spring容器中配置jdbc工厂bean，例如:
 
-```
+```xml
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
@@ -4347,25 +4476,26 @@ Then configure the Jdbi factory bean in your Spring container, e.g.:
 </beans>
 ```
 
-> **<1>** The SQL data source that Jdbi will connect to. In this example we use an H2 database, but it can be any JDBC-compatible database. 
-> **<2>** Enable configuration of transactions via annotations.
-> **<3>** Configure `JdbiFactoryBean` using the data source configured earlier.
-> **<4>** Inject `Jdbi` into a service class. Alternatively, use standard JSR-330 `@Inject` annotations on the target class instead of configuring it in your `beans.xml`.
+> **<1>** Jdbi 将连接到的 SQL 数据源。 在此示例中，我们使用 H2 数据库，但它可以是任何 JDBC 兼容的数据库。
+> **<2>** 通过注释启用事务配置。
+> **<3>** 使用之前配置的数据源配置`JdbiFactoryBean`。
+> **<4>** 将`Jdbi`注入服务类。 或者，在目标类上使用标准 JSR-330 `@Inject` 注解，而不是在 `beans.xml` 中配置它。
 
-#### 7.12.1. Installing plugins
+<a name="installing_plugins"></a>
+#### [7.12.1. Installing plugins(安装插件)](#installing_plugins)
 
-Plugins may be automatically installed by scanning the classpath for [ServiceLoader](https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html) manifests.
+可以通过扫描 [ServiceLoader](https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html) 清单的类路径来自动安装插件。
 
-```
+```xml
 <bean id="jdbi" class="org.jdbi.v3.spring4.JdbiFactoryBean">
   ...
   <property name="autoInstallPlugins" value="true"/>
 </bean>
 ```
 
-Plugins may also be installed explicitly:
+插件也可以显式安装：
 
-```
+```xml
 <bean id="jdbi" class="org.jdbi.v3.spring4.JdbiFactoryBean">
   ...
   <property name="plugins">
@@ -4377,9 +4507,9 @@ Plugins may also be installed explicitly:
 </bean>
 ```
 
-Not all plugins are automatically installable. In these situations, you can auto-install some plugins and manually install the rest:
+并非所有插件都可以自动安装。 在这些情况下，您可以自动安装一些插件并手动安装其余的：
 
-```
+```xml
 <bean id="jdbi" class="org.jdbi.v3.spring4.JdbiFactoryBean">
   ...
   <property name="autoInstallPlugins" value="true"/>
@@ -4391,11 +4521,12 @@ Not all plugins are automatically installable. In these situations, you can auto
 </bean>
 ```
 
-#### 7.12.2. Global Attributes
+<a name="global_attributes"></a>
+#### [7.12.2. Global Attributes(全局属性)](#global_attributes)
 
-Global defined attributes may be configured on the factory bean:
+可以在工厂 bean 上配置全局定义的属性：
 
-```
+```xml
 <bean id="jdbi" class="org.jdbi.v3.spring4.JdbiFactoryBean">
   <property name="dataSource" ref="db"/>
   <property name="globalDefines">
@@ -4406,46 +4537,48 @@ Global defined attributes may be configured on the factory bean:
 </bean>
 ```
 
-### 7.13. SQLite
+<a name="sqlite"></a>
+### [7.13. SQLite](#sqlite)
 
-The **jdbi3-sqlite** plugin provides support for using the [SQLite JDBC Driver](https://bitbucket.org/xerial/sqlite-jdbc/) with Jdbi.
+**jdbi3-sqlite** 插件支持将 [SQLite JDBC 驱动程序](https://bitbucket.org/xerial/sqlite-jdbc/) 与 Jdbi 一起使用。
 
-The plugin configures mapping for the Java **URL** type which is not supported by driver.
+该插件为驱动程序不支持的 Java **URL** 类型配置映射。
 
-To use this plugin, first add a Maven dependency:
+要使用这个插件，首先添加一个 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-sqlite</artifactId>
 </dependency>
 ```
 
-Then install the plugin into your `Jdbi` instance.
+然后将插件安装到您的 `Jdbi` 实例中。
 
-```
+```java
 Jdbi jdbi = Jdbi.create("jdbc:sqlite:database")
                 .installPlugin(new SQLitePlugin());
 ```
 
-### 7.14. StringTemplate 4
+<a name="stringtemplate_4"></a>
+### [7.14. StringTemplate 4](#stringtemplate_4)
 
-This module allows you to plug in the StringTemplate 4 templating engine, in place of the standard Jdbi templating engine.
+这个模块允许你插入 StringTemplate 4 模板引擎，代替标准的 Jdbi 模板引擎。
 
-To use module plugin, add a Maven dependency:
+要使用模块插件，请添加 Maven 依赖项：
 
-```
+```xml
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-stringtemplate4</artifactId>
 </dependency>
 ```
 
-To use StringTemplate format in SQL statements, set the template engine to `StringTemplateEngine`.
+要在 SQL 语句中使用 StringTemplate 格式，请将模板引擎设置为 `StringTemplateEngine`。
 
-Defined attributes are provided to the StringTemplate engine to render the SQL:
+将定义的属性提供给 StringTemplate 引擎以呈现 SQL：
 
-```
+```java
 String sortColumn = "name";
 String sql = "select id, name " +
              "from account " +
@@ -4458,13 +4591,13 @@ List<Account> accounts = handle.createQuery(sql)
       .mapTo(Account.class)
       .list();
 ```
-> **☢警告:** Since StringTemplate by default uses the `<` character to mark ST expressions, you might need to escape some SQL: `String datePredSql = "<if(datePredicate)> <dateColumn> \\< :dateFilter <endif>"`
+> **☢警告:** 由于 StringTemplate 默认使用 `<` 字符来标记 ST 表达式，您可能需要转义一些 SQL：`String datePredSql = "<if(datePredicate)> <dateColumn> \\< :dateFilter <endif>"`
 
-Alternatively, SQL templates can be loaded from StringTemplate group files on the classpath:
+或者，可以从类路径上的 StringTemplate 组文件加载 SQL 模板：
 
-`com/foo/AccountDao.sql.stg`
+*com/foo/AccountDao.sql.stg*
 
-```
+```java
 group AccountDao;
 
 selectAll(sort,sortBy) ::= <<
@@ -4480,9 +4613,9 @@ String sql = template.add("sort", true)
                      .render();
 ```
 
-In SQL Objects, the `@UseStringTemplateEngine` annotation sets the statement locator, similar to first example above.
+在 SQL 对象中，`@UseStringTemplateEngine` 注解设置语句定位器，类似于上面的第一个示例。
 
-```
+```java
 package com.foo;
 
 public interface AccountDao {
@@ -4495,9 +4628,9 @@ public interface AccountDao {
 }
 ```
 
-Alternatively, the `@UseStringTemplateSqlLocator` annotation sets the statement locator, and loads SQL from a StringTemplate group file on the classpath:
+或者，`@UseStringTemplateSqlLocator` 注解设置语句定位器，并从类路径上的 StringTemplate 组文件加载 SQL：
 
-```
+```java
 package com.foo;
 
 public interface AccountDao {
@@ -4508,11 +4641,11 @@ public interface AccountDao {
 }
 ```
 
-In this example, since the fully qualified class name is `com.foo.AccountDao`, SQL will be loaded from the file `com/foo/AccountDao.sql.stg` on the classpath.
+在这个例子中，由于完全限定的类名是 `com.foo.AccountDao`，SQL 将从类路径上的文件 `com/foo/AccountDao.sql.stg` 加载。
 
-By default, the template in the group with the same name as the method will be used. This can be overridden on the `@Sql___` annotation:
+默认情况下，将使用组中与方法同名的模板。This can be overridden on the `@Sql___` annotation:
 
-```
+```java
 package com.foo;
 
 public interface AccountDao {
@@ -4523,35 +4656,36 @@ public interface AccountDao {
 }
 ```
 
-In this example, the SQL template will still be loaded from the file `com/foo/AccountDao.sql.stg` on the classpath, however the `listSorted` template will be used, regardless of the method name.
+在这个例子中，SQL 模板仍然会从类路径中的 `com/foo/AccountDao.sql.stg` 文件中加载，但是无论方法名如何，都会使用 `listSorted` 模板。
 
-### 7.15. Vavr
+<a name="vavr"></a>
+### [7.15. Vavr](#vavr)
 
-The Vavr Plugin offers deep integration of **Jdbi** with the Vavr functional library:
+Vavr 插件提供了 **Jdbi** 与 Vavr 函数库的深度集成：
 
-- Supports argument resolution of sever Vavr Value types such as `Option<T>`, `Either<L, T>`, `Lazy<T>`, `Try<T>` and `Validation<T>`. Given that for the wrapped type `T` a Mapper is registered.
-- Return Vavr collection types from queries. Supported are `Seq<T>`, `Set<T>`, `Map<K, T>` and `Multimap<K, T>` as well as all subtypes thereof. It is possible to collect into a `Traversable<T>`, in this case a `List<T>` will be returned. For all interface types a sensible default implementation will be used (e.q. `List<T>` for `Seq<T>`). Furthermore `Multimap<K, T>`s are backed by a `Seq<T>` as default value container.
-- Columns can be mapped into Vavr’s `Option<T>` type.
-- Tuple projections for **Jdbi**! Yey! Vavr offers Tuples up to a maximum arity of 8. you can map your query results e.g. to `Tuple3<Integer, String, Long>`. If you select more columns than the arity of the projection the columns up to that index will be used.
+- 支持服务器 Vavr 值类型的参数解析，例如 `Option<T>`、`Either<L, T>`、`Lazy<T>`、`Try<T>` 和 `Validation<T>`。 对于包装类型 `T` 注册了一个 Mapper映射器。
+- 从查询中返回 Vavr 集合类型。 支持的是 `Seq<T>`、`Set<T>`、`Map<K, T>` 和 `Multimap<K, T>` 及其所有子类型。 可以收集到一个 `Traversable<T>`，在这种情况下，将返回一个 `List<T>`。 对于所有接口类型，将使用合理的默认实现（例如，`List<T>` 为 `Seq<T>`）。 此外，`Multimap<K, T>` 为 `Seq<T>` 作为默认值容器支持。
+- 列可以映射到 Vavr 的 `Option<T>` 类型。
+- **Jdbi** 的元组投影！ 耶！ Vavr 提供最多 8 个元组的元组。您可以映射查询结果，例如 到`Tuple3<Integer, String, Long>`。 如果您选择的列多于投影的数量，则将使用该索引之前的列。
 
-To use the plugin, add a Maven dependency:
+要使用该插件，请添加一个 Maven 依赖项：
 
-```
+```XML
 <dependency>
   <groupId>org.jdbi</groupId>
   <artifactId>jdbi3-vavr</artifactId>
 </dependency>
 ```
 
-Currently Vavr >= 0.9.0 is supported and tested. The plugin pulls a supported version of Vavr and is ready to be used. As with other plugins: install via `Jdbi` instance or use auto install.
+目前支持和测试 Vavr >= 0.9.0。 该插件会提取受支持的 Vavr 版本并可以使用。 与其他插件一样：通过 `Jdbi` 实例安装或使用自动安装。
 
-```
+```java
 jdbi.installPlugin(new VavrPlugin());
 ```
 
-Here are some usage examples of the features listed above:
+以下是上面列出的功能的一些使用示例：
 
-```
+```java
 String query = "select * from users where :name is null or name = :name";
 Option<String> param = Option.of("eric");
 
@@ -4562,31 +4696,31 @@ return handle.createQuery(query)
         .findFirst();
 ```
 
-where `param` may be one of `Option<T>`, `Either<L, T>`, `Lazy<T>`, `Try<T>` or `Validation<T>`. Note that in the case of these types, the nested value must be 'present' otherwise a `null` value is used (e.g. for `Either.Left` or `Validation.Invalid`).
+其中 `param` 可以是 `Option<T>`、`Either<L, T>`、`Lazy<T>`、`Try<T>` 或 `Validation<T>` 之一。 请注意，在这些类型的情况下，嵌套值必须是“存在”，否则使用`null`值（例如，用于`Either.Left`或`Validation.Invalid`）。
 
-```
+```java
 handle.createQuery("select name from users")
         .collectInto(new GenericType<Seq<String>>() {});
 ```
 
-This works for all the collection types supported. For the nested value row and column mappers already installed in **Jdbi** will be used. Therefore the following would work and can make sense if the column is nullable:
+这适用于所有支持的集合类型。 对于已经安装在 **Jdbi** 中的嵌套值行和列映射器，将被使用。 因此，如果该列可以为空，则以下内容将起作用并且可能有意义：
 
-```
+```java
 handle.createQuery("select middle_name from users") // nulls incoming!
         .collectInto(new GenericType<Seq<Option<String>>>() {});
 ```
 
-The plugin will obey configured key and value columns for `Map<K, T>` and `Multimap<K, T>` return types. In the next example we will key users by their name, which is not necessarily unique.
+该插件将遵循为 `Map<K, T>` 和 `Multimap<K, T>` 返回类型配置的键和值列。 在下一个示例中，我们将按用户名作为key，这不一定是唯一的。
 
-```
+```java
 Multimap<String, User> usersByName = handle.createQuery("select * from users")
         .setMapKeyColumn("name")
         .collectInto(new GenericType<Multimap<String, User>>() {});
 ```
 
-Last but not least we can now project simple queries to Vavr tuples like that:
+最后但同样重要的是，我们现在可以将简单的查询投射到 Vavr 元组，如下所示：
 
-```
+```java
 // given a 'tuples' table with t1 int, t2 varchar, t3 varchar, ...
 List<Tuple3<Integer, String, String>> tupleProjection = handle
         .createQuery("select t1, t2, t3 from tuples")
@@ -4594,9 +4728,9 @@ List<Tuple3<Integer, String, String>> tupleProjection = handle
         .list();
 ```
 
-You can also project complex types into a tuple as long as a row mapper is registered.
+只要注册了行映射器，您还可以将复杂类型投影到元组中。
 
-```
+```java
 // given that there are row mappers registered for both complex types
 Tuple2<City, Address> tupleProjection = handle
         .createQuery("select cityname, zipcode, street, housenumber from " +
@@ -4605,9 +4739,9 @@ Tuple2<City, Address> tupleProjection = handle
         .one();
 ```
 
-If you want to mix complex types and simple ones we also got you covered. Using the `TupleMappers` class you can configure your projections.(In fact, you have to - read below!)
+如果您想混合使用复杂类型和简单类型，我们也可以满足您的需求。 使用 `TupleMappers` 类，您可以配置您的投影。（事实上，您必须 - 阅读下文！）
 
-```
+```java
 handle.configure(TupleMappers.class, c ->
         c.setColumn(2, "street").setColumn(3, "housenumber"));
 
@@ -4618,16 +4752,18 @@ Tuple3<City, String, Integer> result = handle
         .one();
 ```
 
-Bear in mind:
+记住：
 
-- The configuration of the columns is 1-based, since they reflect the tuples' values (which you would query by e.g. `._1`).
-- Tuples are always mapped fully column-wise or fully via row mappers. If you want to mix row-mapped types and single-column mappings the `TupleMappers` must be configured properly i.e. all non row-mapped tuple indices must be provided with a column configuration!
+- 列的配置是基于 1 的，因为它们反映了元组的值（您可以通过例如 `._1` 进行查询）。
+- 元组总是完全按列映射或完全通过行映射器映射。 如果您想混合行映射类型和单列映射，则必须正确配置“TupleMappers”，即必须为所有非行映射元组索引提供列配置！
 
-## 8. Cookbook(烹饪书)
+<a name="cookbook"></a>
+## [8. Cookbook(烹饪书)](#cookbook)
 
 本节包括您可能喜欢用 `Jdbi` 做的各种事情的示例。
 
-### 8.1. 简单的依赖注入
+<a name="simple_dependency_injection"></a>
+### [8.1. 简单的依赖注入](#simple_dependency_injection)
 
 `Jdbi`试图独立于使用依赖项注入框架，但它很容易集成您的框架中。只需在一个简单的自定义配置类型上进行字段注入:
 
@@ -4651,7 +4787,8 @@ myIoC.inject(jdbi.getConfig(InjectedDependencies.class));
 getHandle().getConfig(InjectedDependencies.class).dep
 ```
 
-### 8.2. LIKE clauses with Parameters(带参数的 LIKE 子句)
+<a name="like_clauses_with_parameters"></a>
+### [8.2. LIKE clauses with Parameters(带参数的 LIKE 子句)](#like_clauses_with_parameters)
 
 由于 JDBC（因此`Jdbi`）不允许将参数绑定到字符串文字的中间，你不能将绑定插入到`LIKE` 子句（`LIKE '%:param%'`）中。
 
@@ -4681,9 +4818,11 @@ handle.createQuery("select name from things where name like '%' || :search || '%
 
 > **🏷注意:** 在执行此操作之前，请检查数据库的字符串连接语法。
 
-## 9. Advanced Topics(高级主题)
+<a name="advanced_topics"></a>
+## [9. Advanced Topics(高级主题)](#advanced_topics)
 
-### 9.1. High Availability(高可用性)
+<a name="high_availability"></a>
+### [9.1. High Availability(高可用性)](#high_availability)
 
 Jdbi可以与数据库驱动程序中的连接池和高可用性特性结合使用。我们已经成功地将[HikariCP](https://brettwooldridge.github.io/HikariCP/)与[PgJDBC连接负载平衡](https://jdbc.postgresql.org/documentation/head/connect.html)结合使用。
 
@@ -4701,8 +4840,8 @@ Jdbi jdbi = Jdbi.create(new HikariDataSource(hc)).installPlugin(new PostgresPlug
 
 如果您希望有两个单独的池，例如一个连接读副本的只读集和一个较小的只访问单个主机的写入池，那么当前应该有单独的`Jdbi`实例，每个实例都指向单独的`DataSource`。
 
-
-### 9.2. 使用参数名称编译
+<a name="compiling_with_parameter_names"></a>
+### [9.2. 使用参数名称编译](#compiling_with_parameter_names)
 
 默认情况下，Java编译器不会将构造函数和方法的参数名写入类文件。在运行时，反射式请求参数名称会给出“arg0”、“arg1”等值。
 
@@ -4725,7 +4864,8 @@ void insert(@Bind("id") long id, @Bind("name") String name); //<1>
 void insert(long id, String name);
 ```
 
-#### 9.2.1. Maven 设置
+<a name="maven_setup"></a>
+#### [9.2.1. Maven 设置](#maven_setup)
 
 在你的 POM 中配置 `maven-compiler-plugin`：
 
@@ -4741,7 +4881,8 @@ void insert(long id, String name);
 </plugin>
 ```
 
-#### 9.2.2. IntelliJ IDEA 设置
+<a name="intellij_idea_setup"></a>
+#### [9.2.2. IntelliJ IDEA 设置](#intellij_idea_setup)
 
 - File → Settings
 - Build, Execution, Deployment → Compiler → Java Compiler
@@ -4749,19 +4890,22 @@ void insert(long id, String name);
 - Click Apply, then OK.
 - Build → Rebuild Project
 
-#### 9.2.3. Eclipse 设置
+<a name="eclipse_setup"></a>
+#### [9.2.3. Eclipse 设置](#eclipse_setup)
 
 - Window → Preferences
 - Java → Compiler
 - Under "Classfile Generation," check the option "Store information about method parameters (usable via reflection)."
 
-### 9.3. Working with Generic Types(使用泛型类型)
+<a name="working_with_generic_types"></a>
+### [9.3. Working with Generic Types(使用泛型类型)](#working_with_generic_types)
 
-Jdbi provides utility classes to make it easier to work with Java generic types.
+Jdbi 提供了实用程序类，以便更轻松地使用 Java 泛型类型。
 
-#### 9.3.1. GenericType(泛型类型)
+<a name="generictype"></a>
+#### [9.3.1. GenericType(泛型类型)](#generictype)
 
-[GenericType](apidocs/org/jdbi/v3/core/generic/GenericType.html) 表示一个泛型类型签名，可以以类型安全的方式传递。
+[GenericType](https://jdbi.org/apidocs/org/jdbi/v3/core/generic/GenericType.html) 表示一个泛型类型签名，可以以类型安全的方式传递。
 
 通过实例化匿名内部类来创建泛型类型引用:
 
@@ -4780,9 +4924,10 @@ List<Optional<String>> middleNames = handle
 
 `GenericType.getType()` 返回原始 [java.lang.reflect.Type](https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Type.html) 对象 用于表示 Java 中的泛型。
 
-#### 9.3.2. GenericTypes(泛型类型帮助类)
+<a name="generictypes"></a>
+#### [9.3.2. GenericTypes(泛型类型帮助类)](#generictypes)
 
-[GenericTypes](apidocs/org/jdbi/v3/core/generic/GenericTypes.html) 提供了处理 Java 泛型类型签名的方法。
+[GenericTypes](https://jdbi.org/apidocs/org/jdbi/v3/core/generic/GenericTypes.html) 提供了处理 Java 泛型类型签名的方法。
 
 `GenericTypes`中的所有方法都按照`java.lang.reflect.Type`操作。
 
@@ -4834,9 +4979,10 @@ GenericTypes.findGenericParameter(optionalOfString, List.class);
 // => Optional.empty();
 ```
 
-### 9.4. NamedArgumentFinder(命名参数查找器)
+<a name="namedargumentfinder"></a>
+### [9.4. NamedArgumentFinder(命名参数查找器)](#namedargumentfinder)
 
-[NamedArgumentFinder](apidocs/org/jdbi/v3/core/argument/NamedArgumentFinder.html) 接口，顾名思义，从某些来源按名称查找参数。 通常，单个`NamedArgumentFinder` 实例将为多个不同的名称提供参数。
+[NamedArgumentFinder](https://jdbi.org/apidocs/org/jdbi/v3/core/argument/NamedArgumentFinder.html) 接口，顾名思义，从某些来源按名称查找参数。 通常，单个`NamedArgumentFinder` 实例将为多个不同的名称提供参数。
 
 在`bindBean()`，`bindFields()`， `bindMethods()` 和 `bindMap()`都不是很合适的情况下，你可以实现自己的`NamedArgumentFinder`并绑定它，而不是分别提取和绑定每个参数。
 
@@ -4849,15 +4995,16 @@ NamedArgumentFinder cacheFinder = (name, ctx) ->
 stmt.bindNamedArgumentFinder(cacheFinder);
 ```
 
-> **💡提示:** 在幕后，[SqlStatement.bindBean()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindBean-java.lang.Object-), [SqlStatement.bindMethods()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMethods-java.lang.Object-), [SqlStatement.bindFields()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindFields-java.lang.Object-), and [SqlStatement.bindMap()](apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMap-java.util.Map-) 方法只是创建和绑定的自定义实现 `NamedArgumentFinder` 分别用于  beans, methods, fields, 和 maps。
+> **💡提示:** 在幕后，[SqlStatement.bindBean()](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindBean-java.lang.Object-), [SqlStatement.bindMethods()](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMethods-java.lang.Object-), [SqlStatement.bindFields()](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindFields-java.lang.Object-), and [SqlStatement.bindMap()](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html#bindMap-java.util.Map-) 方法只是创建和绑定的自定义实现 `NamedArgumentFinder` 分别用于  beans, methods, fields, 和 maps。
 
-### 9.5. JdbiConfig(Jdbi配置)
+<a name="jdbiconfig"></a>
+### 9.5. [JdbiConfig(Jdbi配置)](#jdbiconfig)
 
-配置由 [ConfigRegistry](apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 类管理。每个代表不同数据库上下文的 Jdbi 对象（例如，**Jdbi** 本身、**Handle** 实例或附加的 SqlObject 类）都有自己的配置注册表。大多数上下文实现了 [Configurable](apidocs/org/jdbi/v3/core/config/Configurable.html) 接口，它允许修改其配置以及检索当前上下文的配置以供 Jdbi 核心或扩展使用。
+配置由 [ConfigRegistry](https://jdbi.org/apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 类管理。每个代表不同数据库上下文的 Jdbi 对象（例如，**Jdbi** 本身、**Handle** 实例或附加的 SqlObject 类）都有自己的配置注册表。大多数上下文实现了 [Configurable](https://jdbi.org/apidocs/org/jdbi/v3/core/config/Configurable.html) 接口，它允许修改其配置以及检索当前上下文的配置以供 Jdbi 核心或扩展使用。
 
 创建新的可配置上下文时，它会在创建时继承其父配置的副本 - 对原始配置的进一步修改不会影响已创建的配置上下文。 当从 Jdbi 生成Handle、从Handle打开 **SqlStatement** 以及附加或创建按需扩展（如 **SqlObject**）时，会发生配置上下文复制。
 
-配置本身存储在 [JdbiConfig](apidocs/org/jdbi/v3/core/config/JdbiConfig.html) 接口的各种实现中。 每个实现都必须遵守接口的约定； 特别是它必须有一个提供有用默认值的公共无参数构造函数和一个在配置注册表被克隆时调用的 **createCopy** 方法。
+配置本身存储在 [JdbiConfig](https://jdbi.org/apidocs/org/jdbi/v3/core/config/JdbiConfig.html) 接口的各种实现中。 每个实现都必须遵守接口的约定； 特别是它必须有一个提供有用默认值的公共无参数构造函数和一个在配置注册表被克隆时调用的 **createCopy** 方法。
 
 通常，应该在使用上下文之前在上下文上设置配置，并且以后不要更改。 一些配置类可能是线程安全的，但大多数不是。
 
@@ -4905,7 +5052,8 @@ public class ExampleConfig implements JdbiConfig<ExampleConfig> {
 }
 ```
 
-#### 9.5.1. Creating a custom JdbiConfig type(创建自定义 JdbiConfig 类型)
+<a name="creating_a_custom_jdbiconfig_type"></a>
+#### [9.5.1. Creating a custom JdbiConfig type(创建自定义 JdbiConfig 类型)](#creating_a_custom_jdbiconfig_type)
 
 - 创建一个实现 JdbiConfig 的公共类。
 - 添加一个公共的、无参数的构造函数
@@ -4917,7 +5065,8 @@ public class ExampleConfig implements JdbiConfig<ExampleConfig> {
 - 从其他感兴趣的类中使用该配置对象。
   - 例如 BeanMapper、FieldMapper 和 ConstructorMapper 都使用 ReflectionMappers 配置类来保持通用配置。
 
-### 9.6. JdbiPlugin(Jdbi插件)
+  <a name="jdbiplugin"></a>
+### [9.6. JdbiPlugin(Jdbi插件)](#jdbiplugin)
 
 JdbiPlugin 可用于捆绑批量配置。 插件可以通过`Jdbi.installPlugin(JdbiPlugin)`显式安装，也可以通过`installPlugins()`使用ServiceLoader机制从类路径自动安装。
 
@@ -4927,31 +5076,34 @@ Jars 可能会在`META-INF/services/org.jdbi.v3.core.spi.JdbiPlugin` 中提供�
 
 > **💡提示:** 开发人员鼓励您显式地安装插件。在所使用的模块上声明依赖项的代码对于重构来说更加健壮，并为静态分析工具提供关于哪些代码被使用，哪些代码没有被使用的有用数据。
 
-### 9.7. StatementContext(Statement上下文)
+<a name="statementcontext"></a>
+### [9.7. StatementContext(Statement上下文)](#statementcontext)
 
-[StatementContext](apidocs/org/jdbi/v3/core/statement/StatementContext.html) 类是与创建和执行语句相关的各种状态的载体，这些状态不适合放在 **Query** 或 其他特定的语句类本身。 除其他外，它拥有开放的**JDBC** 资源、处理过的 SQL 语句和累积的绑定。 它暴露于大多数用户扩展点的实现，例如 **RowMapper、\*ColumnMapper\*s 或 \*CollectorFactory**。
+[StatementContext](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/StatementContext.html) 类是与创建和执行语句相关的各种状态的载体，这些状态不适合放在 **Query** 或 其他特定的语句类本身。 除其他外，它拥有开放的**JDBC** 资源、处理过的 SQL 语句和累积的绑定。 它暴露于大多数用户扩展点的实现，例如 **RowMapper、\*ColumnMapper\*s 或 \*CollectorFactory**。
 
 **StatementContext**本身不打算被扩展，通常扩展不需要改变上下文。请阅读JavaDoc以获得更多关于高级用法的信息。
 
-### 9.8. User-Defined Annotations(用户自定义的注解)
+<a name="user_defined_annotations"></a>
+### [9.8. User-Defined Annotations(用户自定义的注解)](#user_defined_annotations)
 
 SQL Object被设计为使用用户定义的注解进行扩展。事实上，Jdbi中提供的大多数注解都与下面概述的方法相关联。
 
 在SQL Object中有一些不同类别的注解，理解它们之间的区别是很重要的:
 
-- [Statement Customizing Annotations](#_statement_customizing_annotations) - 在执行之前配置方法的底层 [SqlStatement](apidocs/org/jdbi/v3/core/statement/SqlStatement.html)。 这些只能与诸如`@SqlQuery`、`@SqlUpdate` 等注解一起使用，并且不适用于默认方法。
-- [Configuration Annotations](#_configuration_annotations) - 在 SQL 对象或其方法之一的范围内修改 [ConfigRegistry](apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 中的配置。
-- [Method Decorating Annotations](#_method_decorating_annotations) - 用一些额外的行为装饰一个方法调用，例如 `@Transaction` 注解将方法调用包装在一个 `handle.inTransaction()` 调用中。
+- [Statement Customizing Annotations](#statement_customizing_annotations) - 在执行之前配置方法的底层 [SqlStatement](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html)。 这些只能与诸如`@SqlQuery`、`@SqlUpdate` 等注解一起使用，并且不适用于默认方法。
+- [Configuration Annotations](#configuration_annotations) - 在 SQL 对象或其方法之一的范围内修改 [ConfigRegistry](https://jdbi.org/apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 中的配置。
+- [Method Decorating Annotations](#method_decorating_annotations) - 用一些额外的行为装饰一个方法调用，例如 `@Transaction` 注解将方法调用包装在一个 `handle.inTransaction()` 调用中。
 
 一旦您知道您想要哪种类型的注解，请继续下面的相应部分并按照指南进行设置。
 
-#### 9.8.1. Statement 自定义注解
+<a name="statement_customizing_annotations"></a>
+#### [9.8.1. Statement 自定义注解](#statement_customizing_annotations)
 
-SQL statement 自定义注解用于对与 SQL 方法关联的 [SqlStatement](apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 应用一些更改。
+SQL statement 自定义注解用于对与 SQL 方法关联的 [SqlStatement](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 应用一些更改。
 
 通常，这些注解与核心中的 API 方法相关。 例如 `@Bind`对应`SqlStatement.bind()`，`@MaxRows`对应`Query.setMaxRows()`等。
 
-只有在创建 [SqlStatement](apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 后才应用自定义注解。
+只有在创建 [SqlStatement](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 后才应用自定义注解。
 
 您可以创建自己的 SQL statement 自定义注解并将运行时行为附加到它们。
 
@@ -4972,9 +5124,9 @@ public @interface MaxRows {
 
 当用于参数时，注解可以在处理注解时使用传递给方法的参数。
 
-接下来，我们编写 [SqlStatementCustomizerFactory](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizerFactory.html) 类的实现，以处理注解并将自定义应用于语句。
+接下来，我们编写 [SqlStatementCustomizerFactory](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizerFactory.html) 类的实现，以处理注解并将自定义应用于语句。
 
-`SqlStatementCustomizerFactory` 生成两种不同类型的“语句定制器”命令对象：[SqlStatementCustomizer](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizer.html)(用于类型或方法的注解)和 [SqlStatementParameterCustomizer](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementParameterCustomizer.html)(用于方法参数的注解)。
+`SqlStatementCustomizerFactory` 生成两种不同类型的“语句定制器”命令对象：[SqlStatementCustomizer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizer.html)(用于类型或方法的注解)和 [SqlStatementParameterCustomizer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementParameterCustomizer.html)(用于方法参数的注解)。
 
 让我们为注解实现一个语句定制工厂:
 
@@ -5007,11 +5159,11 @@ public class MaxRowsFactory implements SqlStatementCustomizerFactory {
 ```
 
 > **<1>** 从注解中提取最大行
-> **<2>** [SqlStatementCustomizer](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizer.html) 可以实现为一个 lambda——它接收一个 [SqlStatement](apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 作为参数，在语句上调用它想要的任何方法，并返回 `void`。
+> **<2>** [SqlStatementCustomizer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizer.html) 可以实现为一个 lambda——它接收一个 [SqlStatement](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlStatement.html) 作为参数，在语句上调用它想要的任何方法，并返回 `void`。
 > **<3>** 由于此注解的定制在方法级别和类型级别是相同的，为了简洁起见，我们简单地委托给类型级别的方法。
-> **<4>** [SqlStatementParameterCustomizer](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementParameterCustomizer.html) 也可以实现为 lambda。 它接受一个 `SqlStatement` 和传递给带注解参数的方法的值。
+> **<4>** [SqlStatementParameterCustomizer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementParameterCustomizer.html) 也可以实现为 lambda。 它接受一个 `SqlStatement` 和传递给带注解参数的方法的值。
 
-最后，添加[@SqlStatementCustomizingAnnotation](apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizingAnnotation.html)注解到`@MaxRows`注解类型。 这告诉 Jdbi `MaxRowsFactory` 实现了 `@MaxRows` 注解的行为：
+最后，添加[@SqlStatementCustomizingAnnotation](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/customizer/SqlStatementCustomizingAnnotation.html)注解到`@MaxRows`注解类型。 这告诉 Jdbi `MaxRowsFactory` 实现了 `@MaxRows` 注解的行为：
 
 ```java
 @SqlStatementCustomizingAnnotation(MaxRowsFactory.class)
@@ -5035,18 +5187,19 @@ public interface Dao {
 }
 ```
 
-> **💡提示:** We chose `@MaxRows` as an example here because it was easy to understand. In practice, you will get better database performance by using a `LIMIT` clause in your SQL statement than by using `@MaxRows`.
+> **💡提示:** 我们在这里选择了 `@MaxRows` 作为示例，因为它很容易理解。 实际上，在 SQL 语句中使用 LIMIT 子句比使用 @MaxRows 可以获得更好的数据库性能。
 
-#### 9.8.2. Configuration 注解
+<a name="configuration_annotations"></a>
+#### [9.8.2. Configuration 注解](#configuration_annotations)
 
-Configuration注解用于对与 SQL 对象或方法关联的 [ConfigRegistry](apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 应用一些更改。
+Configuration注解用于对与 SQL 对象或方法关联的 [ConfigRegistry](https://jdbi.org/apidocs/org/jdbi/v3/core/config/ConfigRegistry.html) 应用一些更改。
 
-通常这些注解与[Configurable](apidocs/org/jdbi/v3/core/config/Configurable.html)的方法相关(`Jdbi`、`Handle`和`SqlStatement`都实现了这个接口)。 例如，`@RegisterColumnMapper` 与`Configurable.registerColumnMapper()` 相关。
+通常这些注解与[Configurable](https://jdbi.org/apidocs/org/jdbi/v3/core/config/Configurable.html)的方法相关(`Jdbi`、`Handle`和`SqlStatement`都实现了这个接口)。 例如，`@RegisterColumnMapper` 与`Configurable.registerColumnMapper()` 相关。
 
 您可以创建自己的配置注解，并将运行时行为附加到它们：
 
 - 使用您需要的任何属性编写新的配置注解。
-- 编写 [Configurer](apidocs/org/jdbi/v3/sqlobject/config/Configurer.html) 的实现，它执行与您的注解相关的配置。
+- 编写 [Configurer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/config/Configurer.html) 的实现，它执行与您的注解相关的配置。
 - 将 `@ConfiguringAnnotation` 注解添加到您的配置注解类型上。
 
 完成上述步骤后，Jdbi 将在遇到相关注解时调用您的配置器。
@@ -5070,7 +5223,7 @@ public @interface RegisterColumnMapper{
 
 在类型上放置配置注解意味着“将此配置应用于每个方法”。
 
-接下来，我们编写 [Configurer](apidocs/org/jdbi/v3/sqlobject/config/Configurer.html) 类的实现，来处理注解并应用配置：
+接下来，我们编写 [Configurer](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/config/Configurer.html) 类的实现，来处理注解并应用配置：
 
 ```java
 public class RegisterColumnMapperImpl implements Configurer {
@@ -5107,7 +5260,7 @@ public class RegisterColumnMapperImpl implements Configurer {
 
 对于只有一个目标的配置注解（例如`@KeyColumn` 和`@ValueColumn` 可能只应用于方法），您只需要实现适合该注解目标的`Configurer` 方法。
 
-最后，将 [@ConfiguringAnnotation](apidocs/org/jdbi/v3/sqlobject/config/ConfiguringAnnotation.html) 注解添加到您的 `@RegisterColumnMapper` 注解类型上。 这告诉 Jdbi `RegisterColumnMapperImpl` 实现了 `@RegisterColumnMapper` 注解的行为。
+最后，将 [@ConfiguringAnnotation](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/config/ConfiguringAnnotation.html) 注解添加到您的 `@RegisterColumnMapper` 注解类型上。 这告诉 Jdbi `RegisterColumnMapperImpl` 实现了 `@RegisterColumnMapper` 注解的行为。
 
 ```java
 @ConfiguringAnnotation(RegisterColumnMapperImpl.class)
@@ -5128,11 +5281,12 @@ public interface AccountDao {
 }
 ```
 
-#### 9.8.3. Method 装饰注解
+<a name="method_decorating_annotations"></a>
+#### [9.8.3. Method 装饰注解](#method_decorating_annotations)
 
 方法装饰注解用于通过附加（或替代）行为增强 SQL 对象方法。
 
-在内部，SQL Object 用 [Handler](apidocs/org/jdbi/v3/sqlobject/Handler.html) 接口的实例来表示每个方法的行为。 每次调用SQL Object实例上的方法时，该方法都通过执行给定方法的处理程序来执行。
+在内部，SQL Object 用 [Handler](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/Handler.html) 接口的实例来表示每个方法的行为。 每次调用SQL Object实例上的方法时，该方法都通过执行给定方法的处理程序来执行。
 
 当您使用装饰注解（如`@Transaction`）时，方法的常规处理程序被包装在另一个处理程序中，该处理程序可能会在将调用传递给原始处理程序之前和/或之后执行某些操作。
 
@@ -5155,7 +5309,7 @@ public @interface Transaction {
 
 在类型上放置装饰注解意味着“将此装饰应用于每个方法”。
 
-接下来我们编写一个[HandlerDecorator](apidocs/org/jdbi/v3/sqlobject/HandlerDecorator.html)接口的实现，来处理注解并应用装饰：
+接下来我们编写一个[HandlerDecorator](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/HandlerDecorator.html)接口的实现，来处理注解并应用装饰：
 
 ```java
 public class TransactionDecorator implements HandlerDecorator {
@@ -5175,7 +5329,7 @@ public class TransactionDecorator implements HandlerDecorator {
 > **<2>** 从注解中提取事务隔离级别
 > **<3>** `Handler` 接口接受一个目标（被调用的 SQL Object  实例）、一个传递给该方法的参数的 `Object[]` 数组和一个 `HandleSupplier`。
 
-最后，将 [@SqlMethodDecoratingAnnotation](apidocs/org/jdbi/v3/sqlobject/SqlMethodDecoratingAnnotation.html) 注解添加到您的 `@Transaction` 注解类型。 这告诉 Jdbi `TransactionDecorator` 实现了 `@Transaction` 注解的行为。
+最后，将 [@SqlMethodDecoratingAnnotation](https://jdbi.org/apidocs/org/jdbi/v3/sqlobject/SqlMethodDecoratingAnnotation.html) 注解添加到您的 `@Transaction` 注解类型。 这告诉 Jdbi `TransactionDecorator` 实现了 `@Transaction` 注解的行为。
 
 ```java
 @SqlMethodDecoratingAnnotation(TransactionDecorator.class)
@@ -5214,11 +5368,12 @@ public interface ContactDao {
 
 装饰器顺序从最外层到最内层表示。
 
-### 9.9. 模板引擎
+<a name="templateengine"></a>
+### [9.9. 模板引擎](#templateengine)
 
-Jdbi uses a [TemplateEngine](apidocs/org/jdbi/v3/core/statement/TemplateEngine.html) implementation to render templates into SQL. Template engines take a SQL template string and the `StatementContext` as input, and produce a parseable SQL string as output.
+Jdbi 使用 [TemplateEngine](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/TemplateEngine.html) 实现将模板呈现为 SQL。 模板引擎将 SQL 模板字符串和`StatementContext`作为输入，并生成可解析的 SQL 字符串作为输出。
 
-Out of the box, Jdbi is configured to use `DefinedAttributeTemplateEngine`, which replaces angle-bracked tokens like `<name>` in your SQL statements with the string value of the named attribute:
+开箱即用，Jdbi 被配置为使用 `DefinedAttributeTemplateEngine`，它用命名属性的字符串值替换 SQL 语句中的尖括号标记，如 `<name>`：
 
 ```java
 String tableName = "customers";
@@ -5243,11 +5398,12 @@ TemplateEngine templateEngine = (template, ctx) -> {
 jdbi.setTemplateEngine(templateEngine);
 ```
 
-> **💡提示:** Jdbi 还提供了 `StringTemplateEngine`，它使用 StringTemplate 库呈现模板。 参见 [StringTemplate 4](#_stringtemplate_4)。
+> **💡提示:** Jdbi 还提供了 `StringTemplateEngine`，它使用 StringTemplate 库呈现模板。 参见 [StringTemplate 4](#stringtemplate_4)。
 
-### 9.10. SqlParser(Sql解析器)
+<a name="sqlparser"></a>
+### [9.10. SqlParser(Sql解析器)](#sqlparser)
 
-渲染 SQL 模板后，Jdbi 使用 [SqlParser](apidocs/org/jdbi/v3/core/statement/SqlParser.html) 从 SQL 语句中解析出任何命名参数。 这会产生一个 `ParsedSql` 对象，其中包含 Jdbi 绑定参数和执行 SQL 语句所需的所有信息。
+渲染 SQL 模板后，Jdbi 使用 [SqlParser](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlParser.html) 从 SQL 语句中解析出任何命名参数。 这会产生一个 `ParsedSql` 对象，其中包含 Jdbi 绑定参数和执行 SQL 语句所需的所有信息。
 
 开箱即用，Jdbi 被配置为使用`ColonPrefixSqlParser`，它识别以冒号为前缀的命名参数，例如 `:name`。
 
@@ -5281,17 +5437,96 @@ SqlParser parser = (sql, ctx) -> {
 jdbi.setParser(parser);
 ```
 
-### 9.11. SqlLogger(Sql日志记录器)
+<a name="sqllogger"></a>
+### [9.11. SqlLogger(Sql日志记录器)](#sqllogger)
 
-The [SqlLogger](apidocs/org/jdbi/v3/core/statement/SqlLogger.html) interface is called before and after executing each statement, and given the current `StatementContext`, to log any relevant information desired: mainly the query in various compilation stages, attributes and bindings, and important timestamps.
+[SqlLogger](https://jdbi.org/apidocs/org/jdbi/v3/core/statement/SqlLogger.html) 接口在执行每个语句之前和之后被调用，并给定当前的`StatementContext`，记录所需的任何相关信息：主要是在各个编译阶段的查询，属性和绑定，以及重要的时间戳。
 
-### 9.12. ResultProducer
+**翻译者WJW添加:** 一下是如何设置SqlLogger的一个示例:
 
-A **ResultProducer** takes a lazily supplied **PreparedStatement** and produces a result. The most common producer path, **execute()**, retrieves the **ResultSet** over the query results and then uses a **ResultSetScanner** or higher level mapper to produce results.
+先编写一个实现*SqlLogger*接口的一个日志类
 
-An example alternate use is to just return the number of rows modified, as in an UPDATE or INSERT statement:
+```java
+package org.wjw;
+
+import java.sql.SQLException;
+import java.time.Duration;
+
+import org.jdbi.v3.core.statement.SqlLogger;
+import org.jdbi.v3.core.statement.StatementContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Slf4JSqlLoggerExt implements SqlLogger {
+  private final Logger log;
+
+  public Slf4JSqlLoggerExt() {
+    this(LoggerFactory.getLogger("org.jdbi.sql"));
+  }
+
+  public Slf4JSqlLoggerExt(Logger log) {
+    this.log = log;
+  }
+
+  @Override
+  public void logAfterExecution(StatementContext context) {
+    if (log.isDebugEnabled()) {
+      log.debug("Executed in {} '{}' with parameters '{}'",
+          format(Duration.between(context.getExecutionMoment(), context.getCompletionMoment())),
+          context.getParsedSql().getSql(),
+          context.getBinding());
+    }
+  }
+
+  @Override
+  public void logException(StatementContext context, SQLException ex) {
+    if (log.isErrorEnabled()) {
+      log.error("Exception while executing '{}' with parameters '{}'",
+          context.getParsedSql().getSql(),
+          context.getBinding(),
+          ex);
+    }
+  }
+
+  private static String format(Duration duration) {
+    final long totalSeconds = duration.getSeconds();
+    final long h = totalSeconds / 3600;
+    final long m = (totalSeconds % 3600) / 60;
+    final long s = totalSeconds % 60;
+    final long ms = duration.toMillis() % 1000;
+    return String.format(
+        "%d:%02d:%02d.%03d",
+        h,
+        m,
+        s,
+        ms);
+  }
+}
 
 ```
+
+接着在jdbi实例里设置它
+
+```java
+  private Slf4JSqlLoggerExt _log = new Slf4JSqlLoggerExt(org.slf4j.LoggerFactory.getLogger(this.getClass()));
+
+...
+
+  Jdbi jdbi = Jdbi.create(dataSource)
+        .installPlugin(new SqlObjectPlugin())
+        .setSqlLogger(_log);
+```
+
+
+
+<a name="resultproducer"></a>
+### [9.12. ResultProducer(Result生产者)](#resultproducer)
+
+**ResultProducer** 采用延迟提供的 **PreparedStatement** 并产生结果。 最常见的生产者路径 **execute()** 检索查询结果上的 **ResultSet**，然后使用 **ResultSetScanner** 或更高级别的映射器来生成结果。
+
+另一个例子是只返回修改的行数，如在UPDATE或INSERT语句中:
+
+```java
 public static ResultProducer<Integer> returningUpdateCount() {
     return (statementSupplier, ctx) -> {
         try {
@@ -5303,101 +5538,108 @@ public static ResultProducer<Integer> returningUpdateCount() {
 }
 ```
 
-If you acquire the lazy statement, you are responsible for ensuring that the context is closed eventually to release database resources.
+如果您获得了lazy语句，则负责确保上下文最终关闭以释放数据库资源。
 
-Most users will not need to implement the **ResultProducer** interface.
+大多数用户将不需要实现**ResultProducer**接口。
 
-### 9.13. Generator
+<a name="generator"></a>
+### [9.13. Generator(生成器)](#generator)
 
-Jdbi includes an experimental SqlObject code generator. If you include the `jdbi3-generator` artifact as an annotation processor and annotate your SqlObject definitions with `@GenerateSqlObject`, the generator will produce an implementing class and avoid using `Proxy` instances. This may be useful for `graal-native` compilation.
+Jdbi 包括一个实验性的 SqlObject 代码生成器。 如果你包含 `jdbi3-generator` 工件作为注释处理器并使用 `@GenerateSqlObject` 注释你的 SqlObject 定义，生成器将生成一个实现类并避免使用 `Proxy` 实例。 这对于 `graal-native` 编译可能很有用。
 
-## 10. Appendix
+<a name="appendix"></a>
+## [10. Appendix(附录)](#appendix)
 
-### 10.1. Best Practices
+<a name="best_practices"></a>
+### [10.1. 最佳实践](#best_practices)
 
-- Test your SQL Objects (DAOs) against real databases when possible. Jdbi tries to be defensive and fail eagerly when you hold it wrong.
-- Use the `-parameters` compiler flag to avoid all those `@Bind("foo") String foo` redundant qualifiers in SQL Object method parameters. See [使用参数名称编译](#133____9_2__使用参数名称编译).
-- Use a profiler! The true root cause of performance problems can often be a surprise. Measure first, *then* tune for performance. And then measure again to be sure it made a difference.
-- Don’t forget to bring a towel!
+- 如果可能的话，针对真实的数据库测试SQL对象(dao)。Jdbi试图采取防御态度，当你错误地把握它时，它会急切地失败。
+- 使用 `-parameters` 编译器标志来避免 SQL 对象方法参数中的所有那些 `@Bind("foo") String foo` 冗余限定符。参见 [使用参数名称编译](#compiling_with_parameter_names).
+- 使用一个分析器!性能问题的真正根本原因往往出人意料。首先测量，然后调整性能。然后再次测量，以确保它有所不同。
+- 别忘了带毛巾！
 
-### 10.2. API Reference
+<a name="api_reference"></a>
+### [10.2. API 参考](#api_reference)
 
-- [Javadoc](apidocs/index.html)
+- [Javadoc](https://jdbi.org/apidocs/index.html)
 - [jdbi3-kotlin](apidocs-kotlin/jdbi3-kotlin/index.html)
 - [jdbi3-kotlin-sqlobject](apidocs-kotlin/jdbi3-kotlin-sqlobject/index.html)
 
-### 10.3. Related Projects
+<a name="related_projects"></a>
+### [10.3. 相关项目](#related_projects)
 
-[Embedded Postgres](https://github.com/opentable/otj-pg-embedded) makes testing against a real database quick and easy.
+[Embedded Postgres](https://github.com/opentable/otj-pg-embedded) 使针对真实数据库的测试变得快速而简单。
 
-[dropwizard-jdbi3](https://github.com/arteam/dropwizard-jdbi3) provides integration with DropWizard.
+[dropwizard-jdbi3](https://github.com/arteam/dropwizard-jdbi3) 提供与 DropWizard 的集成。
 
-[metrics-jdbi3](https://github.com/arteam/metrics-jdbi3) instruments using DropWizard-Metrics to emit statement timing statistics.
+[metrics-jdbi3](https://github.com/arteam/metrics-jdbi3) 工具使用DropWizard-Metrics发出语句计时统计数据。
 
-Do you know of a project related to Jdbi? Send us an issue and we’ll add a link here!
+你知道一个与Jdbi相关的项目吗?给我们发送一个issue，我们会在这里添加一个链接!
 
-### 10.4. Contributing
+<a name="contributing"></a>
+### [10.4. 捐献](#contributing)
 
-**jdbi** uses GitHub for collaboration. Please check out the [project page](https://github.com/jdbi/jdbi) for more information.
+**jdbi** 使用 GitHub 进行协作。 请查看[项目页面](https://github.com/jdbi/jdbi) 了解更多信息。
 
-If you have a question, we have a [Google Group mailing list](https://groups.google.com/group/jdbi)
+如果您有问题，我们有 [Google Group 邮件列表](https://groups.google.com/group/jdbi)
 
-Users sometimes hang out on [IRC in #jdbi on Freenode](irc://irc.freenode.net/#jdbi).
+用户有时会在 [IRC in #jdbi on Freenode](irc://irc.freenode.net/#jdbi) 上闲逛。
 
-### 10.5. Upgrading from v2 to v3
+<a name="upgrading_from_v2_to_v3"></a>
+### [10.5. 从 v2 升级到 v3](#upgrading_from_v2_to_v3)
 
-Already using Jdbi v2?
+已经在使用 Jdbi v2？
 
-Here’s a quick summary of differences to help you upgrade:
+以下是一个快速的差异总结，以帮助您升级:
 
-General:
+总体:
 
-- Maven artifacts renamed and split out:
-- Old: `org.jdbi:jdbi`
-- New: `org.jdbi:jdbi3-core`, `org.jdbi:jdbi3-sqlobject`, etc.
-- Root package renamed: `org.skife.jdbi.v2` → `org.jdbi.v3`
+- Maven 工件重命名和拆分：
+- 旧的: `org.jdbi:jdbi`
+- 新的: `org.jdbi:jdbi3-core`, `org.jdbi:jdbi3-sqlobject`, etc.
+- 根 package 重命名: `org.skife.jdbi.v2` 到 `org.jdbi.v3`
 
 Core API:
 
 - `DBI`, `IDBI` → `Jdbi`
-  - Instantiate with `Jdbi.create()` factory methods instead of constructors.
+  - 使用`Jdbi.create()`工厂方法而不是构造函数进行实例化。
 - `DBIException` → `JdbiException`
-- `Handle.select(String, …)` now returns a `Query` for further method chaining, instead of a `List<Map<String, Object>>`. Call `Handle.select(sql, …).mapToMap().list()` for the same effect as v2.
-- `Handle.insert()` and `Handle.update()` have been coalesced into `Handle.execute()`.
-- `ArgumentFactory` is no longer generic.
-- `AbstractArgumentFactory` is a generic implementation of `ArgumentFactory` for factories that handle a single argument type.
-- Argument and mapper factories now operate in terms of `java.lang.reflect.Type` instead of `java.lang.Class`. This allows Jdbi to handle arguments and mappers for generic types.
-- Argument and mapper factories now have a single `build()` method that returns an `Optional`, instead of separate `accepts()` and `build()` methods.
-- `ResultSetMapper` → `RowMapper`. The row index parameter was also removed from `RowMapper`--the current row number can be retrieved directly from the `ResultSet`.
+- `Handle.select(String, ...)` 现在返回一个 `Query` 用于进一步的方法链接，而不是 `List<Map<String, Object>>`。 调用 `Handle.select(sql, ...).mapToMap().list()` 以获得与 v2 相同的效果。
+- `Handle.insert()` 和 `Handle.update()` 已合并为 `Handle.execute()`。
+- `ArgumentFactory` 不再是通用的。
+- `AbstractArgumentFactory` 是用于处理单个参数类型的工厂的 `ArgumentFactory` 的通用实现。
+- 参数和映射器工厂现在根据 `java.lang.reflect.Type` 而不是 `java.lang.Class` 运行。 这允许 Jdbi 处理泛型类型的参数和映射器。
+- 参数和映射器工厂现在有一个单独的 `build()` 方法，它返回一个 `Optional`，而不是单独的 `accepts()` 和 `build()` 方法。
+- `ResultSetMapper` → `RowMapper`. 行索引参数也从 `RowMapper` 中删除——当前行号可以直接从 `ResultSet` 中检索。
 - `ResultColumnMapper` → `ColumnMapper`
 - `ResultSetMapperFactory` → `RowMapperFactory`
 - `ResultColumnMapperFactory` → `ColumnMapperFactory`
-- `Query` no longer maps to `Map<String, Object>` by default. Call `Query.mapToMap()`, `.mapToBean(type)`, `.map(mapper)` or `.mapTo(type)`.
-- `ResultBearing<T>` was refactored into `ResultBearing` (no generic parameter) and `ResultIterable<T>`. Call `.mapTo(type)` to get a `ResultIterable<T>`.
-- `TransactionConsumer` and `TransactionCallback` only take a `Handle` now—the `TransactionStatus` argument is removed. Just rollback the handle now.
-- `TransactionStatus` class removed.
-- `CallbackFailedException` class removed. The functional interfaces like `HandleConsumer`, `HandleCallback`, `TransactionCallback`, etc can now throw any exception type. Methods like `Jdbi.inTransaction` that take these callbacks use exception transparency to throw only the exception thrown by the callback. If your callback throws no checked exceptions, you don’t need a try/catch block.
-- `StatementLocator` interface removed from core. All core statements expect to receive the actual SQL string now. A similar concept, `SqlLocator` was added but is specific to SQL Object.
-- `StatementRewriter` refactored into `TemplateEngine`, and `SqlParser`.
-- StringTemplate no longer required to process `<name>`-style tokens in SQL.
-- Custom SqlParser implementations must now provide a way to transform raw parameter names to names that will be properly parsed out as named params.
+- 默认情况下，`Query` 不再映射到 `Map<String, Object>`。 调用`Query.mapToMap()`、`.mapToBean(type)`、`.map(mapper)` 或`.mapTo(type)`。
+- `ResultBearing<T>` 被重构为 `ResultBearing(无通用参数)` 和  `ResultIterable<T>`。 调用 `.mapTo(type)` 以获得一个 `ResultIterable<T>`。
+- `TransactionConsumer` 和 `TransactionCallback` 现在只接受一个 `Handle`——移除了 `TransactionStatus` 参数。 现在只需rollback句柄即可。
+- 删除了`TransactionStatus` 类。
+- 删除了`CallbackFailedException` 类。 像`HandleConsumer`、`HandleCallback`、`TransactionCallback` 等功能接口现在可以抛出任何异常类型。 像`Jdbi.inTransaction` 这样的接受这些回调的方法使用异常透明性来只抛出回调抛出的异常。 如果你的回调没有抛出任何检查异常，你就不需要 try/catch 块。
+- 从core中删除了`StatementLocator` 接口。 所有core statements 现在都希望接收实际的 SQL 字符串。 添加了一个类似的概念，`SqlLocator`，但它是特定于 SQL 对象的。
+- `StatementRewriter` 重构为 `TemplateEngine` 和 `SqlParser`。
+- StringTemplate 不再需要在 SQL 中处理 `<name>` 样式的标记。
+- 自定义 SqlParser 实现现在必须提供一种方法来将原始参数名称转换为将被正确解析为命名参数的名称。
 
 SQL Object API:
 
-- SQL Object support is not installed by default. It must be added as a separate dependency, and the plugin installed into the `Jdbi` object:
+- 默认情况下不安装 SQL 对象支持。 它必须作为单独的依赖项添加，并将插件安装到 `Jdbi` 对象中：
 
-```
+```java
 Jdbi jdbi = Jdbi.create(...);
 jdbi.installPlugin(new SqlObjectPlugin());
 ```
 
-- SQL Object types in v3 must be public interfaces—no classes. Method return types must likewise be public. This is due to SQL Object implementation switching from CGLIB to `java.lang.reflect.Proxy`, which only supports interfaces.
+- v3 中的 SQL 对象类型必须是公共接口——没有类。 方法返回类型同样必须是公共的。 这是由于 SQL 对象实现从 CGLIB 切换到`java.lang.reflect.Proxy`，它只支持接口。
 - `GetHandle` → `SqlObject`
-- `SqlLocator` replaces `StatementLocator`, and only applies to SQL Objects.
-- `@RegisterMapper` divided into `@RegisterRowMapper` and `@RegisterColumnMapper`.
-- `@Bind` annotations on SQL Object method parameters can be made optional, by compiling your code with the `-parameters` compiler flag enabled.
-- `@BindIn` → `@BindList`, and no longer requires StringTemplate
-- On-demand SQL objects don’t play well with methods that return `Iterable` or `FluentIterable`. On-demand objects strictly close the handle after each method call, and no longer "hold the door open" for you to finish consuming the interable as they did in v2. This forecloses a major source of connection leaks.
-- SQL Objects are no longer closeable — they are either on-demand, or their lifecycle is tied to the lifecycle of the `Handle` they are attached to.
-- `@BindAnnotation` meta-annotation removed. Use `@SqlStatementCustomizingAnnotation` instead.
-- `@SingleValueResult` → `@SingleValue`. The annotation may be used for method return types, or on `@SqlBatch` parameters.
+- `SqlLocator` 取代了 `StatementLocator`，并且只适用于 SQL 对象。
+- `@RegisterMapper` 被分为`@RegisterRowMapper` 和`@RegisterColumnMapper`。
+- 通过在启用 `-parameters` 编译器标志的情况下编译代码，可以将 SQL 对象方法参数上的 `@Bind` 注释设为可选。
+- `@BindIn` → `@BindList`，不再需要 StringTemplate
+- 按需 SQL 对象不适用于返回`Iterable`或`FluentIterable`的方法。 按需对象在每次方法调用后都严格关闭句柄，不再像 v2 中那样“让门打开”让您完成对可交互对象的消费。 这排除了连接泄漏的主要来源。
+- SQL 对象不再是可关闭的 — 它们要么是按需的，要么它们的生命周期与它们所附加的`Handle`的生命周期相关联。
+- `@BindAnnotation` 元注解已删除。 改用`@SqlStatementCustomizingAnnotation`。
+- `@SingleValueResult` → `@SingleValue`. 此注解可用于方法返回类型，也可用于`@SqlBatch` 参数。
